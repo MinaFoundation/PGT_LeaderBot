@@ -49,22 +49,24 @@ async def get_user_commits_in_repo(username, repo_link):
         owner, repo_name = owner_repo.rstrip("/").split("/")
 
         repo = g.get_repo(f"{owner}/{repo_name}")
-
-        commits_url = f"https://api.github.com/repos/{owner}/{repo_name}/commits?author={username}"
+        branches = repo.get_branches()
 
         async with aiohttp.ClientSession() as session:
-            commits = await fetch_commits(session, commits_url)
-            if commits:
-                for commit in commits:
-                    commit_info = {
-                        'message': commit['commit']['message'],
-                        'date': commit['commit']['committer']['date']
-                    }
-                    logger.debug(f"Commit Info: {commit_info}")
-            else:
-                logger.info(f"No commits found for user {username} in {repo_name}.")
+            for branch in branches:
+                commits_url = f"https://api.github.com/repos/{owner}/{repo_name}/commits?author={username}&sha={branch.name}"
+                commits = await fetch_commits(session, commits_url)
+                if commits:
+                    for commit in commits:
+                        commit_info = {
+                            'message': commit['commit']['message'],
+                            'date': commit['commit']['committer']['date'],
+                            'branch': branch.name
+                        }
+                        logger.debug(f"Commit Info: {commit_info}")
+                else:
+                    logger.info(f"No commits found for user {username} in {repo_name}.")
             
-            logger.debug(f"{username}, has {len(commits)} commits")
+                logger.debug(f"{username}, has {len(commits)} commits")
             
     except GithubException as e:
         logger.error(f"GitHub API Error: {e}")
