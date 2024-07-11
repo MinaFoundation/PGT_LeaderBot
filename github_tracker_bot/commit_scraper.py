@@ -63,6 +63,9 @@ async def get_user_commits_in_repo(username, repo_link):
                     logger.debug(f"Commit Info: {commit_info}")
             else:
                 logger.info(f"No commits found for user {username} in {repo_name}.")
+            
+            logger.debug(f"{username}, has {len(commits)} commits")
+            
     except GithubException as e:
         logger.error(f"GitHub API Error: {e}")
 
