@@ -48,10 +48,10 @@ def read_sheet():
             user_data = {headers[i]: row_data[i] for i in range(len(headers))}
 
             for i in range(len(headers)):
-                if i < len(row_data):  
+                if i < len(row_data):
                     user_data[headers[i]] = row_data[i]
                 else:
-                    user_data[headers[i]] = ""  
+                    user_data[headers[i]] = ""
 
             if "REPOSITORIES" in user_data:
                 user_data["REPOSITORIES"] = [
