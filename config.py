@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 
+
 load_dotenv(override=True)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -11,3 +12,8 @@ REDIS_PORT = os.getenv("REDIS_PORT")
 
 GOOGLE_CREDENTIALS = "leaderbot-kr-6dc75af94571.json"
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+if LOG_LEVEL not in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+    print(f"Invalid log level '{LOG_LEVEL}', defaulting to 'INFO'")
+    LOG_LEVEL = "INFO"
