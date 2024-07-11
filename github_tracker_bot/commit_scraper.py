@@ -39,7 +39,7 @@ async def fetch_commits(session, url):
     
     return all_commits
 
-async def get_user_commits_in_repo(username, repo_link):
+async def get_user_commits_in_repo(username, repo_link, since, until):
     if not re.match(r'https?://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/?$', repo_link):
         logger.error("Invalid GitHub repository link format.")
         return
@@ -53,7 +53,10 @@ async def get_user_commits_in_repo(username, repo_link):
 
         async with aiohttp.ClientSession() as session:
             for branch in branches:
-                commits_url = f"https://api.github.com/repos/{owner}/{repo_name}/commits?author={username}&sha={branch.name}"
+                commits_url = (
+                    f"https://api.github.com/repos/{owner}/{repo_name}/commits"
+                    f"?author={username}&sha={branch.name}&since={since}&until={until}"
+                )
                 commits = await fetch_commits(session, commits_url)
                 if commits:
                     for commit in commits:
@@ -73,4 +76,7 @@ async def get_user_commits_in_repo(username, repo_link):
 
 
 if __name__ == '__main__':
-    asyncio.run(get_user_commits_in_repo('berkingurcan', 'https://github.com/UmstadAI/zkAppUmstad'))
+    since_date = "2024-01-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-07-01T00:00:00Z"
+
+    asyncio.run(get_user_commits_in_repo('berkingurcan', 'https://github.com/UmstadAI/zkAppUmstad', since_date, until_date))
