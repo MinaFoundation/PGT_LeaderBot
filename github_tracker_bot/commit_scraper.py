@@ -67,16 +67,16 @@ async def get_user_commits_in_repo(username, repo_link, since, until):
                         }
                         logger.debug(f"Commit Info: {commit_info}")
                 else:
-                    logger.info(f"No commits found for user {username} in {repo_name}.")
+                    logger.info(f"No commits found for user {username} in {repo_name}, {branch.name} branch.")
             
-                logger.debug(f"{username}, has {len(commits)} commits")
+                logger.debug(f"{username}, has {len(commits)} commits in {branch.name} branch")
             
     except GithubException as e:
         logger.error(f"GitHub API Error: {e}")
 
 
 if __name__ == '__main__':
-    since_date = "2024-01-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-07-01T00:00:00Z"
+    since_date = "2024-06-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-07-11T00:00:00Z"
 
     asyncio.run(get_user_commits_in_repo('berkingurcan', 'https://github.com/UmstadAI/zkAppUmstad', since_date, until_date))
