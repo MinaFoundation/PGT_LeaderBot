@@ -47,6 +47,12 @@ def read_sheet():
             row_data = [row[i] if i < len(row) else "" for i in range(len(headers))]
             user_data = {headers[i]: row_data[i] for i in range(len(headers))}
 
+            for i in range(len(headers)):
+                if i < len(row_data):  
+                    user_data[headers[i]] = row_data[i]
+                else:
+                    user_data[headers[i]] = ""  
+
             if "REPOSITORIES" in user_data:
                 user_data["REPOSITORIES"] = [
                     repo.strip()
