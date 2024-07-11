@@ -18,15 +18,26 @@ g = Github(GITHUB_TOKEN)
 
 async def fetch_commits(session, url):
     headers = {'Authorization': 'token ' + GITHUB_TOKEN}
-    async with session.get(url, headers=headers) as response:
-        print(url)
-        if response.status == 200:
-            commits = await response.json()
-            return commits
-        else:
-            error_message = await response.text()
-            logger.error(f"Failed to fetch commits: {error_message}")
-            return None
+    all_commits = []
+    
+    while url:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                commits = await response.json()
+                all_commits.extend(commits)
+
+                if 'Link' in response.headers:
+                    links = response.headers['Link']
+                    match = re.search(r'<([^>]+)>;\s*rel="next"', links)
+                    url = match.group(1) if match else None
+                else:
+                    url = None
+            else:
+                error_message = await response.text()
+                logger.error(f"Failed to fetch commits: {error_message}")
+                return None
+    
+    return all_commits
 
 async def get_user_commits_in_repo(username, repo_link):
     if not re.match(r'https?://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/?$', repo_link):
@@ -46,8 +57,6 @@ async def get_user_commits_in_repo(username, repo_link):
             if commits:
                 for commit in commits:
                     commit_info = {
-                        'sha': commit['sha'],
-                        'url': commit['html_url'],
                         'message': commit['commit']['message'],
                         'date': commit['commit']['committer']['date']
                     }
