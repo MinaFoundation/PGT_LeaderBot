@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
 from github_tracker_bot.read_sheet import read_sheet, get_google_sheets_service
-import log_config
 import config
 
 
