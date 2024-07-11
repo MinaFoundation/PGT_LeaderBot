@@ -16,18 +16,19 @@ logger = get_logger(__name__)
 GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
+
 async def fetch_commits(session, url):
-    headers = {'Authorization': 'token ' + GITHUB_TOKEN}
+    headers = {"Authorization": "token " + GITHUB_TOKEN}
     all_commits = []
-    
+
     while url:
         async with session.get(url, headers=headers) as response:
             if response.status == 200:
                 commits = await response.json()
                 all_commits.extend(commits)
 
-                if 'Link' in response.headers:
-                    links = response.headers['Link']
+                if "Link" in response.headers:
+                    links = response.headers["Link"]
                     match = re.search(r'<([^>]+)>;\s*rel="next"', links)
                     url = match.group(1) if match else None
                 else:
@@ -36,14 +37,17 @@ async def fetch_commits(session, url):
                 error_message = await response.text()
                 logger.error(f"Failed to fetch commits: {error_message}")
                 return None
-    
+
     return all_commits
 
+
 async def get_user_commits_in_repo(username, repo_link, since, until):
-    if not re.match(r'https?://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/?$', repo_link):
+    if not re.match(
+        r"https?://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/?$", repo_link
+    ):
         logger.error("Invalid GitHub repository link format.")
         return
-    
+
     try:
         _, owner_repo = repo_link.split("github.com/", 1)
         owner, repo_name = owner_repo.rstrip("/").split("/")
@@ -61,22 +65,33 @@ async def get_user_commits_in_repo(username, repo_link, since, until):
                 if commits:
                     for commit in commits:
                         commit_info = {
-                            'message': commit['commit']['message'],
-                            'date': commit['commit']['committer']['date'],
-                            'branch': branch.name
+                            "message": commit["commit"]["message"],
+                            "date": commit["commit"]["committer"]["date"],
+                            "branch": branch.name,
                         }
                         logger.debug(f"Commit Info: {commit_info}")
                 else:
-                    logger.info(f"No commits found for user {username} in {repo_name}, {branch.name} branch.")
-            
-                logger.debug(f"{username}, has {len(commits)} commits in {branch.name} branch")
-            
+                    logger.info(
+                        f"No commits found for user {username} in {repo_name}, {branch.name} branch."
+                    )
+
+                logger.debug(
+                    f"{username}, has {len(commits)} commits in {branch.name} branch"
+                )
+
     except GithubException as e:
         logger.error(f"GitHub API Error: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     since_date = "2024-06-01T00:00:00Z"  # ISO 8601 format
     until_date = "2024-07-11T00:00:00Z"
 
-    asyncio.run(get_user_commits_in_repo('berkingurcan', 'https://github.com/UmstadAI/zkAppUmstad', since_date, until_date))
+    asyncio.run(
+        get_user_commits_in_repo(
+            "berkingurcan",
+            "https://github.com/UmstadAI/zkAppUmstad",
+            since_date,
+            until_date,
+        )
+    )
