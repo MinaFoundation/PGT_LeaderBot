@@ -9,3 +9,7 @@ def read(ctx):
 @task
 def test(ctx):
     ctx.run("python -m unittest discover tests")
+
+@task
+def commit(ctx):
+    ctx.run("python github_tracker_bot/commit_scraper.py")
