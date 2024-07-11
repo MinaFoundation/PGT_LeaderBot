@@ -102,6 +102,27 @@ class TestReadSheet(unittest.TestCase):
 
         data = read_sheet()
         self.assertEqual(data, expected_data)
+    
+    @patch("github_tracker_bot.read_sheet.get_google_sheets_service")
+    def test_read_sheet_extra_header_columns(self, mock_get_service):
+        mock_service = Mock()
+        mock_get_service.return_value = mock_service
+
+        mock_service.spreadsheets().values().get().execute.return_value = {
+            "values": [
+                ["Name", "Age", "REPOSITORIES", "Extra"],
+                ["Alice", "30", "repo1, repo2", "extra1"],
+                ["Bob", "25", "repo3", "extra2"]
+            ]
+        }
+
+        expected_data = [
+            {"Name": "Alice", "Age": "30", "REPOSITORIES": ["repo1", "repo2"], "Extra": "extra1"},
+            {"Name": "Bob", "Age": "25", "REPOSITORIES": ["repo3"], "Extra": "extra2"}
+        ]
+
+        data = read_sheet()
+        self.assertEqual(data, expected_data)
 
     @patch("github_tracker_bot.read_sheet.get_google_sheets_service")
     def test_read_sheet_empty_cells(self, mock_get_service):
