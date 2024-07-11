@@ -17,8 +17,9 @@ GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
 async def fetch_commits(session, url):
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
+    headers = {'Authorization': 'token ' + GITHUB_TOKEN}
     async with session.get(url, headers=headers) as response:
+        print(url)
         if response.status == 200:
             commits = await response.json()
             return commits
@@ -38,7 +39,7 @@ async def get_user_commits_in_repo(username, repo_link):
 
         repo = g.get_repo(f"{owner}/{repo_name}")
 
-        commits_url = f"https://api.github.com/repos/{repo}/commits?author={username}"
+        commits_url = f"https://api.github.com/repos/{owner}/{repo_name}/commits?author={username}"
 
         async with aiohttp.ClientSession() as session:
             commits = await fetch_commits(session, commits_url)
@@ -50,7 +51,7 @@ async def get_user_commits_in_repo(username, repo_link):
                         'message': commit['commit']['message'],
                         'date': commit['commit']['committer']['date']
                     }
-                    logger.info(f"Commit Info: {commit_info}")
+                    logger.debug(f"Commit Info: {commit_info}")
             else:
                 logger.info(f"No commits found for user {username} in {repo_name}.")
     except GithubException as e:
