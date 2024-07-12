@@ -70,7 +70,42 @@ async def get_user_commits_in_repo(
         existing_shas = set()
 
         async with aiohttp.ClientSession() as session:
+            main_branch = None
+            other_branches = []
+
             for branch in branches:
+                if branch.name == "main":
+                    main_branch = branch
+                else:
+                    other_branches.append(branch)
+
+            if main_branch:
+                branch_name = main_branch.name
+                commits_url = (
+                    f"https://api.github.com/repos/{owner}/{repo_name}/commits"
+                    f"?author={username}&sha={main_branch.name}&since={since}&until={until}"
+                )
+
+                commits = await fetch_commits(session, commits_url)
+
+                if commits:
+                    for commit in commits:
+                        commit_sha = commit["sha"]
+                        if commit_sha not in existing_shas:
+                            commit_info = {
+                                "message": commit["commit"]["message"],
+                                "date": commit["commit"]["committer"]["date"],
+                                "branch": branch_name,
+                                "sha": commit_sha,
+                                "author": commit["commit"]["author"]["name"],
+                                "repo": f"{owner}/{repo_name}",
+                            }
+                            commit_infos.append(commit_info)
+                            existing_shas.add(commit_sha)
+
+                            logger.debug(f"Commit Info: {commit_info}")
+
+            for branch in other_branches:
                 branch_name = branch.name
                 commits_url = (
                     f"https://api.github.com/repos/{owner}/{repo_name}/commits"

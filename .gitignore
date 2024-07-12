@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+processed_commits.json
+
 leaderbot-kr-6dc75af94571.json
 
 # C extensions
