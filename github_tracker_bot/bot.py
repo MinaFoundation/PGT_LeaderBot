@@ -23,21 +23,20 @@ async def main(username, repo_link, since_date, until_date):
 
     if commit_infos:
         processed_commits = await process_commits(commit_infos)
-        for processed_commit in processed_commits:
-            logger.debug(processed_commit)
+        for commit_info in processed_commits:
+            logger.debug(json.dumps(commit_info, indent=5))
+            
+        logger.debug(f"Total commit number: {len(processed_commits)}")
+        return processed_commits
     else:
         logger.info("No commits found or failed to fetch commits.")
 
-    for commit_info in processed_commits:
-        logger.debug(json.dumps(commit_info, indent=5))
-        
-    return processed_commits
 
 if __name__ == "__main__":
     username = "berkingurcan"
-    repo_link = "https://github.com/UmstadAI/discord-umstad"
+    repo_link = "https://github.com/MinaFoundation/PGT_LeaderBot"
     since_date = "2024-07-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-07-04T00:00:00Z"
+    until_date = "2024-17-30T00:00:00Z"
 
     asyncio.run(main(
         username,
