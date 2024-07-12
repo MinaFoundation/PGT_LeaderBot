@@ -113,8 +113,8 @@ async def get_user_commits_in_repo(
 
 
 if __name__ == "__main__":
-    since_date = "2024-07-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-07-11T00:00:00Z"
+    since_date = "2024-07-03T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-07-04T00:00:00Z"
 
     asyncio.run(
         get_user_commits_in_repo(
