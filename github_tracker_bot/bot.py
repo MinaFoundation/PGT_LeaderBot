@@ -40,9 +40,9 @@ def write_to_json(data, filename):
 
 if __name__ == "__main__":
     username = "berkingurcan"
-    repo_link = "https://github.com/MinaFoundation/PGT_gptSurveySummarizer"
-    since_date = "2024-05-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-05-30T00:00:00Z"
+    repo_link = "https://github.com/UmstadAI/zkAppUmstad"
+    since_date = "2024-01-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-01-30T00:00:00Z"
 
     asyncio.run(main(
         username,

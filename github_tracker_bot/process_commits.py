@@ -9,6 +9,8 @@ from github import Github
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import config
+import lib.extract_unnecessary_diff as lib
+
 from log_config import get_logger
 
 logger = get_logger(__name__)
@@ -57,7 +59,12 @@ def concatenate_diff_to_commit_info(commit_info: Dict[str, Any], diff: Optional[
     }
     
     if diff is not None:
-        result["diff"] = diff
+        is_diff_necessary = not lib.process_diff(diff)
+        
+        if is_diff_necessary:
+            result["diff"] = lib.filter_diffs(diff)
+        else:
+            result["diff"] = ""
     else:
         result["diff"] = ""
     
