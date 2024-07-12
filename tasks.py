@@ -14,3 +14,8 @@ def test(ctx):
 @task
 def commit(ctx):
     ctx.run("python github_tracker_bot/commit_scraper.py")
+
+
+@task
+def process(ctx):
+    ctx.run("python github_tracker_bot/process_commits.py")
