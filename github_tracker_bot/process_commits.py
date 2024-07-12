@@ -9,7 +9,7 @@ from github import Github
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import config
-import lib.extract_unnecessary_diff as lib
+import helpers.extract_unnecessary_diff as lib
 
 from log_config import get_logger
 

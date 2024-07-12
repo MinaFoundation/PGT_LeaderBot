@@ -1,5 +1,5 @@
 import unittest
-import github_tracker_bot.lib.extract_unnecessary_diff as lib
+import github_tracker_bot.helpers.extract_unnecessary_diff as lib
 
 class TestNonCodeFileDetection(unittest.TestCase):
     def test_is_non_code_file(self):
