@@ -50,13 +50,14 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
         return None
 
 
-def format_commit_for_ai(commit_info: Dict[str, Any], diff: str) -> Dict[str, Any]:
+def concatenate_diff_to_commit_info(commit_info: Dict[str, Any], diff: str) -> Dict[str, Any]:
     return {
-        "message": commit_info["message"],
-        "date": commit_info["date"],
-        "branch": commit_info["branch"],
-        "sha": commit_info["sha"],
+        "repo": commit_info["repo"],
         "author": commit_info["author"],
+        "date": commit_info["date"],
+        "message": commit_info["message"],
+        "sha": commit_info["sha"],
+        "branch": commit_info["branch"],
         "diff": diff,
     }
 
