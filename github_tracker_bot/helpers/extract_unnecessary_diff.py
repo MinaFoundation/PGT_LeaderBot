@@ -3,6 +3,7 @@ import re
 non_code_patterns = [
     r'^yarn\.lock$', 
     r'^package-lock\.json$', 
+    r'^pnpm-lock\.yaml$',
     r'^pipfile\.lock$', 
     r'^\.gitignore$', 
     r'^\.editorconfig$', 
@@ -27,7 +28,88 @@ non_code_patterns = [
     r'^\.DS_Store$', 
     r'^thumbs\.db$', 
     r'^\.vscode/.*', 
-    r'^\.idea/.*'
+    r'^\.idea/.*',
+    # Lock files
+    r'^yarn\.lock$', 
+    r'^package-lock\.json$', 
+    r'^pnpm-lock\.yaml$',
+    r'^pipfile\.lock$', 
+    
+    # Configuration and ignore files
+    r'^\.gitignore$', 
+    r'^\.editorconfig$', 
+    r'^\.eslintignore$', 
+    r'^\.eslintrc\.json$', 
+    r'^\.prettierrc$', 
+    r'^\.prettierrc\.json$', 
+    r'^\.prettierrc\.yaml$', 
+    r'^\.stylelintrc$', 
+    r'^\.stylelintrc\.json$', 
+    r'^\.stylelintrc\.yaml$', 
+    r'^\.browserslistrc$', 
+    r'^\.npmrc$', 
+    r'^\.yarnrc$', 
+    r'^\.nvmrc$', 
+    r'^\.env$', 
+    r'^\.env\.example$', 
+    
+    # Documentation
+    r'^CONTRIBUTING\.md$', 
+    r'^CHANGELOG\.md$', 
+    r'^docs/.*', 
+    r'^mkdocs\.yml$', 
+    
+    # Docker and CI/CD
+    r'^Dockerfile$', 
+    r'^Jenkinsfile$', 
+    r'^\.travis\.yml$', 
+    r'^\.circleci/config\.yml$', 
+    r'^Makefile$', 
+    r'^\.github/workflows/.*', 
+    r'^azure-pipelines\.yml$', 
+    r'^bitbucket-pipelines\.yml$', 
+    r'^.gitlab-ci\.yml$', 
+    
+    # Binary files
+    r'.*\.(png|jpg|gif|svg)$', 
+    r'.*\.(pdf|docx)$', 
+    
+    # Logs and data
+    r'.*\.log$', 
+    r'.*\.csv$', 
+    r'.*\.json$', 
+    
+    # Dependencies and build artifacts
+    r'^node_modules/.*', 
+    r'^vendor/.*', 
+    r'^dist/.*', 
+    r'^build/.*', 
+    r'^target/.*', 
+    
+    # IDE and OS specific files
+    r'^\.DS_Store$', 
+    r'^thumbs\.db$', 
+    r'^\.vscode/.*', 
+    r'^\.idea/.*', 
+    
+    # Rust
+    r'^Cargo\.toml$', 
+    r'^Cargo\.lock$', 
+    
+    # TypeScript/JavaScript
+    r'^tsconfig\.json$', 
+    r'^jsconfig\.json$', 
+    r'^tslint\.json$', 
+    r'^jest\.config\.js$', 
+    r'^babel\.config\.js$', 
+    r'^webpack\.config\.js$', 
+    r'^rollup\.config\.js$', 
+    
+    # Python
+    r'^Pipfile$', 
+    r'^requirements\.txt$', 
+    r'^pyproject\.toml$', 
+    r'^tox\.ini$', 
 ]
 
 
@@ -75,6 +157,6 @@ def filter_diffs(diff_text):
         if not (combined_pattern.search(file_path_a) or combined_pattern.search(file_path_b)):
             filtered_diffs.append('diff --git' + diff)
 
-    return '\n'.join(filtered_diffs)
+    return ' \n '.join(filtered_diffs)
 
 

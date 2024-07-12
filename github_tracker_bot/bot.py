@@ -34,7 +34,7 @@ async def main(username, repo_link, since_date, until_date):
 
 def write_to_json(data, filename):
     with open(filename, 'w') as f:
-        json.dump(data, f, indent=4)
+        json.dump(data, f, indent=5)
         logger.info(f"Processed commits have been written to {filename}")
 
 
