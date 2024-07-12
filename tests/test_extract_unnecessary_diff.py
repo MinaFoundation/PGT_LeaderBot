@@ -75,8 +75,8 @@ class TestFilterDiffs(unittest.TestCase):
         +def util_function():
         +    pass
         """
-        print("Output \n", lib.filter_diffs(diff_text))
-        self.assertEqual(lib.filter_diffs(diff_text).strip(), diff_text.strip())
+       
+        self.assertEquals(lib.filter_diffs(diff_text).strip(), diff_text.strip())
 
     def test_all_diffs_filtered(self):
         diff_text = """
