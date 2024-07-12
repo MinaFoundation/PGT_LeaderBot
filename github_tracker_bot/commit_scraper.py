@@ -71,6 +71,7 @@ async def get_user_commits_in_repo(
 
         async with aiohttp.ClientSession() as session:
             for branch in branches:
+                branch_name = branch.name
                 commits_url = (
                     f"https://api.github.com/repos/{owner}/{repo_name}/commits"
                     f"?author={username}&sha={branch.name}&since={since}&until={until}"
@@ -85,7 +86,7 @@ async def get_user_commits_in_repo(
                             commit_info = {
                                 "message": commit["commit"]["message"],
                                 "date": commit["commit"]["committer"]["date"],
-                                "branch": branch.name,
+                                "branch": branch_name,
                                 "sha": commit_sha,
                                 "author": commit["commit"]["author"]["name"],
                                 "repo": f"{owner}/{repo_name}",
@@ -94,6 +95,8 @@ async def get_user_commits_in_repo(
                             existing_shas.add(commit_sha)
 
                             logger.debug(f"Commit Info: {commit_info}")
+                        else:
+                            continue
                 else:
                     logger.info(
                         f"No commits found for user {username} in {repo_name}, {branch.name} branch."

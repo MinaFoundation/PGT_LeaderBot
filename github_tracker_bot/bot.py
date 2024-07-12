@@ -5,7 +5,6 @@ import asyncio
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import config
 from log_config import get_logger
 
 logger = get_logger(__name__)
@@ -27,16 +26,23 @@ async def main(username, repo_link, since_date, until_date):
             logger.debug(json.dumps(commit_info, indent=5))
             
         logger.debug(f"Total commit number: {len(processed_commits)}")
+        write_to_json(processed_commits, 'processed_commits.json')
         return processed_commits
     else:
         logger.info("No commits found or failed to fetch commits.")
 
 
+def write_to_json(data, filename):
+    with open(filename, 'w') as f:
+        json.dump(data, f, indent=4)
+        logger.info(f"Processed commits have been written to {filename}")
+
+
 if __name__ == "__main__":
     username = "berkingurcan"
-    repo_link = "https://github.com/MinaFoundation/PGT_LeaderBot"
-    since_date = "2024-07-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-17-30T00:00:00Z"
+    repo_link = "https://github.com/MinaFoundation/PGT_gptSurveySummarizer"
+    since_date = "2024-05-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-05-30T00:00:00Z"
 
     asyncio.run(main(
         username,
