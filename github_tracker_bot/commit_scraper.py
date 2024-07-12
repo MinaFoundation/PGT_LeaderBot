@@ -88,7 +88,7 @@ async def get_user_commits_in_repo(
                                 "branch": branch.name,
                                 "sha": commit_sha,
                                 "author": commit["commit"]["author"]["name"],
-                                "repo": "{owner}/{repo_name}",
+                                "repo": f"{owner}/{repo_name}",
                             }
                             commit_infos.append(commit_info)
                             existing_shas.add(commit_sha)

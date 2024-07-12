@@ -19,3 +19,7 @@ def commit(ctx):
 @task
 def process(ctx):
     ctx.run("python github_tracker_bot/process_commits.py")
+
+@task
+def bot(ctx):
+    ctx.run("python github_tracker_bot/bot.py")

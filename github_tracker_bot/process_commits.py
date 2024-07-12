@@ -1,11 +1,10 @@
 import os
 import sys
-import re
 import asyncio
 import aiohttp
-from typing import Optional, List, Dict, Any
+from typing import List, Optional, Dict, Any
 
-from github import Github, GithubException
+from github import Github
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -16,7 +15,6 @@ logger = get_logger(__name__)
 
 GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
-
 
 async def fetch_diff(repo: str, sha: str) -> Optional[str]:
     url = f"https://api.github.com/repos/{repo}/commits/{sha}"
@@ -33,34 +31,47 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
                         if diff_response.status == 200:
                             return await diff_response.text()
                         else:
-                            logger.error(
-                                f"Failed to fetch diff: {await diff_response.text()}"
-                            )
+                            logger.error(f"Failed to fetch diff: {await diff_response.text()}")
                             return None
                 else:
-                    logger.error(
-                        f"Failed to fetch commit data: {await response.text()}"
-                    )
+                    logger.error(f"Failed to fetch commit data: {await response.text()}")
                     return None
     except aiohttp.ClientError as e:
         logger.error(f"Client error while fetching diff: {e}")
+        return None
+    except asyncio.TimeoutError:
+        logger.error("Request timed out while fetching diff")
         return None
     except Exception as e:
         logger.error(f"Unexpected error while fetching diff: {e}")
         return None
 
-
-def concatenate_diff_to_commit_info(commit_info: Dict[str, Any], diff: str) -> Dict[str, Any]:
-    return {
+def concatenate_diff_to_commit_info(commit_info: Dict[str, Any], diff: Optional[str]) -> Dict[str, Any]:
+    result = {
         "repo": commit_info["repo"],
         "author": commit_info["author"],
         "date": commit_info["date"],
         "message": commit_info["message"],
         "sha": commit_info["sha"],
         "branch": commit_info["branch"],
-        "diff": diff,
     }
+    
+    if diff is not None:
+        result["diff"] = diff
+    else:
+        result["diff"] = ""
+    
+    return result
 
+async def process_commits(commit_infos: List[Dict[str, Any]]):
+    processed_commits = []
+    for commit_info in commit_infos:
+        diff = await fetch_diff(commit_info["repo"], commit_info["sha"])
+        processed_commit = concatenate_diff_to_commit_info(commit_info, diff)
+        processed_commits.append(processed_commit)
+        logger.debug(f"Processed commit: {processed_commit}")
+    
+    return processed_commits
 
 if __name__ == "__main__":
     repo_name = "UmstadAI/zkAppUmstad"
