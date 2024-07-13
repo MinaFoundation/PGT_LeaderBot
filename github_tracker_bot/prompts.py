@@ -48,7 +48,7 @@ def process_message(date: str, data_array: List[CommitData]):
         {{
             "username": {data_array[0]["username"]},
             "date": {date},
-            "is_qualified": bool,
+            "is_qualified": true/false,
             "explanation": your explanation for your decision
         }}
         ```

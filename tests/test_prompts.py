@@ -46,6 +46,7 @@ class TestPrompts(unittest.TestCase):
     def test_process_message(self):
         for date, commits in self.commit_data.items():
             message = prompts.process_message(date, commits)
-            print(message)
 
-        pass
+        self.assertIsNotNone(message)
+
+

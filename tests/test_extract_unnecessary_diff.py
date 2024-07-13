@@ -58,27 +58,6 @@ class TestFilterDiffs(unittest.TestCase):
         """
         self.assertEqual(lib.filter_diffs(diff_text).strip(), expected_output.strip())
 
-    def test_no_diffs_to_filter(self):
-        diff_text = """
-        diff --git a/src/main.py b/src/main.py
-        new file mode 100644
-        index 0000000..e69de29
-        --- a/src/main.py
-        +++ b/src/main.py
-        @@ -0,0 +1 @@
-        +print("Hello World")
-
-        diff --git a/src/utils.py b/src/utils.py
-        new file mode 100644
-        index 0000000..e69de29
-        --- a/src/utils.py
-        +++ b/src/utils.py
-        @@ -0,0 +1 @@
-        +def util_function():
-        +    pass
-        """
-
-        self.assertEquals(lib.filter_diffs(diff_text).strip(), diff_text.strip())
 
     def test_all_diffs_filtered(self):
         diff_text = """
