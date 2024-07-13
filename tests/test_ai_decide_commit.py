@@ -103,7 +103,7 @@ class TestOpenAIIntegration(unittest.TestCase):
         except OpenAIError as e:
             self.fail(f"Unexpected OpenAIError: {e}")
 
-class TestDecideDailyCommitFunction(unittest.TestCase):
+class TestDecideDailyCommitsFunction(unittest.TestCase):
     def setUp(self):
         self.client = OpenAI(api_key=config.OPENAI_API_KEY)
 
