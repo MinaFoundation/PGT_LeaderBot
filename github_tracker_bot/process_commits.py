@@ -60,6 +60,7 @@ def concatenate_diff_to_commit_info(
     result = {
         "repo": commit_info["repo"],
         "author": commit_info["author"],
+        "username": commit_info["username"],
         "date": commit_info["date"],
         "message": commit_info["message"],
         "sha": commit_info["sha"],

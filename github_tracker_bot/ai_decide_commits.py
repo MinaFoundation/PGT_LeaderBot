@@ -16,6 +16,7 @@ client = OpenAI(api_key=config.OPENAI_API_KEY)
 class CommitData(TypedDict):
     repo: str
     author: str
+    username: str
     date: str
     message: str
     sha: str

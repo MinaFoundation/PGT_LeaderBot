@@ -13,6 +13,7 @@ class TestPrompts(unittest.TestCase):
                 {
                     "repo": "berkingurcan/mina-spy-chain",
                     "author": "berkingurcan",
+                    "username": "berkingurcan",
                     "date": "2024-04-29T16:52:07Z",
                     "message": "ADD string for message",
                     "sha": "94f79d4689ebdde3b48ec672cf784fd48ad0b14c",
@@ -22,6 +23,7 @@ class TestPrompts(unittest.TestCase):
                 {
                     "repo": "berkingurcan/mina-spy-chain",
                     "author": "Berkin G\u00fcrcan",
+                    "username": "berkingurcan",
                     "date": "2024-04-29T16:52:31Z",
                     "message": "Merge pull request #1 from berkingurcan/string-message\n\nADD string for message",
                     "sha": "558c1ba6511f618d1eed0ce8d2675ddaa47fa039",
@@ -31,6 +33,7 @@ class TestPrompts(unittest.TestCase):
                 {
                     "repo": "berkingurcan/mina-spy-chain",
                     "author": "Berkin G\u00fcrcan",
+                    "username": "berkingurcan",
                     "date": "2024-04-29T17:54:59Z",
                     "message": "Update README.md",
                     "sha": "79937f5f2b9d4042e14891daa26e51cd36076e67",

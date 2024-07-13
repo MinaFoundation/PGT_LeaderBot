@@ -98,6 +98,7 @@ async def get_user_commits_in_repo(
                                 "branch": branch_name,
                                 "sha": commit_sha,
                                 "author": commit["commit"]["author"]["name"],
+                                "username": username,
                                 "repo": f"{owner}/{repo_name}",
                             }
                             commit_infos.append(commit_info)
@@ -124,6 +125,7 @@ async def get_user_commits_in_repo(
                                 "branch": branch_name,
                                 "sha": commit_sha,
                                 "author": commit["commit"]["author"]["name"],
+                                "username": username,
                                 "repo": f"{owner}/{repo_name}",
                             }
                             commit_infos.append(commit_info)

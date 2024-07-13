@@ -31,6 +31,7 @@ logger = log_config.get_logger(__name__)
 class CommitData(TypedDict):
     repo: str
     author: str
+    username: str
     date: str
     message: str
     sha: str
@@ -38,19 +39,18 @@ class CommitData(TypedDict):
     diff: str
 
 
-# TODO!: find correct name of author berkingurcan or Berkin Gurcan programmatically
 def process_message(date: str, data_array: List[CommitData]):
     MESSAGE = f"""
         You have given list of commits data which are committed in a day {date}.
         Decide if these total of commits are qualified by considering decision rules that you are given.
         Return always JSON Object in this format:
         ``` 
-        {
-            "username": {data_array.author},
+        {{
+            "username": {data_array[0]["username"]},
             "date": {date},
             "is_qualified": bool,
             "explanation": your explanation for your decision
-        }
+        }}
         ```
 
         List of commits data in {date}:
@@ -58,7 +58,7 @@ def process_message(date: str, data_array: List[CommitData]):
         ```
         {str(data_array)}
         ```
-    """.trim()
+    """
 
     logger.debug(MESSAGE)
     return MESSAGE
