@@ -1,9 +1,10 @@
-# Calculate token with Prompts and diffs 
+# Calculate token with Prompts and diffs
 # Return if exceeds
 # if exceeds use divider(diff_divider.py)
 # use it before ``message = prompts.process_message(date, data_array)`` and give separate arrays according to exceed
 import tiktoken
 import github_tracker_bot.prompts as prompts
+
 
 def calculate_token_number(data):
     system_token_count = prompts.SYSTEM_MESSAGE_DAILY_DECIDE_COMMIT

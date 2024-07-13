@@ -103,6 +103,7 @@ class TestOpenAIIntegration(unittest.TestCase):
         except OpenAIError as e:
             self.fail(f"Unexpected OpenAIError: {e}")
 
+
 class TestDecideDailyCommitsFunction(unittest.TestCase):
     def setUp(self):
         self.client = OpenAI(api_key=config.OPENAI_API_KEY)
@@ -126,7 +127,9 @@ class TestDecideDailyCommitsFunction(unittest.TestCase):
             ]
         }
 
-        result = await ai.decide_daily_commits("2024-04-29", commit_without_diff["2024-04-29"])
+        result = await ai.decide_daily_commits(
+            "2024-04-29", commit_without_diff["2024-04-29"]
+        )
         self.assertEqual(result, False)
 
     async def test_empty_message(self):

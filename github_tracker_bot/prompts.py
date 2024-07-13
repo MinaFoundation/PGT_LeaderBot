@@ -42,7 +42,7 @@ class CommitData(TypedDict):
 def process_message(date: str, data_array: List[CommitData]):
     if not data_array:
         return ""
-    
+
     MESSAGE = f"""
         You have given list of commits data which are committed in a day {date}.
         Decide if these total of commits are qualified by considering decision rules that you are given.

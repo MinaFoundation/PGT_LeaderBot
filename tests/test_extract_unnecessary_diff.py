@@ -58,7 +58,6 @@ class TestFilterDiffs(unittest.TestCase):
         """
         self.assertEqual(lib.filter_diffs(diff_text).strip(), expected_output.strip())
 
-
     def test_all_diffs_filtered(self):
         diff_text = """
         diff --git a/.gitignore b/.gitignore
