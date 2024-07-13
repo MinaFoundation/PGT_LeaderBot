@@ -12,6 +12,7 @@ logger = get_logger(__name__)
 from commit_scraper import get_user_commits_in_repo
 from process_commits import process_commits
 
+
 async def main(username, repo_link, since_date, until_date):
     commit_infos = await get_user_commits_in_repo(
         username,
@@ -24,16 +25,16 @@ async def main(username, repo_link, since_date, until_date):
         processed_commits = await process_commits(commit_infos)
         for commit_info in processed_commits:
             logger.debug(json.dumps(commit_info, indent=5))
-            
+
         logger.debug(f"Total commit number: {len(processed_commits)}")
-        write_to_json(processed_commits, 'processed_commits.json')
+        write_to_json(processed_commits, "processed_commits.json")
         return processed_commits
     else:
         logger.info("No commits found or failed to fetch commits.")
 
 
 def write_to_json(data, filename):
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         json.dump(data, f, indent=5)
         logger.info(f"Processed commits have been written to {filename}")
 
@@ -44,9 +45,4 @@ if __name__ == "__main__":
     since_date = "2024-04-01T00:00:00Z"  # ISO 8601 format
     until_date = "2024-04-30T00:00:00Z"
 
-    asyncio.run(main(
-        username,
-        repo_link,
-        since_date,
-        until_date
-    ))
+    asyncio.run(main(username, repo_link, since_date, until_date))

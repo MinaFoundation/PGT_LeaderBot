@@ -1,6 +1,7 @@
 import unittest
 import github_tracker_bot.helpers.extract_unnecessary_diff as lib
 
+
 class TestNonCodeFileDetection(unittest.TestCase):
     def test_is_non_code_file(self):
         self.assertTrue(lib.is_non_code_file("yarn.lock"))
@@ -25,6 +26,7 @@ class TestNonCodeFileDetection(unittest.TestCase):
 
         diff_data_no_path = "some random text"
         self.assertTrue(lib.process_diff(diff_data_no_path))
+
 
 class TestFilterDiffs(unittest.TestCase):
     def test_filter_out_non_code_diffs(self):
@@ -75,7 +77,7 @@ class TestFilterDiffs(unittest.TestCase):
         +def util_function():
         +    pass
         """
-       
+
         self.assertEquals(lib.filter_diffs(diff_text).strip(), diff_text.strip())
 
     def test_all_diffs_filtered(self):
@@ -120,5 +122,6 @@ class TestFilterDiffs(unittest.TestCase):
         """
         self.assertEqual(lib.filter_diffs(diff_text).strip(), expected_output.strip())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

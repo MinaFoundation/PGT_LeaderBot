@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
+
 async def fetch_diff(repo: str, sha: str) -> Optional[str]:
     url = f"https://api.github.com/repos/{repo}/commits/{sha}"
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
@@ -33,10 +34,14 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
                         if diff_response.status == 200:
                             return await diff_response.text()
                         else:
-                            logger.error(f"Failed to fetch diff: {await diff_response.text()}")
+                            logger.error(
+                                f"Failed to fetch diff: {await diff_response.text()}"
+                            )
                             return None
                 else:
-                    logger.error(f"Failed to fetch commit data: {await response.text()}")
+                    logger.error(
+                        f"Failed to fetch commit data: {await response.text()}"
+                    )
                     return None
     except aiohttp.ClientError as e:
         logger.error(f"Client error while fetching diff: {e}")
@@ -48,7 +53,10 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
         logger.error(f"Unexpected error while fetching diff: {e}")
         return None
 
-def concatenate_diff_to_commit_info(commit_info: Dict[str, Any], diff: Optional[str]) -> Dict[str, Any]:
+
+def concatenate_diff_to_commit_info(
+    commit_info: Dict[str, Any], diff: Optional[str]
+) -> Dict[str, Any]:
     result = {
         "repo": commit_info["repo"],
         "author": commit_info["author"],
@@ -57,18 +65,34 @@ def concatenate_diff_to_commit_info(commit_info: Dict[str, Any], diff: Optional[
         "sha": commit_info["sha"],
         "branch": commit_info["branch"],
     }
-    
+
     if diff is not None:
         is_diff_necessary = not lib.process_diff(diff)
-        
+
         if is_diff_necessary:
             result["diff"] = lib.filter_diffs(diff)
         else:
             result["diff"] = ""
     else:
         result["diff"] = ""
-    
+
     return result
+
+
+def group_and_sort_commits(processed_commits: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    grouped_commits = {}
+
+    for commit in processed_commits:
+        date = commit["date"][:10]
+        if date not in grouped_commits:
+            grouped_commits[date] = []
+        grouped_commits[date].append(commit)
+
+    for date in grouped_commits:
+        grouped_commits[date].sort(key=lambda x: x["date"])
+
+    return grouped_commits
+
 
 async def process_commits(commit_infos: List[Dict[str, Any]]):
     processed_commits = []
@@ -77,8 +101,9 @@ async def process_commits(commit_infos: List[Dict[str, Any]]):
         processed_commit = concatenate_diff_to_commit_info(commit_info, diff)
         processed_commits.append(processed_commit)
         logger.debug(f"Processed commit: {processed_commit}")
-    
-    return processed_commits
+
+    return group_and_sort_commits(processed_commits)
+
 
 if __name__ == "__main__":
     repo_name = "UmstadAI/zkAppUmstad"
