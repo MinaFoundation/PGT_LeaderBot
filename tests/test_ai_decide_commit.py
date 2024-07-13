@@ -1,7 +1,7 @@
 import unittest
 import config
 
-from openai import AuthenticationError, BadRequestError, NotFoundError, OpenAI, OpenAIError
+from openai import AuthenticationError, NotFoundError, OpenAI, OpenAIError
 
 class TestOpenAIIntegration(unittest.TestCase):
     def setUp(self):
@@ -101,5 +101,8 @@ class TestOpenAIIntegration(unittest.TestCase):
         except OpenAIError as e:
             self.fail(f"Unexpected OpenAIError: {e}")
 
+    def test_token_error_with_prompt(self):
+        pass
+    
 if __name__ == "__main__":
     unittest.main()
