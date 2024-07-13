@@ -1,6 +1,7 @@
 import unittest
 import config
 
+import github_tracker_bot.ai_decide_commits as ai
 from openai import AuthenticationError, NotFoundError, OpenAI, OpenAIError
 
 
@@ -104,6 +105,31 @@ class TestOpenAIIntegration(unittest.TestCase):
 
     def test_token_error_with_prompt(self):
         pass
+
+    async def test_commit_without_diff(self):
+        commit_without_diff = {
+            "2024-04-29": [
+                {
+                    "repo": "repo/test",
+                    "author": "author",
+                    "username": "username",
+                    "date": "2024-04-29T16:52:07Z",
+                    "message": "Commit without diff",
+                    "sha": "sha1",
+                    "branch": "main",
+                    "diff": "",
+                }
+            ]
+        }
+
+        result = await ai.decide_daily_commits("2024-04-29", commit_without_diff["2024-04-29"])
+        self.assertEqual(result, False)
+
+    async def test_empty_message(self):
+        empty_commit_data = []
+        result = await ai.decide_daily_commits("2024-04-29", empty_commit_data)
+        
+        self.assertEqual(result, False)
 
 
 if __name__ == "__main__":

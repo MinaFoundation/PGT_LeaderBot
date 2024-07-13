@@ -43,10 +43,18 @@ class TestPrompts(unittest.TestCase):
             ]
         }
 
-    def test_process_message(self):
+    def test_process_message_function(self):
         for date, commits in self.commit_data.items():
             message = prompts.process_message(date, commits)
 
         self.assertIsNotNone(message)
 
+    def test_empty_commit_data(self):
+        empty_commit_data = []
+        message = prompts.process_message("2024-04-29", empty_commit_data)
+        self.assertEqual(message, "")
 
+    def test_incorrect_date_format(self):
+        incorrect_date = "29-04-2024"
+        with self.assertRaises(ValueError):
+            prompts.process_message(incorrect_date, self.commit_data)

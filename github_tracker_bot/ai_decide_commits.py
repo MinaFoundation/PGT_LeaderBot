@@ -1,10 +1,15 @@
+import os
+import sys
+import json
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import config
-import prompts
 from typing import TypedDict, List
 from datetime import datetime
 
 import log_config
-import prompts
+import github_tracker_bot.prompts as prompts
 
 from openai import AuthenticationError, NotFoundError, OpenAI, OpenAIError
 
@@ -27,7 +32,13 @@ class CommitData(TypedDict):
 async def decide_daily_commits(
     date: str, data_array: List[CommitData], seed: int = None
 ):
+    commit_data = data_array.get(date)
+    if not commit_data or not commit_data["diff"].strip():
+        return False
+    
     message = prompts.process_message(date, data_array)
+    if not message:
+        return False
 
     try:
         completion = client.chat.completions.create(
