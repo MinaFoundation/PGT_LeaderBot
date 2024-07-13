@@ -28,10 +28,19 @@ class CommitData(TypedDict):
     branch: str
     diff: str
 
+def validate_date_format(date_str: str) -> bool:
+    try:
+        datetime.strptime(date_str, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
 
 async def decide_daily_commits(
     date: str, data_array: List[CommitData], seed: int = None
 ):
+    if not validate_date_format(date):
+        raise ValueError("Incorrect date format, should be YYYY-MM-DD")
+    
     try:
         commit_data = data_array.get(date)
         if not commit_data or not commit_data["diff"].strip():
