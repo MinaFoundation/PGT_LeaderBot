@@ -79,7 +79,9 @@ def concatenate_diff_to_commit_info(
     return result
 
 
-def group_and_sort_commits(processed_commits: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+def group_and_sort_commits(
+    processed_commits: List[Dict[str, Any]]
+) -> Dict[str, List[Dict[str, Any]]]:
     grouped_commits = {}
 
     for commit in processed_commits:

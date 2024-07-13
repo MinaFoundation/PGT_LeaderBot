@@ -3,6 +3,7 @@ import config
 
 from openai import AuthenticationError, NotFoundError, OpenAI, OpenAIError
 
+
 class TestOpenAIIntegration(unittest.TestCase):
     def setUp(self):
         self.client = OpenAI(api_key=config.OPENAI_API_KEY)
@@ -13,12 +14,12 @@ class TestOpenAIIntegration(unittest.TestCase):
                 model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": "Hello!"}
-                ]
+                    {"role": "user", "content": "Hello!"},
+                ],
             )
 
             self.assertIsNotNone(completion)
-            self.assertTrue(hasattr(completion, 'choices'))
+            self.assertTrue(hasattr(completion, "choices"))
             self.assertGreater(len(completion.choices), 0)
 
             message_content = completion.choices[0].message.content
@@ -34,12 +35,12 @@ class TestOpenAIIntegration(unittest.TestCase):
                 model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": ""}
-                ]
+                    {"role": "user", "content": ""},
+                ],
             )
 
             self.assertIsNotNone(completion)
-            self.assertTrue(hasattr(completion, 'choices'))
+            self.assertTrue(hasattr(completion, "choices"))
             self.assertGreater(len(completion.choices), 0)
 
             message_content = completion.choices[0].message.content
@@ -54,8 +55,8 @@ class TestOpenAIIntegration(unittest.TestCase):
                 model="invalid-model-name",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": "Hello!"}
-                ]
+                    {"role": "user", "content": "Hello!"},
+                ],
             )
             self.fail("Expected BadRequestError not raised")
         except NotFoundError:
@@ -70,12 +71,12 @@ class TestOpenAIIntegration(unittest.TestCase):
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": "Tell me a joke."},
-                    {"role": "user", "content": "And give me a quote."}
-                ]
+                    {"role": "user", "content": "And give me a quote."},
+                ],
             )
 
             self.assertIsNotNone(completion)
-            self.assertTrue(hasattr(completion, 'choices'))
+            self.assertTrue(hasattr(completion, "choices"))
             self.assertGreater(len(completion.choices), 0)
 
             message_content = completion.choices[0].message.content
@@ -92,8 +93,8 @@ class TestOpenAIIntegration(unittest.TestCase):
                 model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": "Hello!"}
-                ]
+                    {"role": "user", "content": "Hello!"},
+                ],
             )
             self.fail("Expected AuthenticationError not raised")
         except AuthenticationError:
@@ -103,6 +104,7 @@ class TestOpenAIIntegration(unittest.TestCase):
 
     def test_token_error_with_prompt(self):
         pass
-    
+
+
 if __name__ == "__main__":
     unittest.main()

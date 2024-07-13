@@ -24,3 +24,8 @@ def process(ctx):
 @task
 def bot(ctx):
     ctx.run("python github_tracker_bot/bot.py")
+
+
+@task
+def decide(ctx):
+    ctx.run("python github_tracker_bot/ai_decide_commits.py")
