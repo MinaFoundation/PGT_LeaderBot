@@ -32,15 +32,15 @@ class CommitData(TypedDict):
 async def decide_daily_commits(
     date: str, data_array: List[CommitData], seed: int = None
 ):
-    commit_data = data_array.get(date)
-    if not commit_data or not commit_data["diff"].strip():
-        return False
-    
-    message = prompts.process_message(date, data_array)
-    if not message:
-        return False
-
     try:
+        commit_data = data_array.get(date)
+        if not commit_data or not commit_data["diff"].strip():
+            return False
+        
+        message = prompts.process_message(date, data_array)
+        if not message:
+            return False
+
         completion = client.chat.completions.create(
             model="gpt-4o",
             response_format={"type": "json_object"},
@@ -59,3 +59,7 @@ async def decide_daily_commits(
 
     except OpenAIError as e:
         logger.error(f"OpenAI API call failed with error: {e}")
+
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
+        return False
