@@ -1,15 +1,18 @@
 import unittest
 import tiktoken
 import config
+import github_tracker_bot.helpers.extract_unnecessary_diff as extractor
+import github_tracker_bot.helpers.calculate_token as calculator
 import github_tracker_bot.prompts as prompts
 
 from openai import AuthenticationError, NotFoundError, OpenAI, OpenAIError
 
-class TestProcessTokenExceed(unittest.Testcase):
+
+class TestProcessTokenExceed(unittest.TestCase):
     def setUp(self):
         def generate_data_with_token_count(token_count):
             return "word " * (token_count - 1)
-        
+
         self.client = OpenAI(api_key=config.OPENAI_API_KEY)
         self.ok_commit_data = {
             "2024-04-29": [
@@ -77,7 +80,8 @@ class TestProcessTokenExceed(unittest.Testcase):
                     "message": "Update README.md",
                     "sha": "1111111111111111111111111111111111111111",
                     "branch": "main",
-                    "diff": too_long_words
+                    "diff": "diff --git a/packages/chain/src/messages.ts b/packages/chain/src/messages.ts\n "
+                    + too_long_words,
                 },
                 {
                     "repo": "berkingurcan/mina-spy-chain",
@@ -92,10 +96,22 @@ class TestProcessTokenExceed(unittest.Testcase):
             ]
         }
 
+    def test_process_token_exceed_one_diff(self):
+        not_exceed_commit = self.ok_commit_data["2024-04-29"][0]
+        before_ok_commit = calculator.calculate_token_number(not_exceed_commit["diff"])
+        self.assertEqual(before_ok_commit, True)
 
-    def test_process_token_exceed():
-        pass
+        filtered_ok_commit = extractor.filter_diffs(not_exceed_commit["diff"])
+        filtered_ok_commit_token_count = calculator.calculate_token_number(filtered_ok_commit)
+        self.assertEqual(filtered_ok_commit_token_count, True)
 
-    def test_process_token_exceed_threetimes():
+        commit = self.exceeded_commit_data["2024-04-29"][2]
+        before_truncated_commit = calculator.calculate_token_number(commit["diff"])
+        truncated_commit = extractor.filter_diffs(commit["diff"])
+        token_count = calculator.calculate_token_number(truncated_commit)
+
+        self.assertEqual(before_truncated_commit, False)
+        self.assertEqual(token_count, True)
+
+    def test_process_token_exceed_total_commit(self):
         pass
-        

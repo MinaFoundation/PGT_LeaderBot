@@ -16,3 +16,6 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 if LOG_LEVEL not in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
     print(f"Invalid log level '{LOG_LEVEL}', defaulting to 'INFO'")
     LOG_LEVEL = "INFO"
+
+
+MAXIMUM_COMMIT_TOKEN_COUNT = 20000

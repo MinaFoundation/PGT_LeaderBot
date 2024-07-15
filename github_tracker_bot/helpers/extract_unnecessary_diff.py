@@ -1,4 +1,7 @@
 import re
+import github_tracker_bot.helpers.calculate_token as calculator
+import tiktoken
+import config
 
 non_code_patterns = [
     r"^yarn\.lock$",
@@ -110,4 +113,15 @@ def filter_diffs(diff_text):
         ):
             filtered_diffs.append("diff --git" + diff)
 
-    return "\n ".join(filtered_diffs)
+    return truncate_diff_if_needed("\n ".join(filtered_diffs))
+
+
+def truncate_diff_if_needed(diff_text):
+    enc = tiktoken.encoding_for_model("gpt-4o")
+    token_integers = enc.encode(diff_text)
+
+    if not calculator.calculate_token_number(diff_text):
+        truncated_diff = enc.decode(token_integers[: config.MAXIMUM_COMMIT_TOKEN_COUNT])
+        return truncated_diff
+    else:
+        return diff_text
