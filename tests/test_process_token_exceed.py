@@ -149,7 +149,8 @@ class TestProcessTokenExceed(unittest.TestCase):
                     "sha": "2222222222222222222222222222222222222222",
                     "branch": "main",
                     "diff": "diff --git a/packages/chain/src/messages.ts b/packages/chain/src/messages.ts\n "
-                    + too_long_words + too_long_words,
+                    + too_long_words
+                    + too_long_words,
                 },
             ]
         }
@@ -174,9 +175,13 @@ class TestProcessTokenExceed(unittest.TestCase):
         self.assertEqual(token_count, True)
 
     def test_process_token_exceed_total_commit(self):
-        before_token_count = calculator.calculate_token_number(str(self.exceeded_two_commit_data["2024-04-29"]))
+        before_token_count = calculator.calculate_token_number(
+            str(self.exceeded_two_commit_data["2024-04-29"])
+        )
         self.assertEqual(before_token_count, False)
-        handled_daily_commit_data = handler.handle_daily_exceed_data(self.exceeded_two_commit_data["2024-04-29"])
+        handled_daily_commit_data = handler.handle_daily_exceed_data(
+            self.exceeded_two_commit_data["2024-04-29"]
+        )
         token_count = calculator.calculate_token_number(str(handled_daily_commit_data))
 
         self.assertEqual(token_count, True)

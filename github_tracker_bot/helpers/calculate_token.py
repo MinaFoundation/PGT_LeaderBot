@@ -5,6 +5,7 @@ from log_config import get_logger
 
 logger = get_logger(__name__)
 
+
 def calculate_token_number(data):
     system_token_count = prompts.SYSTEM_MESSAGE_DAILY_DECIDE_COMMIT
     message_token_count = 1000
