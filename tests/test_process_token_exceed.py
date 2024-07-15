@@ -102,7 +102,9 @@ class TestProcessTokenExceed(unittest.TestCase):
         self.assertEqual(before_ok_commit, True)
 
         filtered_ok_commit = extractor.filter_diffs(not_exceed_commit["diff"])
-        filtered_ok_commit_token_count = calculator.calculate_token_number(filtered_ok_commit)
+        filtered_ok_commit_token_count = calculator.calculate_token_number(
+            filtered_ok_commit
+        )
         self.assertEqual(filtered_ok_commit_token_count, True)
 
         commit = self.exceeded_commit_data["2024-04-29"][2]
