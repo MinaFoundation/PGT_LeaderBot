@@ -174,6 +174,8 @@ class TestProcessTokenExceed(unittest.TestCase):
         self.assertEqual(token_count, True)
 
     def test_process_token_exceed_total_commit(self):
+        before_token_count = calculator.calculate_token_number(str(self.exceeded_two_commit_data["2024-04-29"]))
+        self.assertEqual(before_token_count, False)
         handled_daily_commit_data = handler.handle_daily_exceed_data(self.exceeded_two_commit_data["2024-04-29"])
         token_count = calculator.calculate_token_number(str(handled_daily_commit_data))
 
