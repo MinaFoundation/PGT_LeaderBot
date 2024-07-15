@@ -178,4 +178,3 @@ class TestProcessTokenExceed(unittest.TestCase):
         token_count = calculator.calculate_token_number(str(handled_daily_commit_data))
 
         self.assertEqual(token_count, True)
-        pass
