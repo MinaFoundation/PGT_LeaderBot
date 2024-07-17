@@ -1,0 +1,90 @@
+[
+     {
+          "username": "berkingurcan",
+          "repository": "https://github.com/berkingurcan/mina-spy-chain",
+          "date": "2024-04-29",
+          "response": {
+               "username": "berkingurcan",
+               "date": "2024-04-29",
+               "is_qualified": false,
+               "explanation": "The commits on 2024-04-29 include a mix of changes. The first commit 'ADD string for message' involves significant code changes that add new functionality and tests, which is qualified. However, the second commit is a merge commit, which is not qualified. The third commit 'Update README.md' involves only documentation changes, which is also not qualified. Since not all commits meet the criteria, the overall qualification for the day is false."
+          }
+     },
+     {
+          "username": "berkingurcan",
+          "repository": "https://github.com/berkingurcan/mina-spy-chain",
+          "date": "2024-04-26",
+          "response": {
+               "username": "berkingurcan",
+               "date": "2024-04-26",
+               "is_qualified": true,
+               "explanation": "The commits made on 2024-04-26 by berkingurcan include significant changes and additions to the codebase. These changes involve fixing and updating message processing logic, adding error handling, and implementing extensive tests to ensure the correctness of the system. The commits are not related to configuration changes, merge conflicts, reverts, dependency updates, or spam. They demonstrate serious technical knowledge and contribute meaningful improvements to the project."
+          }
+     },
+     {
+          "username": "berkingurcan",
+          "repository": "https://github.com/berkingurcan/mina-spy-chain",
+          "date": "2024-04-25",
+          "response": {
+               "username": "berkingurcan",
+               "date": "2024-04-25",
+               "is_qualified": true,
+               "explanation": "The commits made on 2024-04-25 by berkingurcan involve substantial changes to the codebase, including the addition of new methods, classes, and tests. These changes demonstrate technical knowledge and contribute significant new functionality to the project. The commits are not related to configuration changes, merge conflicts, reverts, dependency updates, or spam. Therefore, they are qualified."
+          }
+     },
+     {
+          "username": "berkingurcan",
+          "repository": "https://github.com/berkingurcan/mina-spy-chain",
+          "date": "2024-04-24",
+          "response": {
+               "username": "berkingurcan",
+               "date": "2024-04-24",
+               "is_qualified": true,
+               "explanation": "The commit includes the addition of a new method `initializeAgent` in the `Messages` class and the creation of a new test file `messages.test.ts` with initial test setup. These changes involve adding new functionality and tests, which require technical knowledge and contribute to the project's progress."
+          }
+     },
+     {
+          "username": "berkingurcan",
+          "repository": "https://github.com/berkingurcan/mina-spy-chain",
+          "date": "2024-04-23",
+          "response": {
+               "username": "berkingurcan",
+               "date": "2024-04-23",
+               "is_qualified": false,
+               "explanation": "The commits on 2024-04-23 include a mix of meaningful changes and minor updates. While there are significant additions and improvements to the `messages.ts` file, such as adding validation methods and assertions, there are also several commits that make minor adjustments or formatting changes. Additionally, the last commit creates a new test file `messages.test.ts` but does not include any actual test code. Therefore, the overall contribution does not fully meet the criteria of adding substantial new features or making a significant impact on the project."
+          }
+     },
+     {
+          "username": "berkingurcan",
+          "repository": "https://github.com/berkingurcan/mina-spy-chain",
+          "date": "2024-04-22",
+          "response": {
+               "username": "berkingurcan",
+               "date": "2024-04-22",
+               "is_qualified": true,
+               "explanation": "The commit adds a new file 'messages.ts' with substantial code defining several classes and methods. This involves technical knowledge and contributes new functionality to the project, making it a qualified commit."
+          }
+     },
+     {
+          "username": "berkingurcan",
+          "repository": "https://github.com/berkingurcan/mina-spy-chain",
+          "date": "2024-04-01",
+          "response": {
+               "username": "berkingurcan",
+               "date": "2024-04-01",
+               "is_qualified": false,
+               "explanation": "The commits on 2024-04-01 do not qualify. The first commit is an initial commit that only adds a .gitattributes file, which is a configuration change. The second commit has no diff content, making it impossible to evaluate its contribution. Neither commit adds substantial features or improvements to the codebase."
+          }
+     },
+     {
+          "username": "berkingurcan",
+          "repository": "https://github.com/berkingurcan/mina-spy-chain",
+          "date": "2024-04-27",
+          "response": {
+               "username": "berkingurcan",
+               "date": "2024-04-27",
+               "is_qualified": true,
+               "explanation": "The commit adds a new feature to the project by introducing a new module 'PrivateMessages' with significant code implementation. It includes the creation of new classes, methods, and state management, which requires technical knowledge and deep thinking. Additionally, it updates the runtime configuration to include the new module and adds a test file for the new functionality. This commit clearly adds value and functionality to the project."
+          }
+     }
+]

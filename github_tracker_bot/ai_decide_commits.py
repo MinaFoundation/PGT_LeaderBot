@@ -44,12 +44,14 @@ async def decide_daily_commits(
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
 
     try:
-        commit_data = data_array.get(date)
+        commit_data = next((data for data in data_array), None)
         if not commit_data or not commit_data["diff"].strip():
+            logger.error("Commit data or diff file is empty")
             return False
 
         message = prompts.process_message(date, data_array)
         if not message:
+            logger.error("After processing commit")
             return False
 
         completion = client.chat.completions.create(

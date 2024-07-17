@@ -2,6 +2,9 @@ import os
 import sys
 import asyncio
 import aiohttp
+from datetime import datetime
+from dateutil import parser
+
 from typing import List, Optional, Dict, Any
 
 from github import Github
@@ -93,7 +96,7 @@ def group_and_sort_commits(
         grouped_commits[date].append(commit)
 
     for date in grouped_commits:
-        grouped_commits[date].sort(key=lambda x: x["date"])
+        grouped_commits[date].sort(key=lambda x: parser.isoparse(x["date"]))
 
     return grouped_commits
 
