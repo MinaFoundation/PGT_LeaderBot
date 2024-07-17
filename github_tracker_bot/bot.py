@@ -35,9 +35,7 @@ async def main(username, repo_link, since_date, until_date):
             logger.debug(json.dumps(commit_info, indent=5))
 
         logger.debug(f"Total commit number: {len(processed_commits)}")
-        write_to_json(
-            processed_commits, "processed_commits.json"
-        )
+        write_to_json(processed_commits, "processed_commits.json")
 
         for commits_day, commits_data in processed_commits.items():
             try:
