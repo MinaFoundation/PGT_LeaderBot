@@ -36,7 +36,7 @@ async def main(username, repo_link, since_date, until_date):
 
         logger.debug(f"Total commit number: {len(processed_commits)}")
         write_to_json(
-            OrderedDict(sorted(processed_commits.items())), "processed_commits.json"
+            processed_commits, "processed_commits.json"
         )
 
         for commits_day, commits_data in processed_commits.items():
@@ -80,8 +80,8 @@ def write_to_json(data, filename):
 
 if __name__ == "__main__":
     username = "berkingurcan"
-    repo_link = "https://github.com/berkingurcan/mina-spy-chain"
-    since_date = "2024-04-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-04-30T00:00:00Z"
+    repo_link = "https://github.com/UmstadAI/zkappumstad"
+    since_date = "2024-05-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-05-30T00:00:00Z"
 
     asyncio.run(main(username, repo_link, since_date, until_date))

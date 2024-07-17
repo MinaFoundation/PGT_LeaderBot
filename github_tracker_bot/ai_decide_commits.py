@@ -45,7 +45,7 @@ async def decide_daily_commits(
 
     try:
         commit_data = next((data for data in data_array), None)
-        if not commit_data or not commit_data["diff"].strip():
+        if not commit_data:
             logger.error("Commit data or diff file is empty")
             return False
 
