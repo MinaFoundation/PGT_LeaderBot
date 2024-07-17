@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import asyncio
+from collections import OrderedDict
 
 from openai import OpenAIError
 
@@ -28,11 +29,13 @@ async def main(username, repo_link, since_date, until_date):
 
     if commit_infos:
         processed_commits = await process_commits(commit_infos)
+        processed_commits = OrderedDict(sorted(processed_commits.items()))
+        
         for commit_info in processed_commits:
             logger.debug(json.dumps(commit_info, indent=5))
 
         logger.debug(f"Total commit number: {len(processed_commits)}")
-        write_to_json(processed_commits, "processed_commits.json")
+        write_to_json(OrderedDict(sorted(processed_commits.items())), "processed_commits.json")
 
         for commits_day, commits_data in processed_commits.items():
             try:
@@ -74,8 +77,8 @@ def write_to_json(data, filename):
 
 if __name__ == "__main__":
     username = "berkingurcan"
-    repo_link = "https://github.com/UmstadAI/zkappumstad"
-    since_date = "2023-12-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2023-12-30T00:00:00Z"
+    repo_link = "https://github.com/berkingurcan/mina-spy-chain"
+    since_date = "2024-04-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-04-30T00:00:00Z"
 
     asyncio.run(main(username, repo_link, since_date, until_date))
