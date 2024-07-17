@@ -10,6 +10,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import config
 import helpers.extract_unnecessary_diff as lib
+import helpers.handle_daily_commits_exceed_data as exceed_handler
 
 from log_config import get_logger
 
@@ -103,9 +104,12 @@ async def process_commits(commit_infos: List[Dict[str, Any]]):
         diff = await fetch_diff(commit_info["repo"], commit_info["sha"])
         processed_commit = concatenate_diff_to_commit_info(commit_info, diff)
         processed_commits.append(processed_commit)
-        logger.debug(f"Processed commit: {processed_commit}")
 
-    return group_and_sort_commits(processed_commits)
+    grouped_commits = group_and_sort_commits(processed_commits)
+    for daily_commit in grouped_commits.values():
+        exceed_handler.handle_daily_exceed_data(daily_commit)
+
+    return grouped_commits
 
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ def write_to_json(data, filename):
 
 if __name__ == "__main__":
     username = "berkingurcan"
-    repo_link = "https://github.com/berkingurcan/mina-spy-chain"
+    repo_link = "https://github.com/UmstadAI/discord-umstad"
     since_date = "2024-04-01T00:00:00Z"  # ISO 8601 format
     until_date = "2024-04-30T00:00:00Z"
 
