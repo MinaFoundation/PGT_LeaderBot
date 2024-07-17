@@ -30,12 +30,14 @@ async def main(username, repo_link, since_date, until_date):
     if commit_infos:
         processed_commits = await process_commits(commit_infos)
         processed_commits = OrderedDict(sorted(processed_commits.items()))
-        
+
         for commit_info in processed_commits:
             logger.debug(json.dumps(commit_info, indent=5))
 
         logger.debug(f"Total commit number: {len(processed_commits)}")
-        write_to_json(OrderedDict(sorted(processed_commits.items())), "processed_commits.json")
+        write_to_json(
+            OrderedDict(sorted(processed_commits.items())), "processed_commits.json"
+        )
 
         for commits_day, commits_data in processed_commits.items():
             try:
@@ -67,6 +69,7 @@ async def main(username, repo_link, since_date, until_date):
                 continue
 
         write_to_json(ai_decisions, "ai_decisions.json")
+        return ai_decisions
 
 
 def write_to_json(data, filename):
