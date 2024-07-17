@@ -108,9 +108,6 @@ class TestDecideDailyCommitsFunction(unittest.TestCase):
     def setUp(self):
         self.client = OpenAI(api_key=config.OPENAI_API_KEY)
 
-    def test_token_error_with_prompt(self):
-        pass
-
     async def test_commit_without_diff(self):
         commit_without_diff = {
             "2024-04-29": [
@@ -142,6 +139,10 @@ class TestDecideDailyCommitsFunction(unittest.TestCase):
         incorrect_date = "29-04-2024"
         with self.assertRaises(ValueError):
             result = await ai.decide_daily_commits(incorrect_date, self.commit_data)
+
+    async def test_valid_commit(self):
+        result = await ai.decide_daily_commits("2024-04-29", self.commit_data)
+        self.assertNotEqual(result, False)
 
 
 if __name__ == "__main__":
