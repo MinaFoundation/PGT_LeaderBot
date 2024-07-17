@@ -95,7 +95,7 @@ def group_and_sort_commits(
             grouped_commits[date] = []
         grouped_commits[date].append(commit)
 
-    for date in grouped_commits:
+    for date in sorted(grouped_commits.keys()):
         grouped_commits[date].sort(key=lambda x: parser.isoparse(x["date"]))
 
     return grouped_commits
