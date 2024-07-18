@@ -12,6 +12,11 @@ def test(ctx):
 
 
 @task
+def testredis(ctx):
+    ctx.run(f"python -m unittest tests/test_redis_data_handler.py")
+
+
+@task
 def commit(ctx):
     ctx.run("python github_tracker_bot/commit_scraper.py")
 

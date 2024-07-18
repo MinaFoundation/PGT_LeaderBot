@@ -17,14 +17,20 @@ from commit_scraper import get_user_commits_in_repo
 from process_commits import process_commits
 from ai_decide_commits import decide_daily_commits
 
+
 async def main(username, repo_link, since_date, until_date):
     await get_result(username, repo_link, since_date, until_date)
+
 
 async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
     pass
 
-async def get_user_results_from_sheet_by_date(username, spreadsheet_id, since_date, until_date):
+
+async def get_user_results_from_sheet_by_date(
+    username, spreadsheet_id, since_date, until_date
+):
     pass
+
 
 async def get_result(username, repo_link, since_date, until_date):
     commit_infos = await get_user_commits_in_repo(

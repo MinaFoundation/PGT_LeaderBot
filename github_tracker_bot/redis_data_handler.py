@@ -10,6 +10,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 from log_config import get_logger
+
 logger = get_logger(__name__)
 
 
@@ -20,14 +21,19 @@ class User:
     repositories: List[str]
     total_daily_contribution_number: int = 0
     total_qualified_daily_contribution_number: int = 0
-    qualified_daily_contribution_number_by_month: Dict[str, int] = field(default_factory=dict)
+    qualified_daily_contribution_number_by_month: Dict[str, int] = field(
+        default_factory=dict
+    )
     qualified_daily_contribution_streak: int = 0
 
     def validate(self) -> bool:
-        if not isinstance(self.repositories, list) or not all(isinstance(repo, str) for repo in self.repositories):
+        if not isinstance(self.repositories, list) or not all(
+            isinstance(repo, str) for repo in self.repositories
+        ):
             logger.error("Invalid repository list")
             return False
         return True
+
 
 @dataclass
 class DailyContributionResponse:
@@ -36,6 +42,7 @@ class DailyContributionResponse:
     is_qualified: bool
     explanation: str
 
+
 @dataclass
 class AIDecision:
     username: str
@@ -43,8 +50,9 @@ class AIDecision:
     date: str
     response: DailyContributionResponse
 
+
 class RedisClient:
-    def __init__(self, host='localhost', port=6379, db=0):
+    def __init__(self, host="localhost", port=6379, db=0):
         try:
             self.r = redis.Redis(host=host, port=port, db=db)
             self.r.ping()
@@ -60,7 +68,15 @@ class RedisClient:
     def get_user(self, user_handle: str) -> User:
         data = self.r.hgetall(f"user:{user_handle}")
         if data:
-            user_dict = {k.decode('utf-8'): json.loads(v) if k in ['repositories', 'qualified_daily_contribution_number_by_month'] else v.decode('utf-8') for k, v in data.items()}
+            user_dict = {
+                k.decode("utf-8"): (
+                    json.loads(v)
+                    if k
+                    in ["repositories", "qualified_daily_contribution_number_by_month"]
+                    else v.decode("utf-8")
+                )
+                for k, v in data.items()
+            }
             return User(**user_dict)
         return None
 
@@ -72,8 +88,7 @@ class RedisClient:
         data = self.r.get(f"decision:{username}:{date}")
         if data:
             decision_dict = json.loads(data)
-            response_dict = decision_dict.pop('response')
-            decision_dict['response'] = DailyContributionResponse(**response_dict)
+            response_dict = decision_dict.pop("response")
+            decision_dict["response"] = DailyContributionResponse(**response_dict)
             return AIDecision(**decision_dict)
         return None
-
