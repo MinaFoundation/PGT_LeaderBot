@@ -15,27 +15,6 @@ logger = get_logger(__name__)
 
 
 @dataclass
-class User:
-    user_handle: str
-    github_name: str
-    repositories: List[str]
-    total_daily_contribution_number: int = 0
-    total_qualified_daily_contribution_number: int = 0
-    qualified_daily_contribution_number_by_month: Dict[str, int] = field(
-        default_factory=dict
-    )
-    qualified_daily_contribution_streak: int = 0
-
-    def validate(self) -> bool:
-        if not isinstance(self.repositories, list) or not all(
-            isinstance(repo, str) for repo in self.repositories
-        ):
-            logger.error("Invalid repository list")
-            return False
-        return True
-
-
-@dataclass
 class DailyContributionResponse:
     username: str
     date: str
@@ -57,6 +36,28 @@ class AIDecision:
         data = asdict(self)
         data["response"] = self.response.to_dict()
         return data
+
+
+@dataclass
+class User:
+    user_handle: str
+    github_name: str
+    repositories: List[str]
+    total_daily_contribution_number: int = 0
+    total_qualified_daily_contribution_number: int = 0
+    qualified_daily_contribution_number_by_month: Dict[str, int] = field(
+        default_factory=dict
+    )
+    qualified_daily_contribution_streak: int = 0
+    ai_decisions: List[AIDecision] = field(default_factory=list)
+
+    def validate(self) -> bool:
+        if not isinstance(self.repositories, list) or not all(
+            isinstance(repo, str) for repo in self.repositories
+        ):
+            logger.error("Invalid repository list")
+            return False
+        return True
 
 
 class RedisClient:
