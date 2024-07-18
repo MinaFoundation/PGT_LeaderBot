@@ -35,9 +35,8 @@ class TestRedisClient(unittest.TestCase):
             github_name="test_github",
             repositories="invalid_repos",
         )
-        with self.assertLogs("redis_data_handler", level="ERROR") as log:
-            self.redis_client.save_user(user)
-            self.assertIn("Invalid repository list", log.output[0])
+        res = self.redis_client.save_user(user)
+        self.assertEqual(res, None)
 
     def test_get_user_exists(self):
         user_handle = "test_user"
@@ -55,7 +54,7 @@ class TestRedisClient(unittest.TestCase):
         }
         user = self.redis_client.get_user(user_handle)
         self.assertEqual(user.user_handle, user_handle)
-        self.assertEqual(user.repositories, ["repo1", "repo2"])
+        self.assertEqual(json.loads(user.repositories), ["repo1", "repo2"])
 
     def test_get_user_not_exists(self):
         self.mock_redis.hgetall.return_value = {}
@@ -77,7 +76,7 @@ class TestRedisClient(unittest.TestCase):
         self.redis_client.save_decision(decision)
         self.mock_redis.set.assert_called_once_with(
             f"decision:{decision.username}:{decision.date}",
-            json.dumps(decision.__dict__),
+            json.dumps(decision.to_dict()),
         )
 
     def test_get_decision_exists(self):

@@ -3,7 +3,7 @@ import os
 
 import redis
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -42,6 +42,9 @@ class DailyContributionResponse:
     is_qualified: bool
     explanation: str
 
+    def to_dict(self):
+        return asdict(self)
+
 
 @dataclass
 class AIDecision:
@@ -49,6 +52,11 @@ class AIDecision:
     repository: str
     date: str
     response: DailyContributionResponse
+
+    def to_dict(self):
+        data = asdict(self)
+        data["response"] = self.response.to_dict()
+        return data
 
 
 class RedisClient:
@@ -82,7 +90,9 @@ class RedisClient:
 
     def save_decision(self, decision: AIDecision):
         key = f"decision:{decision.username}:{decision.date}"
-        self.r.set(key, json.dumps(decision.__dict__))
+        decision_dict = decision.__dict__.copy()
+        decision_dict["response"] = decision.response.__dict__
+        self.r.set(key, json.dumps(decision_dict))
 
     def get_decision(self, username: str, date: str) -> AIDecision:
         data = self.r.get(f"decision:{username}:{date}")
