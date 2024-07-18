@@ -1,6 +1,8 @@
 import tiktoken
 import github_tracker_bot.prompts as prompts
 
+import config
+
 from log_config import get_logger
 
 logger = get_logger(__name__)
@@ -16,4 +18,4 @@ def calculate_token_number(data):
 
     logger.debug(f"Number of tokens are: {num_token}")
 
-    return num_token < 120000
+    return num_token < config.OPENAI_TOKEN_LIMIT
