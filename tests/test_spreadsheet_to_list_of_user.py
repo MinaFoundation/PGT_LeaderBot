@@ -7,7 +7,7 @@ from unittest.mock import patch, Mock
 
 import config
 from github_tracker_bot.redis_data_handler import User
-import github_tracker_bot.bot as bot
+import github_tracker_bot.helpers.spreadsheet_handlers as handlers
 
 
 class TestSpreadsheetToList(unittest.TestCase):
@@ -72,14 +72,14 @@ class TestSpreadsheetToList(unittest.TestCase):
             {"user": "deneme", "github": "denene", "REPOSITORIES": []},
         ]
 
-    def test_spreadsheet_to_user_version1(self):
-        list_of_users = bot.spreadsheet_to_list_of_user(self.data_version_1)
+    async def test_spreadsheet_to_user_version1(self):
+        list_of_users = await handlers.spreadsheet_to_list_of_user(self.data_version_1)
 
         self.assertIsNotNone(list_of_users)
         self.assertIsInstance(list_of_users, List[User])
 
-    def test_spreadsheet_to_user_version2(self):
-        list_of_users = bot.spreadsheet_to_list_of_user(self.data_version_2)
+    async def test_spreadsheet_to_user_version2(self):
+        list_of_users = await handlers.spreadsheet_to_list_of_user(self.data_version_2)
 
         self.assertIsNotNone(list_of_users)
         self.assertIsInstance(list_of_users, List[User])

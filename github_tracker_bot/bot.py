@@ -17,37 +17,12 @@ logger = get_logger(__name__)
 from commit_scraper import get_user_commits_in_repo
 from process_commits import process_commits
 from ai_decide_commits import decide_daily_commits
-from read_sheet import read_sheet
+from helpers.spreadsheet_handlers import spreadsheet_to_list_of_user, get_sheet_data
 import redis_data_handler as rd
 
 
 async def main(username, repo_link, since_date, until_date):
     await get_result(username, repo_link, since_date, until_date)
-
-
-async def get_sheet_data(spreadsheet_id):
-    sheet_data: list = await read_sheet(spreadsheet_id)
-    return sheet_data
-
-
-async def spreadsheet_to_list_of_user(sheet_data) -> List[rd.User]:
-    ss_users: List[rd.User]
-
-    if not sheet_data:
-        return []
-
-    keys = []
-
-    for k in keys[0]:
-        keys.append(k)
-
-    for user_data in sheet_data:
-        user_handle = user_data[keys[0]]
-        github_name = user_data[keys[1]]
-        repositories = user_data[keys[2]]
-
-        user = rd.User(user_handle, github_name, repositories)
-        ss_users.append(user)
 
 
 async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
