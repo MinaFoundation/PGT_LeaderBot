@@ -83,3 +83,6 @@ class TestSpreadsheetToList(unittest.TestCase):
 
         self.assertIsNotNone(list_of_users)
         self.assertIsInstance(list_of_users, List[User])
+
+if __name__ == "__main__":
+    unittest.main()

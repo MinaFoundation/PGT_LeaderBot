@@ -53,3 +53,6 @@ class TestPrompts(unittest.TestCase):
         empty_commit_data = []
         message = prompts.process_message("2024-04-29", empty_commit_data)
         self.assertEqual(message, "")
+
+if __name__ == "__main__":
+    unittest.main()
