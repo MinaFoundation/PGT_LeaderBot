@@ -28,12 +28,12 @@ def get_google_sheets_service():
         sys.exit(1)
 
 
-def read_sheet():
+def read_sheet(spreadsheet_id):
     service = get_google_sheets_service()
     try:
         sheet = service.spreadsheets()
         result = (
-            sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME).execute()
+            sheet.values().get(spreadsheetId=spreadsheet_id, range=RANGE_NAME).execute()
         )
         data = result.get("values", [])
         if not data:
@@ -70,4 +70,4 @@ def read_sheet():
 
 
 if __name__ == "__main__":
-    read_sheet()
+    read_sheet(SPREADSHEET_ID)

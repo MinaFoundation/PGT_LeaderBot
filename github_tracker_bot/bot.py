@@ -8,6 +8,7 @@ from openai import OpenAIError
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import config
 from log_config import get_logger
 
 logger = get_logger(__name__)
@@ -16,8 +17,16 @@ from commit_scraper import get_user_commits_in_repo
 from process_commits import process_commits
 from ai_decide_commits import decide_daily_commits
 
+async def main():
+    pass
 
-async def main(username, repo_link, since_date, until_date):
+async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
+    pass
+
+async def get_user_results_from_sheet_by_date(username, spreadsheet_id, since_date, until_date):
+    pass
+
+async def get_result(username, repo_link, since_date, until_date):
     commit_infos = await get_user_commits_in_repo(
         username,
         repo_link,
@@ -77,9 +86,4 @@ def write_to_json(data, filename):
 
 
 if __name__ == "__main__":
-    username = "berkingurcan"
-    repo_link = "https://github.com/UmstadAI/zkappumstad"
-    since_date = "2024-05-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-05-30T00:00:00Z"
-
-    asyncio.run(main(username, repo_link, since_date, until_date))
+    asyncio.run(main())
