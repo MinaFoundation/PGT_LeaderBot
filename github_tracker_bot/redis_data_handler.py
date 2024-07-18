@@ -1,7 +1,13 @@
+import sys
+import os
+
 import redis
 import json
 from dataclasses import dataclass, field
 from typing import List, Dict, Any
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 from log_config import get_logger
 logger = get_logger(__name__)

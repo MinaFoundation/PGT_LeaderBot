@@ -13,7 +13,7 @@ class TestCalculateTokenNumber(unittest.TestCase):
         self.assertEqual(result, True)
 
     def test_token_count_above_limit(self):
-        data = self.generate_data_with_token_count(120000)
+        data = self.generate_data_with_token_count(124000)
         result = lib.calculate_token_number(data)
         self.assertEqual(result, False)
 

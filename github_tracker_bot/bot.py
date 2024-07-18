@@ -17,8 +17,8 @@ from commit_scraper import get_user_commits_in_repo
 from process_commits import process_commits
 from ai_decide_commits import decide_daily_commits
 
-async def main():
-    pass
+async def main(username, repo_link, since_date, until_date):
+    await get_result(username, repo_link, since_date, until_date)
 
 async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
     pass
@@ -86,4 +86,9 @@ def write_to_json(data, filename):
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    username = "berkingurcan"
+    repo_link = "https://github.com/UmstadAI/zkappumstad"
+    since_date = "2023-11-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2023-11-30T00:00:00Z"
+
+    asyncio.run(main(username, repo_link, since_date, until_date))

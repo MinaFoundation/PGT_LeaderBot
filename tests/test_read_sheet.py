@@ -41,7 +41,7 @@ class TestReadSheet(unittest.TestCase):
             {"Name": "Bob", "Age": "25", "REPOSITORIES": ["repo3"]},
         ]
 
-        data = read_sheet()
+        data = read_sheet(config.SPREADSHEET_ID)
         self.assertEqual(data, expected_data)
 
     @patch("github_tracker_bot.read_sheet.get_google_sheets_service")
@@ -51,7 +51,7 @@ class TestReadSheet(unittest.TestCase):
 
         mock_service.spreadsheets().values().get().execute.return_value = {}
 
-        data = read_sheet()
+        data = read_sheet(config.SPREADSHEET_ID)
         self.assertEqual(data, [])
 
     @patch("github_tracker_bot.read_sheet.get_google_sheets_service")
@@ -63,7 +63,7 @@ class TestReadSheet(unittest.TestCase):
             "API error"
         )
 
-        data = read_sheet()
+        data = read_sheet(config.SPREADSHEET_ID)
         self.assertEqual(data, [])
 
     @patch("github_tracker_bot.read_sheet.get_google_sheets_service")
@@ -84,7 +84,7 @@ class TestReadSheet(unittest.TestCase):
             {"Name": "Bob", "Age": "25", "REPOSITORIES": ["repo3"]},
         ]
 
-        data = read_sheet()
+        data = read_sheet(config.SPREADSHEET_ID)
         self.assertEqual(data, expected_data)
 
     @patch("github_tracker_bot.read_sheet.get_google_sheets_service")
@@ -105,7 +105,7 @@ class TestReadSheet(unittest.TestCase):
             {"Name": "Bob", "Age": "25", "REPOSITORIES": ["repo3"]},
         ]
 
-        data = read_sheet()
+        data = read_sheet(config.SPREADSHEET_ID)
         self.assertEqual(data, expected_data)
 
     @patch("github_tracker_bot.read_sheet.get_google_sheets_service")
@@ -131,7 +131,7 @@ class TestReadSheet(unittest.TestCase):
             {"Name": "Bob", "Age": "25", "REPOSITORIES": ["repo3"], "Extra": "extra2"},
         ]
 
-        data = read_sheet()
+        data = read_sheet(config.SPREADSHEET_ID)
         self.assertEqual(data, expected_data)
 
     @patch("github_tracker_bot.read_sheet.get_google_sheets_service")
@@ -152,7 +152,7 @@ class TestReadSheet(unittest.TestCase):
             {"Name": "", "Age": "25", "REPOSITORIES": ["repo3"]},
         ]
 
-        data = read_sheet()
+        data = read_sheet(config.SPREADSHEET_ID)
         self.assertEqual(data, expected_data)
 
 
