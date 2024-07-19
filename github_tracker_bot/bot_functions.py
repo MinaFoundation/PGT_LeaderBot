@@ -41,35 +41,64 @@ def convert_to_dict(data):
 
 
 async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
-    pass
+    try:
+        sheet_data = await get_sheet_data(spreadsheet_id)
+        if not sheet_data:
+            logger.error(
+                f"Failed to retrieve data from spreadsheet ID: {spreadsheet_id}"
+            )
+            return None
+
+        results = {}
+
+        users = spreadsheet_to_list_of_user(sheet_data)
+
+        for user in users:
+            user_results, qualified_contribution_count = (
+                await get_user_results_from_sheet_by_date(
+                    user.github_name, spreadsheet_id, since_date, until_date, sheet_data
+                )
+            )
+
+            if user_results:
+                results[user.user_handle] = {
+                    "results": user_results,
+                    "qualified_contribution_count": qualified_contribution_count,
+                }
+
+        write_full_to_json(results, "all_results.json")
+        return results
+
+    except Exception as e:
+        logger.error(f"An error occurred while fetching results from sheet: {e}")
 
 
 def count_qualified_contributions_by_date(full_result, since_date, until_date):
     since_date = parser.isoparse(since_date).replace(tzinfo=None)
     until_date = parser.isoparse(until_date).replace(tzinfo=None)
-    
+
     qualified_days = set()
-    
+
     for decision_list in full_result:
         for decision in decision_list:
             decision_date = parser.isoparse(decision.date).replace(tzinfo=None)
             if since_date <= decision_date <= until_date:
                 if decision.response.is_qualified:
                     qualified_days.add(decision_date.date())
-    
-    return {
-        'qualified_days': qualified_days,
-        'count': len(qualified_days)
-    }
+
+    return {"qualified_days": qualified_days, "count": len(qualified_days)}
 
 
 async def get_user_results_from_sheet_by_date(
-    username, spreadsheet_id, since_date, until_date
+    username, spreadsheet_id, since_date, until_date, sheet_data_from=None
 ):
     try:
         full_results = []
 
-        sheet_data = await get_sheet_data(spreadsheet_id)
+        if not sheet_data_from:
+            sheet_data = await get_sheet_data(spreadsheet_id)
+        else:
+            sheet_data = sheet_data_from
         if not sheet_data:
             logger.error(
                 f"Failed to retrieve data from spreadsheet ID: {spreadsheet_id}"
@@ -97,8 +126,8 @@ async def get_user_results_from_sheet_by_date(
         logger.debug(f"Full results: {full_results}")
         write_full_to_json(full_results, "full_res.json")
 
-        qualified_contribution_count = (
-            count_qualified_contributions_by_date(full_results, since_date, until_date)
+        qualified_contribution_count = count_qualified_contributions_by_date(
+            full_results, since_date, until_date
         )
 
         logger.debug(qualified_contribution_count)
@@ -194,7 +223,7 @@ if __name__ == "__main__":
     until_date = "2024-05-30T00:00:00Z"
 
     asyncio.run(
-        get_user_results_from_sheet_by_date(
-            username, config.SPREADSHEET_ID, since_date, until_date
+        get_all_results_from_sheet_by_date(
+            config.SPREADSHEET_ID, since_date, until_date
         )
     )
