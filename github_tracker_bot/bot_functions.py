@@ -45,30 +45,36 @@ async def get_user_results_from_sheet_by_date(
 ):
     try:
         full_results = []
+        
         sheet_data = await get_sheet_data(spreadsheet_id)
+        if not sheet_data:
+            logger.error(f"Failed to retrieve data from spreadsheet ID: {spreadsheet_id}")
+            return None
+
         users = spreadsheet_to_list_of_user(sheet_data)
         user = find_user(users, username)
-
         if not user:
-            logger.error(
-                f"Could not find user for github name or discord handle: {username}!"
-            )
+            logger.error(f"User not found: {username}")
             return None
 
         for repository in user.repositories:
             ai_decisions = await get_result(
                 user.github_name, repository, since_date, until_date
             )
+            if not ai_decisions:
+                logger.warning(f"No AI decisions found for repo: {repository}")
+                continue
+
             ai_decisions_class = rd.create_ai_decisions_class(ai_decisions)
             full_results.append(ai_decisions_class)
 
-        logger.debug(full_results)
-        write_to_json(full_results, "full_results.json")
+        logger.debug(f"Full results: {full_results}")
         return full_results
 
     except Exception as e:
-        logger.error(e)
+        logger.error(f"An error occurred while retrieving user results: {e}")
         return None
+
 
 
 async def get_result(username, repo_link, since_date, until_date):
@@ -120,7 +126,6 @@ async def get_result(username, repo_link, since_date, until_date):
             else:
                 continue
 
-        write_to_json(ai_decisions, "ai_decisions.json")
         return ai_decisions
 
 
