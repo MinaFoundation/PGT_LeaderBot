@@ -73,8 +73,6 @@ async def get_user_results_from_sheet_by_date(
 
     except Exception as e:
         logger.error(f"An error occurred while retrieving user results: {e}")
-        return None
-
 
 
 async def get_result(username, repo_link, since_date, until_date):
