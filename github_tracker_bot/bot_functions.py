@@ -23,6 +23,18 @@ from helpers.spreadsheet_handlers import (
     find_user,
 )
 import redis_data_handler as rd
+from dataclasses import asdict
+
+
+def convert_to_dict(data):
+    if isinstance(data, list):
+        return [convert_to_dict(item) for item in data]
+    elif isinstance(data, dict):
+        return {key: convert_to_dict(value) for key, value in data.items()}
+    elif hasattr(data, "__dataclass_fields__"):
+        return {key: convert_to_dict(value) for key, value in asdict(data).items()}
+    else:
+        return data
 
 
 async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
@@ -62,6 +74,7 @@ async def get_user_results_from_sheet_by_date(
                 full_results.append(ai_decisions_class)
 
         logger.debug(f"Full results: {full_results}")
+        write_full_to_json(full_results, "fullres.json")
         return full_results
 
     except Exception as e:
@@ -101,11 +114,13 @@ async def get_result(username, repo_link, since_date, until_date):
                 if decision:
                     ai_decisions.append(decision)
 
+        get_repo_name = lambda url: url.rstrip("/").split("/")[-1]
+        repo_name = get_repo_name(repo_link)
+
         return ai_decisions
 
     except Exception as e:
         logger.error(f"An error occurred while getting result: {e}")
-        return None
 
 
 async def process_commit_day(username, repo_link, commits_day, commits_data):
@@ -136,6 +151,13 @@ def write_to_json(data, filename):
     with open(filename, "w") as f:
         json.dump(data, f, indent=5)
         logger.info(f"Processed commits have been written to {filename}")
+
+
+def write_full_to_json(data, filename):
+    dict_data = convert_to_dict(data)
+
+    with open(filename, "w") as json_file:
+        json.dump(dict_data, json_file, indent=4)
 
 
 if __name__ == "__main__":
