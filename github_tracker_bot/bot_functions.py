@@ -74,7 +74,7 @@ async def get_user_results_from_sheet_by_date(
                 full_results.append(ai_decisions_class)
 
         logger.debug(f"Full results: {full_results}")
-        write_full_to_json(full_results, "fullres.json")
+        write_full_to_json(full_results, "full_res.json")
         return full_results
 
     except Exception as e:
@@ -163,8 +163,8 @@ def write_full_to_json(data, filename):
 if __name__ == "__main__":
     username = "berkingurcan"
     repo_link = "https://github.com/UmstadAI/zkappumstad"
-    since_date = "2023-11-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2023-11-30T00:00:00Z"
+    since_date = "2024-03-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-03-30T00:00:00Z"
 
     asyncio.run(
         get_user_results_from_sheet_by_date(
