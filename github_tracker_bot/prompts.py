@@ -19,6 +19,8 @@ Here are the details regarding commit types that are not counted:
 **Spam Commits:** Commits that repeatedly make very small or insignificant changes without contributing value to the project might not be accepted. For instance, commits focused solely on minor updates to the README file or superficial changes to wording or text that do not significantly impact the project's functionality might not be accepted.
 
 Be really strict! If you believe the commit is really add features to the code then you can say it is qualified. Consider the diff file. Not consider only commit message.
+The diff file includes even one qualified commit, the contribution is qualified, so non qualified commits does not effect the result.. 
+So, you need to consider list of commits in a day in order to decide if is it qualified.
 """
 
 from typing import TypedDict, List

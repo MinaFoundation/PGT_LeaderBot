@@ -1,8 +1,9 @@
+from datetime import datetime
 import sys
 import os
 import json
 import asyncio
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from typing import List
 
 from openai import OpenAIError
@@ -38,8 +39,23 @@ def convert_to_dict(data):
 
 
 async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
-    # Implement this function if needed
     pass
+
+
+def count_qualified_contributions_by_date(full_result, since_date, until_date):
+    since_date = datetime.fromisoformat(since_date)
+    until_date = datetime.fromisoformat(until_date)
+
+    qualified_days = set()
+
+    for decision_list in full_result:
+        for decision in decision_list:
+            decision_date = datetime.fromisoformat(decision.date)
+            if since_date <= decision_date <= until_date:
+                if decision.response.is_qualified:
+                    qualified_days.add(decision.date)
+
+    return qualified_days, len(qualified_days)
 
 
 async def get_user_results_from_sheet_by_date(
@@ -75,6 +91,11 @@ async def get_user_results_from_sheet_by_date(
 
         logger.debug(f"Full results: {full_results}")
         write_full_to_json(full_results, "full_res.json")
+
+        qualified_contribution_days, qualified_contribution_count = (
+            count_qualified_contributions_by_date(full_results, since_date, until_date)
+        )
+        logger.info(qualified_contribution_days, qualified_contribution_count)
         return full_results
 
     except Exception as e:
@@ -163,8 +184,8 @@ def write_full_to_json(data, filename):
 if __name__ == "__main__":
     username = "berkingurcan"
     repo_link = "https://github.com/UmstadAI/zkappumstad"
-    since_date = "2024-03-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-03-30T00:00:00Z"
+    since_date = "2024-04-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-04-30T00:00:00Z"
 
     asyncio.run(
         get_user_results_from_sheet_by_date(
