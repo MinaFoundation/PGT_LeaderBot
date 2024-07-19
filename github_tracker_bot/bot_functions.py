@@ -30,13 +30,17 @@ async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_d
     pass
 
 
-async def get_user_results_from_sheet_by_date(username, spreadsheet_id, since_date, until_date):
+async def get_user_results_from_sheet_by_date(
+    username, spreadsheet_id, since_date, until_date
+):
     try:
         full_results = []
 
         sheet_data = await get_sheet_data(spreadsheet_id)
         if not sheet_data:
-            logger.error(f"Failed to retrieve data from spreadsheet ID: {spreadsheet_id}")
+            logger.error(
+                f"Failed to retrieve data from spreadsheet ID: {spreadsheet_id}"
+            )
             return None
 
         users = spreadsheet_to_list_of_user(sheet_data)
@@ -140,4 +144,8 @@ if __name__ == "__main__":
     since_date = "2023-11-01T00:00:00Z"  # ISO 8601 format
     until_date = "2023-11-30T00:00:00Z"
 
-    asyncio.run(get_user_results_from_sheet_by_date(username, config.SPREADSHEET_ID, since_date, until_date))
+    asyncio.run(
+        get_user_results_from_sheet_by_date(
+            username, config.SPREADSHEET_ID, since_date, until_date
+        )
+    )

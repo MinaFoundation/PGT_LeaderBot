@@ -101,14 +101,14 @@ def group_and_sort_commits(
 
 async def process_commits(commit_infos: List[Dict[str, Any]]):
     tasks = [
-        fetch_diff(commit_info["repo"], commit_info["sha"]) 
+        fetch_diff(commit_info["repo"], commit_info["sha"])
         for commit_info in commit_infos
     ]
 
     diffs = await asyncio.gather(*tasks)
 
     processed_commits = [
-        concatenate_diff_to_commit_info(commit_info, diff) 
+        concatenate_diff_to_commit_info(commit_info, diff)
         for commit_info, diff in zip(commit_infos, diffs)
     ]
 

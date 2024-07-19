@@ -17,7 +17,9 @@ GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
 
-async def fetch_commits(session: aiohttp.ClientSession, url: str) -> Optional[List[Dict[str, Any]]]:
+async def fetch_commits(
+    session: aiohttp.ClientSession, url: str
+) -> Optional[List[Dict[str, Any]]]:
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     all_commits = []
 
@@ -56,7 +58,7 @@ async def fetch_commits_for_branch(
     branch_name: str,
     since: str,
     until: str,
-    existing_shas: set
+    existing_shas: set,
 ) -> List[Dict[str, Any]]:
     commits_url = (
         f"https://api.github.com/repos/{owner}/{repo_name}/commits"
@@ -86,7 +88,9 @@ async def fetch_commits_for_branch(
     return commit_infos
 
 
-async def get_user_commits_in_repo(username: str, repo_link: str, since: str, until: str) -> Optional[List[Dict[str, Any]]]:
+async def get_user_commits_in_repo(
+    username: str, repo_link: str, since: str, until: str
+) -> Optional[List[Dict[str, Any]]]:
     repo_pattern = re.compile(r"https?://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/?$")
     if not repo_pattern.match(repo_link):
         logger.error("Invalid GitHub repository link format.")
@@ -102,7 +106,16 @@ async def get_user_commits_in_repo(username: str, repo_link: str, since: str, un
         existing_shas = set()
         async with aiohttp.ClientSession() as session:
             tasks = [
-                fetch_commits_for_branch(session, owner, repo_name, username, branch.name, since, until, existing_shas)
+                fetch_commits_for_branch(
+                    session,
+                    owner,
+                    repo_name,
+                    username,
+                    branch.name,
+                    since,
+                    until,
+                    existing_shas,
+                )
                 for branch in branches
             ]
 

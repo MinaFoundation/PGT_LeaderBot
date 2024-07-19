@@ -35,6 +35,7 @@ def process(ctx):
 def bot(ctx):
     ctx.run("python github_tracker_bot/bot.py")
 
+
 @task
 def botf(ctx):
     ctx.run("python github_tracker_bot/bot_functions.py")

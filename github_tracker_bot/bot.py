@@ -17,7 +17,6 @@ async def main(username, repo_link, since_date, until_date):
     pass
 
 
-
 if __name__ == "__main__":
     username = "berkingurcan"
     repo_link = "https://github.com/UmstadAI/zkappumstad"
