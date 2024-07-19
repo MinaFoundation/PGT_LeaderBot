@@ -4,9 +4,7 @@ import asyncio
 import aiohttp
 from datetime import datetime
 from dateutil import parser
-
 from typing import List, Optional, Dict, Any
-
 from github import Github
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -102,11 +100,17 @@ def group_and_sort_commits(
 
 
 async def process_commits(commit_infos: List[Dict[str, Any]]):
-    processed_commits = []
-    for commit_info in commit_infos:
-        diff = await fetch_diff(commit_info["repo"], commit_info["sha"])
-        processed_commit = concatenate_diff_to_commit_info(commit_info, diff)
-        processed_commits.append(processed_commit)
+    tasks = [
+        fetch_diff(commit_info["repo"], commit_info["sha"]) 
+        for commit_info in commit_infos
+    ]
+
+    diffs = await asyncio.gather(*tasks)
+
+    processed_commits = [
+        concatenate_diff_to_commit_info(commit_info, diff) 
+        for commit_info, diff in zip(commit_infos, diffs)
+    ]
 
     grouped_commits = group_and_sort_commits(processed_commits)
     for daily_commit in grouped_commits.values():
