@@ -24,28 +24,16 @@ from helpers.spreadsheet_handlers import (
 )
 import redis_data_handler as rd
 
-from log_config import get_logger
-
-logger = get_logger(__name__)
-
-from helpers.spreadsheet_handlers import (
-    spreadsheet_to_list_of_user,
-    get_sheet_data,
-    find_user,
-)
-import redis_data_handler as rd
-
 
 async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
+    # Implement this function if needed
     pass
 
 
-async def get_user_results_from_sheet_by_date(
-    username, spreadsheet_id, since_date, until_date
-):
+async def get_user_results_from_sheet_by_date(username, spreadsheet_id, since_date, until_date):
     try:
         full_results = []
-        
+
         sheet_data = await get_sheet_data(spreadsheet_id)
         if not sheet_data:
             logger.error(f"Failed to retrieve data from spreadsheet ID: {spreadsheet_id}")
@@ -57,74 +45,87 @@ async def get_user_results_from_sheet_by_date(
             logger.error(f"User not found: {username}")
             return None
 
-        for repository in user.repositories:
-            ai_decisions = await get_result(
-                user.github_name, repository, since_date, until_date
-            )
-            if not ai_decisions:
-                logger.warning(f"No AI decisions found for repo: {repository}")
-                continue
+        tasks = [
+            get_result(user.github_name, repository, since_date, until_date)
+            for repository in user.repositories
+        ]
 
-            ai_decisions_class = rd.create_ai_decisions_class(ai_decisions)
-            full_results.append(ai_decisions_class)
+        results = await asyncio.gather(*tasks)
+
+        for ai_decisions in results:
+            if ai_decisions:
+                ai_decisions_class = rd.create_ai_decisions_class(ai_decisions)
+                full_results.append(ai_decisions_class)
 
         logger.debug(f"Full results: {full_results}")
         return full_results
 
     except Exception as e:
         logger.error(f"An error occurred while retrieving user results: {e}")
+        return None
 
 
 async def get_result(username, repo_link, since_date, until_date):
-    commit_infos = await get_user_commits_in_repo(
-        username,
-        repo_link,
-        since_date,
-        until_date,
-    )
+    try:
+        commit_infos = await get_user_commits_in_repo(
+            username,
+            repo_link,
+            since_date,
+            until_date,
+        )
 
-    ai_decisions = []
+        ai_decisions = []
 
-    if commit_infos:
-        processed_commits = await process_commits(commit_infos)
-        processed_commits = OrderedDict(sorted(processed_commits.items()))
+        if commit_infos:
+            processed_commits = await process_commits(commit_infos)
+            processed_commits = OrderedDict(sorted(processed_commits.items()))
 
-        for commit_info in processed_commits:
-            logger.debug(json.dumps(commit_info, indent=5))
+            for commit_info in processed_commits:
+                logger.debug(json.dumps(commit_info, indent=5))
 
-        logger.debug(f"Total commit number: {len(processed_commits)}")
-        write_to_json(processed_commits, "processed_commits.json")
+            logger.debug(f"Total commit number: {len(processed_commits)}")
+            write_to_json(processed_commits, "processed_commits.json")
 
-        for commits_day, commits_data in processed_commits.items():
-            try:
-                response = await decide_daily_commits(commits_day, commits_data)
-                data_entry = {
-                    "username": username,
-                    "repository": repo_link,
-                    "date": commits_day,
-                    "response": json.loads(response),
-                }
+            tasks = [
+                process_commit_day(username, repo_link, commits_day, commits_data)
+                for commits_day, commits_data in processed_commits.items()
+            ]
 
-                ai_decisions.append(data_entry)
-                logger.debug(
-                    f"AI Response for daily commits:\n"
-                    f"Username: {username},\n"
-                    f"Repository: {repo_link},\n"
-                    f"Date: {commits_day},\n"
-                    f"Response: {response}"
-                )
+            ai_decisions_results = await asyncio.gather(*tasks)
 
-            except OpenAIError as e:
-                logger.error(f"OpenAI API call failed with error: {e}")
-                continue
-
-            except Exception as e:
-                logger.error(f"An unexpected error occurred: {e}")
-                continue
-            else:
-                continue
+            for decision in ai_decisions_results:
+                if decision:
+                    ai_decisions.append(decision)
 
         return ai_decisions
+
+    except Exception as e:
+        logger.error(f"An error occurred while getting result: {e}")
+        return None
+
+
+async def process_commit_day(username, repo_link, commits_day, commits_data):
+    try:
+        response = await decide_daily_commits(commits_day, commits_data)
+        data_entry = {
+            "username": username,
+            "repository": repo_link,
+            "date": commits_day,
+            "response": json.loads(response),
+        }
+        logger.debug(
+            f"AI Response for daily commits:\n"
+            f"Username: {username},\n"
+            f"Repository: {repo_link},\n"
+            f"Date: {commits_day},\n"
+            f"Response: {response}"
+        )
+        return data_entry
+    except OpenAIError as e:
+        logger.error(f"OpenAI API call failed with error: {e}")
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
+    return None
 
 
 def write_to_json(data, filename):
