@@ -1,4 +1,6 @@
 from datetime import datetime
+from dateutil import parser
+
 import sys
 import os
 import json
@@ -43,18 +45,18 @@ async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_d
 
 
 def count_qualified_contributions_by_date(full_result, since_date, until_date):
-    since_date = datetime.fromisoformat(since_date)
-    until_date = datetime.fromisoformat(until_date)
-
+    since_date = parser.isoparse(since_date).replace(tzinfo=None)
+    until_date = parser.isoparse(until_date).replace(tzinfo=None)
+    
     qualified_days = set()
-
+    
     for decision_list in full_result:
         for decision in decision_list:
-            decision_date = datetime.fromisoformat(decision.date)
+            decision_date = parser.isoparse(decision.date).replace(tzinfo=None)
             if since_date <= decision_date <= until_date:
                 if decision.response.is_qualified:
-                    qualified_days.add(decision.date)
-
+                    qualified_days.add(decision_date.date())
+    
     return qualified_days, len(qualified_days)
 
 
