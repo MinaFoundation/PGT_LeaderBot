@@ -19,6 +19,7 @@ Here are the details regarding daily contribution types are counted qualified:
 Here are the details regarding commit types that are not counted:
 
 **Configuration Changes:** Adding/modifying Node IP, RPC endpoint, network ID, short name, API ID, title, etc. might not be accepted.
+**Really Minimal Commits:** Changing the code for a few lines might not be accepted unless it makes really smart coding.
 **Merge Conflict Commits:** Commits resolving conflicts but not containing actual progress or fixes might not be accepted.
 **Revert or Undo Commits:** Commits reverting previous changes or correcting an error without adding new value to the project might not be accepted.
 **Dependency Update Commits:** Commits that only include dependency updates and don’t contribute directly to the main project might not be accepted.
