@@ -66,7 +66,8 @@ async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_d
                     "qualified_contribution_count": qualified_contribution_count,
                 }
 
-        write_full_to_json(results, "all_results.json")
+        #write_full_to_json(results, "all_results.json")
+        logger.debug(results)
         return results
 
     except Exception as e:
@@ -84,7 +85,7 @@ def count_qualified_contributions_by_date(full_result, since_date, until_date):
             decision_date = parser.isoparse(decision.date).replace(tzinfo=None)
             if since_date <= decision_date <= until_date:
                 if decision.response.is_qualified:
-                    qualified_days.add(decision_date.date())
+                    qualified_days.add(decision_date.date().strftime('%Y-%m-%d'))
 
     return {"qualified_days": qualified_days, "count": len(qualified_days)}
 
