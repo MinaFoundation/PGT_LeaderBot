@@ -4,7 +4,6 @@ import re
 import asyncio
 import aiohttp
 from typing import Optional, List, Dict, Any
-
 from github import Github, GithubException
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -18,9 +17,7 @@ GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
 
-async def fetch_commits(
-    session: aiohttp.ClientSession, url: str
-) -> Optional[List[Dict[str, Any]]]:
+async def fetch_commits(session: aiohttp.ClientSession, url: str) -> Optional[List[Dict[str, Any]]]:
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     all_commits = []
 
@@ -51,13 +48,49 @@ async def fetch_commits(
     return all_commits
 
 
-async def get_user_commits_in_repo(
-    username: str, repo_link: str, since: str, until: str
-) -> Optional[List[Dict[str, Any]]]:
+async def fetch_commits_for_branch(
+    session: aiohttp.ClientSession,
+    owner: str,
+    repo_name: str,
+    username: str,
+    branch_name: str,
+    since: str,
+    until: str,
+    existing_shas: set
+) -> List[Dict[str, Any]]:
+    commits_url = (
+        f"https://api.github.com/repos/{owner}/{repo_name}/commits"
+        f"?author={username}&sha={branch_name}&since={since}&until={until}"
+    )
+
+    commits = await fetch_commits(session, commits_url)
+    commit_infos = []
+
+    if commits:
+        for commit in commits:
+            commit_sha = commit["sha"]
+            if commit_sha not in existing_shas:
+                commit_info = {
+                    "message": commit["commit"]["message"],
+                    "date": commit["commit"]["committer"]["date"],
+                    "branch": branch_name,
+                    "sha": commit_sha,
+                    "author": commit["commit"]["author"]["name"],
+                    "username": username,
+                    "repo": f"{owner}/{repo_name}",
+                }
+                commit_infos.append(commit_info)
+                existing_shas.add(commit_sha)
+                logger.debug(f"Commit Info: {commit_info}")
+
+    return commit_infos
+
+
+async def get_user_commits_in_repo(username: str, repo_link: str, since: str, until: str) -> Optional[List[Dict[str, Any]]]:
     repo_pattern = re.compile(r"https?://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/?$")
     if not repo_pattern.match(repo_link):
         logger.error("Invalid GitHub repository link format.")
-        return
+        return None
 
     try:
         _, owner_repo = repo_link.split("github.com/", 1)
@@ -66,85 +99,18 @@ async def get_user_commits_in_repo(
         repo = g.get_repo(f"{owner}/{repo_name}")
         branches = repo.get_branches()
 
-        commit_infos = []
         existing_shas = set()
-
         async with aiohttp.ClientSession() as session:
-            main_branch = None
-            other_branches = []
+            tasks = [
+                fetch_commits_for_branch(session, owner, repo_name, username, branch.name, since, until, existing_shas)
+                for branch in branches
+            ]
 
-            for branch in branches:
-                if branch.name == "main":
-                    main_branch = branch
-                else:
-                    other_branches.append(branch)
+            results = await asyncio.gather(*tasks)
+            commit_infos = [commit_info for result in results for commit_info in result]
 
-            if main_branch:
-                branch_name = main_branch.name
-                commits_url = (
-                    f"https://api.github.com/repos/{owner}/{repo_name}/commits"
-                    f"?author={username}&sha={main_branch.name}&since={since}&until={until}"
-                )
-
-                commits = await fetch_commits(session, commits_url)
-
-                if commits:
-                    for commit in commits:
-                        commit_sha = commit["sha"]
-                        if commit_sha not in existing_shas:
-                            commit_info = {
-                                "message": commit["commit"]["message"],
-                                "date": commit["commit"]["committer"]["date"],
-                                "branch": branch_name,
-                                "sha": commit_sha,
-                                "author": commit["commit"]["author"]["name"],
-                                "username": username,
-                                "repo": f"{owner}/{repo_name}",
-                            }
-                            commit_infos.append(commit_info)
-                            existing_shas.add(commit_sha)
-
-                            logger.debug(f"Commit Info: {commit_info}")
-
-            for branch in other_branches:
-                branch_name = branch.name
-                commits_url = (
-                    f"https://api.github.com/repos/{owner}/{repo_name}/commits"
-                    f"?author={username}&sha={branch.name}&since={since}&until={until}"
-                )
-
-                commits = await fetch_commits(session, commits_url)
-
-                if commits:
-                    for commit in commits:
-                        commit_sha = commit["sha"]
-                        if commit_sha not in existing_shas:
-                            commit_info = {
-                                "message": commit["commit"]["message"],
-                                "date": commit["commit"]["committer"]["date"],
-                                "branch": branch_name,
-                                "sha": commit_sha,
-                                "author": commit["commit"]["author"]["name"],
-                                "username": username,
-                                "repo": f"{owner}/{repo_name}",
-                            }
-                            commit_infos.append(commit_info)
-                            existing_shas.add(commit_sha)
-
-                            logger.debug(f"Commit Info: {commit_info}")
-                        else:
-                            continue
-                else:
-                    logger.info(
-                        f"No commits found for user {username} in {repo_name}, {branch.name} branch."
-                    )
-
-                logger.debug(
-                    f"{username} has {len(commits)} commits in {branch.name} branch"
-                )
-
-            logger.debug(commit_infos)
-            logger.debug(f"Total commit number in the array: {len(commit_infos)}")
+        logger.debug(commit_infos)
+        logger.debug(f"Total commit number in the array: {len(commit_infos)}")
 
         return commit_infos
 
