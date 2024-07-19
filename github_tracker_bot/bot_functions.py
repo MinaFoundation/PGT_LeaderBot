@@ -62,6 +62,8 @@ async def get_user_results_from_sheet_by_date(
             ai_decisions_class = rd.create_ai_decisions_class(ai_decisions)
             full_results.append(ai_decisions_class)
 
+        logger.debug(full_results)
+        write_to_json(full_results, "full_results.json")
         return full_results
 
     except Exception as e:
@@ -134,4 +136,4 @@ if __name__ == "__main__":
     since_date = "2023-11-01T00:00:00Z"  # ISO 8601 format
     until_date = "2023-11-30T00:00:00Z"
 
-    asyncio.run(get_result(username, repo_link, since_date, until_date))
+    asyncio.run(get_user_results_from_sheet_by_date(username, config.SPREADSHEET_ID, since_date, until_date))

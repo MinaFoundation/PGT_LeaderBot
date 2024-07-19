@@ -4,7 +4,7 @@ import github_tracker_bot.redis_data_handler as rd
 
 
 async def get_sheet_data(spreadsheet_id: str) -> List[dict]:
-    sheet_data: List[dict] = await rs.read_sheet(spreadsheet_id)
+    sheet_data: List[dict] = rs.read_sheet(spreadsheet_id)
     return sheet_data
 
 
