@@ -57,7 +57,10 @@ def count_qualified_contributions_by_date(full_result, since_date, until_date):
                 if decision.response.is_qualified:
                     qualified_days.add(decision_date.date())
     
-    return qualified_days, len(qualified_days)
+    return {
+        'qualified_days': qualified_days,
+        'count': len(qualified_days)
+    }
 
 
 async def get_user_results_from_sheet_by_date(
@@ -94,11 +97,12 @@ async def get_user_results_from_sheet_by_date(
         logger.debug(f"Full results: {full_results}")
         write_full_to_json(full_results, "full_res.json")
 
-        qualified_contribution_days, qualified_contribution_count = (
+        qualified_contribution_count = (
             count_qualified_contributions_by_date(full_results, since_date, until_date)
         )
-        logger.info(qualified_contribution_days, qualified_contribution_count)
-        return full_results
+
+        logger.debug(qualified_contribution_count)
+        return full_results, qualified_contribution_count
 
     except Exception as e:
         logger.error(f"An error occurred while retrieving user results: {e}")
@@ -186,8 +190,8 @@ def write_full_to_json(data, filename):
 if __name__ == "__main__":
     username = "berkingurcan"
     repo_link = "https://github.com/UmstadAI/zkappumstad"
-    since_date = "2024-04-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-04-30T00:00:00Z"
+    since_date = "2024-05-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-05-30T00:00:00Z"
 
     asyncio.run(
         get_user_results_from_sheet_by_date(

@@ -55,7 +55,7 @@ async def decide_daily_commits(
             return False
 
         completion = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             response_format={"type": "json_object"},
             messages=[
                 {

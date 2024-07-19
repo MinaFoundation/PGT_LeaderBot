@@ -48,6 +48,7 @@ class User:
     qualified_daily_contribution_number_by_month: Dict[str, int] = field(
         default_factory=dict
     )
+    qualified_daily_contribution_dates = set()
     qualified_daily_contribution_streak: int = 0
     ai_decisions: List[AIDecision] = field(default_factory=list)
 
