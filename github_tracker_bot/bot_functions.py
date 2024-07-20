@@ -29,16 +29,6 @@ import redis_data_handler as rd
 from dataclasses import asdict
 
 
-def convert_to_dict(data):
-    if isinstance(data, list):
-        return [convert_to_dict(item) for item in data]
-    elif isinstance(data, dict):
-        return {key: convert_to_dict(value) for key, value in data.items()}
-    elif hasattr(data, "__dataclass_fields__"):
-        return {key: convert_to_dict(value) for key, value in asdict(data).items()}
-    else:
-        return data
-    
 def count_qualified_contributions_by_date(full_result, since_date, until_date):
     since_date = parser.isoparse(since_date).replace(tzinfo=None)
     until_date = parser.isoparse(until_date).replace(tzinfo=None)
@@ -81,7 +71,7 @@ async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_d
                     "qualified_contribution_count": qualified_contribution_count,
                 }
 
-        #write_full_to_json(results, "all_results.json")
+        write_full_to_json(results, "all_results.json")
         logger.debug(results)
         return results
 
@@ -203,6 +193,20 @@ async def process_commit_day(username, repo_link, commits_day, commits_data):
     return None
 
 
+def convert_to_dict(data):
+    if isinstance(data, list):
+        return [convert_to_dict(item) for item in data]
+    elif isinstance(data, dict):
+        return {key: convert_to_dict(value) for key, value in data.items()}
+    elif hasattr(data, "__dataclass_fields__"):
+        return {key: convert_to_dict(value) for key, value in asdict(data).items()}
+    elif isinstance(data, set):
+        return list(data)
+    elif isinstance(data, (rd.AIDecision, rd.DailyContributionResponse)):
+        return asdict(data)
+    else:
+        return data
+    
 def write_to_json(data, filename):
     with open(filename, "w") as f:
         json.dump(data, f, indent=5)
@@ -214,6 +218,7 @@ def write_full_to_json(data, filename):
 
     with open(filename, "w") as json_file:
         json.dump(dict_data, json_file, indent=4)
+
 
 
 if __name__ == "__main__":
