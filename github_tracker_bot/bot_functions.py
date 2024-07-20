@@ -38,6 +38,21 @@ def convert_to_dict(data):
         return {key: convert_to_dict(value) for key, value in asdict(data).items()}
     else:
         return data
+    
+def count_qualified_contributions_by_date(full_result, since_date, until_date):
+    since_date = parser.isoparse(since_date).replace(tzinfo=None)
+    until_date = parser.isoparse(until_date).replace(tzinfo=None)
+
+    qualified_days = set()
+
+    for decision_list in full_result:
+        for decision in decision_list:
+            decision_date = parser.isoparse(decision.date).replace(tzinfo=None)
+            if since_date <= decision_date <= until_date:
+                if decision.response.is_qualified:
+                    qualified_days.add(decision_date.date().strftime('%Y-%m-%d'))
+
+    return {"qualified_days": qualified_days, "count": len(qualified_days)}
 
 
 async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
@@ -72,22 +87,6 @@ async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_d
 
     except Exception as e:
         logger.error(f"An error occurred while fetching results from sheet: {e}")
-
-
-def count_qualified_contributions_by_date(full_result, since_date, until_date):
-    since_date = parser.isoparse(since_date).replace(tzinfo=None)
-    until_date = parser.isoparse(until_date).replace(tzinfo=None)
-
-    qualified_days = set()
-
-    for decision_list in full_result:
-        for decision in decision_list:
-            decision_date = parser.isoparse(decision.date).replace(tzinfo=None)
-            if since_date <= decision_date <= until_date:
-                if decision.response.is_qualified:
-                    qualified_days.add(decision_date.date().strftime('%Y-%m-%d'))
-
-    return {"qualified_days": qualified_days, "count": len(qualified_days)}
 
 
 async def get_user_results_from_sheet_by_date(
