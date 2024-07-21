@@ -165,17 +165,52 @@ class TestRedisClient(unittest.TestCase):
         ai_decisions = [
             [
                 {
-                    "username": "test_user",
-                    "repository": "repo1",
-                    "date": "2023-07-21",
+                    "username": "berkingurcan",
+                    "repository": "https://github.com/UmstadAI/zkAppUmstad/",
+                    "date": "2024-05-02",
                     "response": {
-                        "username": "test_user",
-                        "date": "2023-07-21",
+                        "username": "berkingurcan",
+                        "date": "2024-05-02",
                         "is_qualified": "True",
-                        "explanation": "valid",
+                        "explanation": "The commits made on this day include significant updates to the Discord API route and the prompts used by the bot. The changes enhance the functionality and user experience of the bot by refining its capabilities and instructions. The updates are well-structured and demonstrate thoughtful consideration of the bot's behavior. Additionally, the change from 'gpt-4-1106-preview' to 'gpt-4-turbo' in the model indicates an improvement in performance. Overall, these contributions are meaningful and impactful, qualifying the day's commits.",
                     },
-                }
-            ]
+                },
+                {
+                    "username": "berkingurcan",
+                    "repository": "https://github.com/UmstadAI/zkAppUmstad/",
+                    "date": "2024-05-17",
+                    "response": {
+                        "username": "berkingurcan",
+                        "date": "2024-05-17",
+                        "is_qualified": "True",
+                        "explanation": "The commits made on this day include significant contributions such as adding a demo searcher API and tools, updating prompts with new features, and improving the formatting of search results. The changes are well-structured and demonstrate thoughtful consideration, particularly in the 'feat add format demosearch query results' and 'feat add search tool and update prompt' commits, which enhance functionality and user experience. Despite some minor commits, the overall impact of the contributions is substantial, qualifying the day's work.",
+                    },
+                },
+            ],
+            [
+                {
+                    "username": "berkingurcan",
+                    "repository": "https://github.com/UmstadAI/discord-umstad",
+                    "date": "2024-05-02",
+                    "response": {
+                        "username": "berkingurcan",
+                        "date": "2024-05-02",
+                        "is_qualified": "True",
+                        "explanation": "The commit introduces a new variable 'IS_THREAD_PROCESSOR_DONE' and modifies the logic in 'handle_thread_create' to conditionally execute the POST request based on this variable. This change demonstrates significant effort in improving error handling and control flow in the code, which contributes meaningfully to the functionality of the application.",
+                    },
+                },
+                {
+                    "username": "berkingurcan",
+                    "repository": "https://github.com/UmstadAI/discord-umstad",
+                    "date": "2024-05-13",
+                    "response": {
+                        "username": "berkingurcan",
+                        "date": "2024-05-13",
+                        "is_qualified": "False",
+                        "explanation": "The first commit does not contain any diff, which means it does not contribute any meaningful change. The second commit updates 'bot.py' but only adds comments without any functional changes or significant improvements to the code. Therefore, there are no qualified commits that add value to the codebase.",
+                    },
+                },
+            ],
         ]
         self.mock_redis.get.return_value = ai_decisions
         result = self.redis_client.get_ai_decisions_by_user(user_handle)
