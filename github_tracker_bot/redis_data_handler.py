@@ -2,7 +2,6 @@ import sys
 import os
 
 import redis
-from redis.commands.json.path import Path
 import json
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any
@@ -110,18 +109,9 @@ class RedisClient:
             }
             return User(**user_dict)
         return None
+    
+    def delete_user(self, user_handle: str) -> User:
+        deleted_data = self.r.delete(f"user:{user_handle}")
+        return deleted_data
 
-    def save_decision(self, decision: AIDecision):
-        key = f"decision:{decision.username}:{decision.date}"
-        decision_dict = decision.__dict__.copy()
-        decision_dict["response"] = decision.response.__dict__
-        self.r.set(key, json.dumps(decision_dict))
 
-    def get_decision(self, username: str, date: str) -> AIDecision:
-        data = self.r.get(f"decision:{username}:{date}")
-        if data:
-            decision_dict = json.loads(data)
-            response_dict = decision_dict.pop("response")
-            decision_dict["response"] = DailyContributionResponse(**response_dict)
-            return AIDecision(**decision_dict)
-        return None

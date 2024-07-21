@@ -61,45 +61,22 @@ class TestRedisClient(unittest.TestCase):
         user = self.redis_client.get_user("nonexistent_user")
         self.assertIsNone(user)
 
-    def test_save_decision(self):
-        decision = AIDecision(
-            username="test_user",
-            repository="repo1",
-            date="2024-01-01",
-            response=DailyContributionResponse(
-                username="test_user",
-                date="2024-01-01",
-                is_qualified=True,
-                explanation="Good job",
-            ),
+    @patch.object(RedisClient, 'get_user')
+    def test_getdel_user(self, mock_get_user):
+        user_handle = "test_user"
+        user_data = User(
+            user_handle=user_handle,
+            github_name="test_github",
+            repositories=["repo1", "repo2"]
         )
-        self.redis_client.save_decision(decision)
-        self.mock_redis.set.assert_called_once_with(
-            f"decision:{decision.username}:{decision.date}",
-            json.dumps(decision.to_dict()),
-        )
+        mock_get_user.return_value = user_data
 
-    def test_get_decision_exists(self):
-        decision_data = {
-            "username": "test_user",
-            "repository": "repo1",
-            "date": "2024-01-01",
-            "response": {
-                "username": "test_user",
-                "date": "2024-01-01",
-                "is_qualified": True,
-                "explanation": "Good job",
-            },
-        }
-        self.mock_redis.get.return_value = json.dumps(decision_data)
-        decision = self.redis_client.get_decision("test_user", "2024-01-01")
-        self.assertEqual(decision.username, "test_user")
-        self.assertEqual(decision.response.explanation, "Good job")
+        self.mock_redis.delete.return_value = user_data
 
-    def test_get_decision_not_exists(self):
-        self.mock_redis.get.return_value = None
-        decision = self.redis_client.get_decision("test_user", "2024-01-01")
-        self.assertIsNone(decision)
+        removed_data = self.redis_client.delete_user(user_handle)
+
+        self.mock_redis.delete.assert_called_once_with(f"user:{user_handle}")
+        self.assertEqual(removed_data, user_data)
 
 
 if __name__ == "__main__":
