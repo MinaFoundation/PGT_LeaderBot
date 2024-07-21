@@ -2,6 +2,7 @@ import sys
 import os
 
 import redis
+from redis.commands.json.path import Path
 import json
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any
@@ -82,7 +83,7 @@ def create_ai_decisions_class(data):
 
 
 class RedisClient:
-    def __init__(self, host="localhost", port=6379, db=0):
+    def __init__(self, host="localhost", port=6379, db=0, decode_responses=True):
         try:
             self.r = redis.Redis(host=host, port=port, db=db)
             self.r.ping()
