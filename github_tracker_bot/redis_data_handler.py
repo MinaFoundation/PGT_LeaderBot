@@ -172,14 +172,44 @@ class RedisClient:
             raise
 
     def update_github_name(self, user_handle: str, update_github_name: str) -> User:
-        pass
+        try:
+            if not self.r.exists(f"user:{user_handle}"):
+                raise KeyError(f"User {user_handle} does not exist")
+            user_data = self.r.get(f"user:{user_handle}")
+            user_dict = user_data
+            user_dict["github_name"] = update_github_name
+            self.r.set(f"user:{user_handle}", json.dumps(user_dict))
+            return User(**user_dict)
+        except redis.RedisError as e:
+            logger.error(f"Failed to update GitHub name for user {user_handle}: {e}")
+            raise
+        except KeyError as e:
+            logger.error(e)
+            raise
 
     def update_repositories(self, user_handle: str, repositories: List[str]) -> User:
-        pass
+        try:
+            if not self.r.exists(f"user:{user_handle}"):
+                raise KeyError(f"User {user_handle} does not exist")
+            user_data = self.r.get(f"user:{user_handle}")
+            user_dict = user_data
+            user_dict["repositories"] = repositories
+            self.r.set(f"user:{user_handle}", json.dumps(user_dict))
+            return User(**user_dict)
+        except redis.RedisError as e:
+            logger.error(f"Failed to update repositories for user {user_handle}: {e}")
+            raise
+        except KeyError as e:
+            logger.error(e)
+            raise
 
     def delete_user(self, user_handle: str) -> User:
-        deleted_data = self.r.delete(f"user:{user_handle}")
-        return deleted_data
+        try:
+            deleted_data = self.r.delete(f"user:{user_handle}")
+            return deleted_data == 1
+        except redis.RedisError as e:
+            logger.error(f"Failed to delete user {user_handle}: {e}")
+            raise
 
     # AI DECISIONS
     def get_ai_decisions_by_user(self, user_handle: str) -> List[List[AIDecision]]:

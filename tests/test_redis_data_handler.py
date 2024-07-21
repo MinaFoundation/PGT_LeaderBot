@@ -68,7 +68,7 @@ class TestRedisClient(unittest.TestCase):
         self.mock_redis.set.return_value = True
         result = self.redis_client.update_user(user)
         self.mock_redis.set.assert_called_once_with(
-            f"user:{user.user_handle}", user.to_dict()
+            f"user:{user.user_handle}", json.dumps(user.to_dict())
         )
         self.assertEqual(result, user)
 
@@ -122,13 +122,13 @@ class TestRedisClient(unittest.TestCase):
         updated_user_data = user_data.copy()
         updated_user_data["github_name"] = update_github_name
         self.mock_redis.set.assert_called_once_with(
-            f"user:{user_handle}", updated_user_data
+            f"user:{user_handle}", json.dumps(user_data)
         )
         self.assertEqual(result.github_name, update_github_name)
 
     def test_update_repositories(self):
         user_handle = "test_user"
-        repositories = ["repo1", "repo3"]
+        repositories = ["repo1", "repo3", "repo4"]
         user_data = {
             "user_handle": user_handle,
             "github_name": "test_github",
@@ -141,7 +141,7 @@ class TestRedisClient(unittest.TestCase):
         updated_user_data = user_data.copy()
         updated_user_data["repositories"] = repositories
         self.mock_redis.set.assert_called_once_with(
-            f"user:{user_handle}", updated_user_data
+            f"user:{user_handle}", json.dumps(updated_user_data)
         )
         self.assertEqual(result.repositories, repositories)
 
