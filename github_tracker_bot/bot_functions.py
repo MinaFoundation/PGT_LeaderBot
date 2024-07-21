@@ -40,10 +40,13 @@ def count_qualified_contributions_by_date(full_result, since_date, until_date):
             decision_date = parser.isoparse(decision.date).replace(tzinfo=None)
             if since_date <= decision_date <= until_date:
                 if decision.response.is_qualified:
-                    qualified_days.add(decision_date.date().strftime('%Y-%m-%d'))
+                    qualified_days.add(decision_date.date().strftime("%Y-%m-%d"))
 
     sorted_qualified_days = sorted(qualified_days)
-    return {"qualified_days": sorted_qualified_days, "count": len(sorted_qualified_days)}
+    return {
+        "qualified_days": sorted_qualified_days,
+        "count": len(sorted_qualified_days),
+    }
 
 
 async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_date):
@@ -203,11 +206,14 @@ def convert_to_dict(data):
         return {key: convert_to_dict(value) for key, value in asdict(data).items()}
     elif isinstance(data, set):
         return list(data)
+    elif isinstance(data, bool):
+        return str(data)
     elif isinstance(data, (rd.AIDecision, rd.DailyContributionResponse)):
         return asdict(data)
     else:
         return data
-    
+
+
 def write_to_json(data, filename):
     with open(filename, "w") as f:
         json.dump(data, f, indent=5)
@@ -219,7 +225,6 @@ def write_full_to_json(data, filename):
 
     with open(filename, "w") as json_file:
         json.dump(dict_data, json_file, indent=4)
-
 
 
 if __name__ == "__main__":

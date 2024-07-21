@@ -50,7 +50,7 @@ class User:
     )
     qualified_daily_contribution_dates = set()
     qualified_daily_contribution_streak: int = 0
-    ai_decisions: List[AIDecision] = field(default_factory=list)
+    ai_decisions: List[List[AIDecision]] = field(default_factory=list)
 
     def validate(self) -> bool:
         if not isinstance(self.repositories, list) or not all(
@@ -92,26 +92,22 @@ class RedisClient:
             raise ConnectionError("Failed to connect to Redis")
 
     def save_user(self, user: User):
-        if user.validate():
-            self.r.hset(f"user:{user.user_handle}", user.__dict__)
+        pass
 
     def get_user(self, user_handle: str) -> User:
-        data = self.r.hgetall(f"user:{user_handle}")
-        if data:
-            user_dict = {
-                k.decode("utf-8"): (
-                    json.loads(v)
-                    if k
-                    in ["repositories", "qualified_daily_contribution_number_by_month"]
-                    else v.decode("utf-8")
-                )
-                for k, v in data.items()
-            }
-            return User(**user_dict)
-        return None
-    
+        pass
+
     def delete_user(self, user_handle: str) -> User:
         deleted_data = self.r.delete(f"user:{user_handle}")
         return deleted_data
 
+    def get_ai_decisions_by_user(self, user_handle: str) -> List[List[AIDecision]]:
+        user = self.get_user(user_handle)
+        if user:
+            return user.ai_decisions
+        return []
 
+    def get_ai_decisions_by_user_and_daterange(
+        self, user_handle: str, since_data, until_date
+    ) -> List[List[AIDecision]]:
+        pass
