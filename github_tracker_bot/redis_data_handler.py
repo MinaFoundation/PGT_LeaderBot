@@ -114,7 +114,7 @@ class RedisClient:
         try:
             user_data = self.r.get(f"user:{user_handle}")
             if user_data:
-                user_dict = json.loads(user_data)
+                user_dict = user_data
                 return User(**user_dict)
             return None
         except redis.RedisError as e:
@@ -122,13 +122,54 @@ class RedisClient:
             raise
 
     def create_user(self, user: User) -> User:
-        pass
+        try:
+            if not user.validate():
+                raise ValueError("Invalid user data")
+            user_data = json.dumps(user.to_dict())
+            self.r.set(f"user:{user.user_handle}", user_data)
+            return user
+        except redis.RedisError as e:
+            logger.error(f"Failed to create user {user.user_handle}: {e}")
+            raise
+        except ValueError as e:
+            logger.error(e)
+            raise
 
     def update_user(self, user: User) -> User:
-        pass
+        try:
+            if not self.r.exists(f"user:{user.user_handle}"):
+                raise KeyError(f"User {user.user_handle} does not exist")
+            if not user.validate():
+                raise ValueError("Invalid user data")
+            user_data = json.dumps(user.to_dict())
+            self.r.set(f"user:{user.user_handle}", user_data)
+            return user
+        except redis.RedisError as e:
+            logger.error(f"Failed to update user {user.user_handle}: {e}")
+            raise
+        except KeyError as e:
+            logger.error(e)
+            raise
+        except ValueError as e:
+            logger.error(e)
+            raise
 
     def update_user_handle(self, user_handle: str, updated_user_handle: str) -> User:
-        pass
+        try:
+            if not self.r.exists(f"user:{user_handle}"):
+                raise KeyError(f"User {user_handle} does not exist")
+            user_data = self.r.get(f"user:{user_handle}")
+            user_dict = user_data
+            user_dict["user_handle"] = updated_user_handle
+            self.r.set(f"user:{updated_user_handle}", json.dumps(user_dict))
+            self.r.delete(f"user:{user_handle}")
+            return User(**user_dict)
+        except redis.RedisError as e:
+            logger.error(f"Failed to update user handle from {user_handle} to {updated_user_handle}: {e}")
+            raise
+        except KeyError as e:
+            logger.error(e)
+            raise
 
     def update_github_name(self, user_handle: str, update_github_name: str) -> User:
         pass

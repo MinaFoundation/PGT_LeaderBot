@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest.mock import patch, MagicMock
 from github_tracker_bot.redis_data_handler import (
@@ -25,7 +26,7 @@ class TestRedisClient(unittest.TestCase):
         self.mock_redis.set.return_value = True
         result = self.redis_client.create_user(user)
         self.mock_redis.set.assert_called_once_with(
-            f"user:{user.user_handle}", user.to_dict()
+            f"user:{user.user_handle}", json.dumps(user.to_dict())
         )
         self.assertEqual(result, user)
 
@@ -102,7 +103,7 @@ class TestRedisClient(unittest.TestCase):
         result = self.redis_client.update_user_handle(user_handle, updated_user_handle)
         self.mock_redis.get.assert_called_once_with(f"user:{user_handle}")
         self.mock_redis.set.assert_called_once_with(
-            f"user:{updated_user_handle}", user_data
+            f"user:{updated_user_handle}", json.dumps(user_data)
         )
         self.assertEqual(result.user_handle, updated_user_handle)
 
