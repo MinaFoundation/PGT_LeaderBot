@@ -59,19 +59,22 @@ class User:
             logger.error("Invalid repository list")
             return False
         return True
-    
+
     def to_dict(self):
         return {
             "user_handle": self.user_handle,
             "github_name": self.github_name,
             "repositories": self.repositories,
             "ai_decisions": [
-                [decision.to_dict() for decision in decisions] for decisions in self.ai_decisions
+                [decision.to_dict() for decision in decisions]
+                for decisions in self.ai_decisions
             ],
             "total_daily_contribution_number": self.total_daily_contribution_number,
             "total_qualified_daily_contribution_number": self.total_qualified_daily_contribution_number,
             "qualified_daily_contribution_number_by_month": self.qualified_daily_contribution_number_by_month,
-            "qualified_daily_contribution_dates": list(self.qualified_daily_contribution_dates),
+            "qualified_daily_contribution_dates": list(
+                self.qualified_daily_contribution_dates
+            ),
             "qualified_daily_contribution_streak": self.qualified_daily_contribution_streak,
         }
 
@@ -138,7 +141,9 @@ class RedisClient:
     ) -> List[List[AIDecision]]:
         pass
 
-    def add_ai_decisions_by_user(self, user_handle: str, ai_decisions: List[AIDecision]):
+    def add_ai_decisions_by_user(
+        self, user_handle: str, ai_decisions: List[AIDecision]
+    ):
         pass
 
     # CONTRIBUTION DATAS
