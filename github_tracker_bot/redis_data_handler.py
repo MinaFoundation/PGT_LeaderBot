@@ -102,7 +102,7 @@ def create_ai_decisions_class(data):
 class RedisClient:
     def __init__(self, host="localhost", port=6379, db=0, decode_responses=True):
         try:
-            self.r = redis.Redis(host=host, port=port, db=db)
+            self.r = redis.Redis(host=host, port=port, db=db, decode_responses=True)
             self.r.ping()
             logger.info("Connected to Redis")
         except redis.RedisError as e:
@@ -111,7 +111,15 @@ class RedisClient:
 
     # USER
     def get_user(self, user_handle: str) -> User:
-        pass
+        try:
+            user_data = self.r.get(f"user:{user_handle}")
+            if user_data:
+                user_dict = json.loads(user_data)
+                return User(**user_dict)
+            return None
+        except redis.RedisError as e:
+            logger.error(f"Failed to get user {user_handle}: {e}")
+            raise
 
     def create_user(self, user: User) -> User:
         pass
