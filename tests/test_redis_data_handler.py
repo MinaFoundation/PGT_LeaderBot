@@ -62,7 +62,7 @@ class TestRedisClient(unittest.TestCase):
         self.assertIsNone(user)
 
     @patch.object(RedisClient, 'get_user')
-    def test_getdel_user(self, mock_get_user):
+    def test_delete_user(self, mock_get_user):
         user_handle = "test_user"
         user_data = User(
             user_handle=user_handle,
@@ -77,6 +77,19 @@ class TestRedisClient(unittest.TestCase):
 
         self.mock_redis.delete.assert_called_once_with(f"user:{user_handle}")
         self.assertEqual(removed_data, user_data)
+
+    @patch.object(RedisClient, 'get_user')
+    def test_delete_nonexists_user(self, mock_get_user):
+        user_handle = "nonexistent_user"
+        mock_get_user.return_value = None
+
+        self.mock_redis.delete.return_value = None
+
+        removed_data = self.redis_client.delete_user(user_handle)
+
+        self.mock_redis.delete.assert_called_once_with(f"user:{user_handle}")
+        self.assertIsNone(removed_data)
+
 
 
 if __name__ == "__main__":
