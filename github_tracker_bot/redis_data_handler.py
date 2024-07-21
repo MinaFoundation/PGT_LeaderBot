@@ -165,7 +165,9 @@ class RedisClient:
             self.r.delete(f"user:{user_handle}")
             return User(**user_dict)
         except redis.RedisError as e:
-            logger.error(f"Failed to update user handle from {user_handle} to {updated_user_handle}: {e}")
+            logger.error(
+                f"Failed to update user handle from {user_handle} to {updated_user_handle}: {e}"
+            )
             raise
         except KeyError as e:
             logger.error(e)
