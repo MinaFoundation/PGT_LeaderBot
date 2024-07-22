@@ -1,3 +1,4 @@
+from datetime import datetime
 import sys
 import os
 
@@ -254,9 +255,30 @@ class MongoDBManagement:
             raise
 
     def get_ai_decisions_by_user_and_daterange(
-        self, user_handle: str, since_data, until_date
+        self, user_handle: str, since_date, until_date
     ) -> List[List[AIDecision]]:
-        pass
+        """Retrieves AI decisions for a specific user within a date range."""
+        try:
+            user = self.get_user(user_handle)
+            if not user:
+                return []
+
+            since_dt = datetime.strptime(since_date, "%Y-%m-%d")
+            until_dt = datetime.strptime(until_date, "%Y-%m-%d")
+
+            filtered_decisions = []
+            for decision_list in user.ai_decisions:
+                filtered_list = [
+                    decision for decision in decision_list
+                    if since_dt <= datetime.strptime(decision.date, "%Y-%m-%d") <= until_dt
+                ]
+                if filtered_list:
+                    filtered_decisions.append(filtered_list)
+
+            return filtered_decisions
+        except Exception as e:
+            logger.error(f"Failed to get AI decisions for user {user_handle} in date range: {e}")
+            raise
 
     # CONTRIBUTION DATAS
     def get_total_daily_contribution_number(self, user_handle: str) -> int:

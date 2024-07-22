@@ -221,10 +221,18 @@ class TestMongoDBManagement(unittest.TestCase):
         ]
         self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions_1)
         self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions_2)
-        decisions = self.mongo_handler.get_ai_decisions_by_user_and_daterange(
+
+        decisions_frame_1 = self.mongo_handler.get_ai_decisions_by_user_and_daterange(
             "test_handle", "2023-07-19", "2023-07-21"
         )
-        self.assertEqual(len(decisions), 2)
+        length_of_decision_frame_1 = sum(len(sublist) for sublist in decisions_frame_1)
+        self.assertEqual(length_of_decision_frame_1, 2)
+
+        decisions_frame_2 = self.mongo_handler.get_ai_decisions_by_user_and_daterange(
+            "test_handle", "2023-07-19", "2024-07-21"
+        )
+        length_of_decision_frame_2 = sum(len(sublist) for sublist in decisions_frame_2)
+        self.assertEqual(length_of_decision_frame_2, 4)
 
     def test_add_ai_decisions_by_user(self):
         self.mongo_handler.create_user(self.test_user)
