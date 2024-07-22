@@ -163,13 +163,68 @@ class TestMongoDBManagement(unittest.TestCase):
         self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions)
         decisions = self.mongo_handler.get_ai_decisions_by_user("test_handle")
         self.assertEqual(len(decisions[0]), 2)
-        self.assertEqual(decisions[0][0]["response"]["is_qualified"], True)
+        self.assertEqual(decisions[0][0].response.is_qualified, True)
 
         user = self.mongo_handler.get_user("test_handle")
         self.assertIsInstance(user, User)
 
     def test_get_ai_decisions_by_user_and_daterange(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+
+        ai_decisions_1 = [
+            AIDecision(
+                username="test_handle",
+                repository="repo1",
+                date="2023-07-20",
+                response=DailyContributionResponse(
+                    username="test_handle",
+                    date="2023-07-20",
+                    is_qualified=True,
+                    explanation="Valid contribution",
+                ),
+            ),
+            AIDecision(
+                username="test_handle",
+                repository="repo1",
+                date="2023-07-23",
+                response=DailyContributionResponse(
+                    username="test_handle",
+                    date="2023-07-23",
+                    is_qualified=True,
+                    explanation="Valid contribution",
+                ),
+            ),
+        ]
+        ai_decisions_2 = [
+            AIDecision(
+                username="test_handle",
+                repository="repo1",
+                date="2023-07-21",
+                response=DailyContributionResponse(
+                    username="test_handle",
+                    date="2023-07-21",
+                    is_qualified=True,
+                    explanation="Valid contribution",
+                ),
+            ),
+            AIDecision(
+                username="test_handle",
+                repository="repo2",
+                date="2023-07-22",
+                response=DailyContributionResponse(
+                    username="test_handle",
+                    date="2023-07-22",
+                    is_qualified=True,
+                    explanation="Valid contribution",
+                ),
+            ),
+        ]
+        self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions_1)
+        self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions_2)
+        decisions = self.mongo_handler.get_ai_decisions_by_user_and_daterange(
+            "test_handle", "2023-07-19", "2023-07-21"
+        )
+        self.assertEqual(len(decisions), 2)
 
     def test_add_ai_decisions_by_user(self):
         self.mongo_handler.create_user(self.test_user)
@@ -192,15 +247,19 @@ class TestMongoDBManagement(unittest.TestCase):
         self.assertTrue(result)
 
         user = self.mongo_handler.get_user("test_handle")
-        self.assertEqual(len(user.ai_decisions), 1)
 
-        print(result)
-        print(user)
+        self.assertEqual(len(user.ai_decisions), 1)
         self.assertEqual(user, result)
 
     # CONTRIBUTION DATA CASES
     def test_get_total_daily_contribution_number(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        self.mongo_handler.update_field(
+            self.test_user.user_handle, "total_daily_contribution_number", 5
+        )
+
+        total = self.mongo_handler.get_total_daily_contribution_number("test_handle")
+        self.assertEqual(total, 5)
 
     def test_set_total_daily_contribution_number(self):
         pass

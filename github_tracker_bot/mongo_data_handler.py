@@ -84,6 +84,35 @@ class User:
             ),
             "qualified_daily_contribution_streak": self.qualified_daily_contribution_streak,
         }
+    
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> 'User':
+        """Creates a User instance from a dictionary."""
+        ai_decisions = [
+            [AIDecision(
+                username=decision["username"],
+                repository=decision["repository"],
+                date=decision["date"],
+                response=DailyContributionResponse(
+                    username=decision["response"]["username"],
+                    date=decision["response"]["date"],
+                    is_qualified=decision["response"]["is_qualified"],
+                    explanation=decision["response"]["explanation"]
+                )
+            ) for decision in decisions]
+            for decisions in data.get("ai_decisions", [])
+        ]
+        return User(
+            user_handle=data["user_handle"],
+            github_name=data["github_name"],
+            repositories=data.get("repositories", []),
+            ai_decisions=ai_decisions,
+            total_daily_contribution_number=data.get("total_daily_contribution_number", 0),
+            total_qualified_daily_contribution_number=data.get("total_qualified_daily_contribution_number", 0),
+            qualified_daily_contribution_number_by_month=data.get("qualified_daily_contribution_number_by_month", {}),
+            qualified_daily_contribution_dates=set(data.get("qualified_daily_contribution_dates", [])),
+            qualified_daily_contribution_streak=data.get("qualified_daily_contribution_streak", 0)
+        )
 
 
 def create_ai_decisions_class(data):
@@ -122,27 +151,7 @@ class MongoDBManagement:
         try:
             user_data = self.collection.find_one({"user_handle": user_handle})
             if user_data:
-                user = User(
-                    user_handle=user_data["user_handle"],
-                    github_name=user_data["github_name"],
-                    repositories=user_data.get("repositories", []),
-                    ai_decisions=user_data.get("ai_decisions", []),
-                    total_daily_contribution_number=user_data.get(
-                        "total_daily_contribution_number", 0
-                    ),
-                    total_qualified_daily_contribution_number=user_data.get(
-                        "total_qualified_daily_contribution_number", 0
-                    ),
-                    qualified_daily_contribution_number_by_month=user_data.get(
-                        "qualified_daily_contribution_number_by_month", {}
-                    ),
-                    qualified_daily_contribution_dates=set(
-                        user_data.get("qualified_daily_contribution_dates", [])
-                    ),
-                    qualified_daily_contribution_streak=user_data.get(
-                        "qualified_daily_contribution_streak", 0
-                    ),
-                )
+                user = User.from_dict(user_data)
 
                 if not user.validate():
                     logger.error("Invalid user data")
