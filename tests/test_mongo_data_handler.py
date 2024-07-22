@@ -303,16 +303,123 @@ class TestMongoDBManagement(unittest.TestCase):
         self.assertEqual(user.total_qualified_daily_contribution_number, 10)
 
     def test_get_qualified_daily_contribution_number_by_month(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        contributions_by_month = {
+            "2023-07": 5,
+            "2023-08": 7,
+        }
+        self.mongo_handler.update_field(
+            self.test_user.user_handle,
+            "qualified_daily_contribution_number_by_month",
+            contributions_by_month,
+        )
+
+        result = self.mongo_handler.get_qualified_daily_contribution_number_by_month(
+            "test_handle"
+        )
+        self.assertEqual(result, contributions_by_month)
 
     def test_set_qualified_daily_contribution_number_by_month(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        contributions_by_month = {
+            "2023-07": 5,
+            "2023-08": 7,
+        }
+
+        result = self.mongo_handler.set_qualified_daily_contribution_number_by_month(
+            "test_handle", contributions_by_month
+        )
+        self.assertTrue(result)
+
+        user = self.mongo_handler.get_user("test_handle")
+        self.assertEqual(
+            user.qualified_daily_contribution_number_by_month, contributions_by_month
+        )
+
+    def test_add_qualified_daily_contribution_number_by_month(self):
+        self.mongo_handler.create_user(self.test_user)
+        contributions_by_month = {
+            "2023-07": 5,
+            "2023-08": 7,
+        }
+        self.mongo_handler.update_field(
+            self.test_user.user_handle,
+            "qualified_daily_contribution_number_by_month",
+            contributions_by_month,
+        )
+
+        self.mongo_handler.add_qualified_daily_contribution_number_by_month(
+            "test_handle", "2023", "09", 10
+        )
+
+        user = self.mongo_handler.get_user("test_handle")
+        expected_contributions_by_month = {
+            "2023-07": 5,
+            "2023-08": 7,
+            "2023-09": 10,
+        }
+        self.assertEqual(
+            user.qualified_daily_contribution_number_by_month,
+            expected_contributions_by_month,
+        )
+
+        self.mongo_handler.add_qualified_daily_contribution_number_by_month(
+            "test_handle", "2023", "08", 15
+        )
+
+        expected_contributions_by_month["2023-08"] = 15
+        user = self.mongo_handler.get_user("test_handle")
+        self.assertEqual(
+            user.qualified_daily_contribution_number_by_month,
+            expected_contributions_by_month,
+        )
 
     def test_get_qualified_daily_contribution_dates(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        self.test_user.qualified_daily_contribution_dates = {
+            "2023-07-21": 1,
+            "2024-07-11": 1,
+        }
+        self.mongo_handler.update_field(
+            self.test_user.user_handle,
+            "qualified_daily_contribution_dates",
+            self.test_user.qualified_daily_contribution_dates,
+        )
+
+        dates = self.mongo_handler.get_qualified_daily_contribution_dates("test_handle")
+        self.assertEqual(set(dates), {"2023-07-21", "2024-07-11"})
 
     def test_set_qualified_daily_contribution_dates(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        contribution_dates = ["2023-07-01", "2023-07-02", "2023-07-03"]
+
+        result = self.mongo_handler.set_qualified_daily_contribution_dates(
+            "test_handle", contribution_dates
+        )
+        self.assertTrue(result)
+
+        user = self.mongo_handler.get_user("test_handle")
+        self.assertEqual(
+            user.qualified_daily_contribution_dates, set(contribution_dates)
+        )
+
+    def test_add_qualified_daily_contribution_dates(self):
+        self.mongo_handler.create_user(self.test_user)
+
+        initial_dates = ["2023-07-01", "2023-07-02"]
+        self.mongo_handler.set_qualified_daily_contribution_dates(
+            self.test_user.user_handle, initial_dates
+        )
+
+        new_dates = ["2023-07-03", "2023-07-04"]
+        result = self.mongo_handler.add_qualified_daily_contribution_dates(
+            self.test_user.user_handle, new_dates
+        )
+        self.assertTrue(result)
+
+        expected_dates = set(initial_dates + new_dates)
+        user = self.mongo_handler.get_user(self.test_user.user_handle)
+        self.assertEqual(set(user.qualified_daily_contribution_dates), expected_dates)
 
     def test_get_qualified_daily_contribution_streak(self):
         self.mongo_handler.create_user(self.test_user)

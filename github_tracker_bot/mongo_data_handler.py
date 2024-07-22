@@ -6,7 +6,7 @@ import json
 import config
 
 from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -364,20 +364,118 @@ class MongoDBManagement:
     def get_qualified_daily_contribution_number_by_month(
         self, user_handle: str
     ) -> Dict[str, int]:
-        pass
+        """Retrieves the qualified daily contribution number by month for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if user:
+                return user.qualified_daily_contribution_number_by_month
+            return 0
+        except Exception as e:
+            logger.error(
+                f"Failed to get total qualified daily contribution number for user {user_handle}: {e}"
+            )
+            raise
 
     def set_qualified_daily_contribution_number_by_month(
-        self, user_handle: str, month: str, number: str
+        self, user_handle: str, set_of_data: Dict[str, int]
     ):
-        pass
+        """Sets the qualified daily contribution number by month for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if not user:
+                raise ValueError(f"User with handle '{user_handle}' does not exist")
 
-    def get_qualified_daily_contribution_dates(self, user_handle: str):
-        pass
+            user.qualified_daily_contribution_number_by_month = set_of_data
+            updated_user = self.update_user(user_handle, user)
+            return updated_user
+        except Exception as e:
+            logger.error(
+                f"Failed to set total qualified daily contribution number for user {user_handle}: {e}"
+            )
+            raise
+
+    def add_qualified_daily_contribution_number_by_month(
+        self, user_handle: str, year: str, month: str, number: int
+    ):
+        """Adds one qualified daily contribution number with year, month and number strings. If dates exists, replaces with new value."""
+        try:
+            user = self.get_user(user_handle)
+            if not user:
+                raise ValueError(f"User with handle '{user_handle}' does not exist")
+
+            current_data = user.qualified_daily_contribution_number_by_month
+
+            key = f"{year}-{month.zfill(2)}"
+
+            current_data[key] = number
+
+            user.qualified_daily_contribution_number_by_month = current_data
+            updated_user = self.update_user(user_handle, user)
+
+            return updated_user
+        except Exception as e:
+            logger.error(
+                f"Failed to add qualified daily contribution number by month for user {user_handle}: {e}"
+            )
+            raise
+
+    def get_qualified_daily_contribution_dates(self, user_handle: str) -> set:
+        """Retrieves the qualified daily contribution dates for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if user:
+                return user.qualified_daily_contribution_dates
+            return 0
+        except Exception as e:
+            logger.error(
+                f"Failed to get total qualified daily contribution dates {user_handle}: {e}"
+            )
+            raise
 
     def set_qualified_daily_contribution_dates(
-        self, user_handle: str, list_of_dates: List[str]
+        self, user_handle: str, set_of_dates: Union[set[str], List[str]]
     ):
-        pass
+        """Sets in a set qualified daily contribution dates"""
+        try:
+            user = self.get_user(user_handle)
+            if not user:
+                raise ValueError(f"User with handle '{user_handle}' does not exist")
+
+            set_of_dates_to_dict = dict.fromkeys(set_of_dates, 1)
+            user.qualified_daily_contribution_dates = set_of_dates_to_dict
+            updated_user = self.update_user(user_handle, user)
+            return updated_user
+        except Exception as e:
+            logger.error(
+                f"Failed to set total qualified daily contribution dates for user {user_handle}: {e}"
+            )
+            raise
+
+    def add_qualified_daily_contribution_dates(
+        self, user_handle: str, dates: List[str]
+    ):
+        """Adds date or dates to qualified daily contribution dates set"""
+        try:
+            user = self.get_user(user_handle)
+            if not user:
+                raise ValueError(f"User with handle '{user_handle}' does not exist")
+
+            new_set_dates = user.qualified_daily_contribution_dates
+
+            for date in dates:
+                new_set_dates.add(date)
+
+            updated_user = self.set_qualified_daily_contribution_dates(
+                user_handle, new_set_dates
+            )
+
+            return updated_user
+
+        except Exception as e:
+            logger.error(
+                f"Failed to add qualified daily contribution dates for user {user_handle}: {e}"
+            )
+            raise
 
     def get_qualified_daily_contribution_streak(self, user_handle: str):
         """Retrieves the qualified daily contribution streak for a specific user."""
@@ -409,4 +507,3 @@ class MongoDBManagement:
                 f"Failed to set total daily contribution number for user {user_handle}: {e}"
             )
             raise
-
