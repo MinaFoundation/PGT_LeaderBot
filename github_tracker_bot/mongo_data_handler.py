@@ -1,7 +1,6 @@
 import sys
 import os
 
-import redis
 import json
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any
@@ -99,119 +98,31 @@ def create_ai_decisions_class(data):
     return decisions
 
 
-class RedisClient:
-    def __init__(self, host="localhost", port=6379, db=0, decode_responses=True):
-        try:
-            self.r = redis.Redis(host=host, port=port, db=db, decode_responses=True)
-            self.r.ping()
-            logger.info("Connected to Redis")
-        except redis.RedisError as e:
-            logger.error(f"Redis connection failed: {e}")
-            raise ConnectionError("Failed to connect to Redis")
+class MongoClient:
+    def __init__(self):
+        pass
 
     # USER
     def get_user(self, user_handle: str) -> User:
-        try:
-            user_data = self.r.get(f"user:{user_handle}")
-            if user_data:
-                user_dict = user_data
-                return User(**user_dict)
-            return None
-        except redis.RedisError as e:
-            logger.error(f"Failed to get user {user_handle}: {e}")
-            raise
+        pass
 
     def create_user(self, user: User) -> User:
-        try:
-            if not user.validate():
-                raise ValueError("Invalid user data")
-            user_data = json.dumps(user.to_dict())
-            self.r.set(f"user:{user.user_handle}", user_data)
-            return user
-        except redis.RedisError as e:
-            logger.error(f"Failed to create user {user.user_handle}: {e}")
-            raise
-        except ValueError as e:
-            logger.error(e)
-            raise
+        pass
 
     def update_user(self, user: User) -> User:
-        try:
-            if not self.r.exists(f"user:{user.user_handle}"):
-                raise KeyError(f"User {user.user_handle} does not exist")
-            if not user.validate():
-                raise ValueError("Invalid user data")
-            user_data = json.dumps(user.to_dict())
-            self.r.set(f"user:{user.user_handle}", user_data)
-            return user
-        except redis.RedisError as e:
-            logger.error(f"Failed to update user {user.user_handle}: {e}")
-            raise
-        except KeyError as e:
-            logger.error(e)
-            raise
-        except ValueError as e:
-            logger.error(e)
-            raise
+        pass
 
     def update_user_handle(self, user_handle: str, updated_user_handle: str) -> User:
-        try:
-            if not self.r.exists(f"user:{user_handle}"):
-                raise KeyError(f"User {user_handle} does not exist")
-            user_data = self.r.get(f"user:{user_handle}")
-            user_dict = user_data
-            user_dict["user_handle"] = updated_user_handle
-            self.r.set(f"user:{updated_user_handle}", json.dumps(user_dict))
-            self.r.delete(f"user:{user_handle}")
-            return User(**user_dict)
-        except redis.RedisError as e:
-            logger.error(
-                f"Failed to update user handle from {user_handle} to {updated_user_handle}: {e}"
-            )
-            raise
-        except KeyError as e:
-            logger.error(e)
-            raise
+        pass
 
     def update_github_name(self, user_handle: str, update_github_name: str) -> User:
-        try:
-            if not self.r.exists(f"user:{user_handle}"):
-                raise KeyError(f"User {user_handle} does not exist")
-            user_data = self.r.get(f"user:{user_handle}")
-            user_dict = user_data
-            user_dict["github_name"] = update_github_name
-            self.r.set(f"user:{user_handle}", json.dumps(user_dict))
-            return User(**user_dict)
-        except redis.RedisError as e:
-            logger.error(f"Failed to update GitHub name for user {user_handle}: {e}")
-            raise
-        except KeyError as e:
-            logger.error(e)
-            raise
+        pass
 
     def update_repositories(self, user_handle: str, repositories: List[str]) -> User:
-        try:
-            if not self.r.exists(f"user:{user_handle}"):
-                raise KeyError(f"User {user_handle} does not exist")
-            user_data = self.r.get(f"user:{user_handle}")
-            user_dict = user_data
-            user_dict["repositories"] = repositories
-            self.r.set(f"user:{user_handle}", json.dumps(user_dict))
-            return User(**user_dict)
-        except redis.RedisError as e:
-            logger.error(f"Failed to update repositories for user {user_handle}: {e}")
-            raise
-        except KeyError as e:
-            logger.error(e)
-            raise
+        pass
 
     def delete_user(self, user_handle: str) -> User:
-        try:
-            deleted_data = self.r.delete(f"user:{user_handle}")
-            return deleted_data == 1
-        except redis.RedisError as e:
-            logger.error(f"Failed to delete user {user_handle}: {e}")
-            raise
+        pass
 
     # AI DECISIONS
     def get_ai_decisions_by_user(self, user_handle: str) -> List[List[AIDecision]]:

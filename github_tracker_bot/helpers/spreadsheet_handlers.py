@@ -1,6 +1,6 @@
 from typing import List, Optional
 import github_tracker_bot.read_sheet as rs
-import github_tracker_bot.redis_data_handler as rd
+import github_tracker_bot.mongo_data_handler as rd
 
 
 async def get_sheet_data(spreadsheet_id: str) -> List[dict]:

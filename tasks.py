@@ -12,8 +12,8 @@ def test(ctx):
 
 
 @task
-def testredis(ctx):
-    ctx.run(f"python -m unittest tests/test_redis_data_handler.py")
+def testmongo(ctx):
+    ctx.run(f"python -m unittest tests/test_mongo_data_handler.py")
 
 
 @task

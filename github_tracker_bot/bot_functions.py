@@ -25,7 +25,7 @@ from helpers.spreadsheet_handlers import (
     get_sheet_data,
     find_user,
 )
-import redis_data_handler as rd
+import github_tracker_bot.mongo_data_handler as rd
 from dataclasses import asdict
 
 

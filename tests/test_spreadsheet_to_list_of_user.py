@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 import config
-from github_tracker_bot.redis_data_handler import User
+from github_tracker_bot.mongo_data_handler import User
 import github_tracker_bot.helpers.spreadsheet_handlers as handlers
 
 
