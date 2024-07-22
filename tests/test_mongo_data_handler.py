@@ -24,6 +24,12 @@ class TestMongoDBManagement(unittest.TestCase):
             repositories=["repo1", "repo2"],
         )
 
+        self.test_update_user = User(
+            user_handle="updated_handle",
+            github_name="test_updated_github",
+            repositories=["repo1", "repo3", "repo4"],
+        )
+
     # CREATE CASES
     def test_create_user_valid(self):
         result = self.mongo_handler.create_user(self.test_user)
@@ -52,22 +58,58 @@ class TestMongoDBManagement(unittest.TestCase):
 
     # UPDATE CASES
     def test_update_user_exists_valid_data(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+
+        result = self.mongo_handler.update_user(self.test_user.user_handle, self.test_update_user)
+        self.assertTrue(result)
+
+        updated_user = self.mongo_handler.get_user("updated_handle")
+        self.assertEqual(updated_user["github_name"], self.test_update_user.github_name)
 
     def test_update_user_exists_invalid_data(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        self.test_user.repositories = ""
+        with self.assertRaises(ValueError):
+            self.mongo_handler.update_user(self.test_user.user_handle, self.test_user)
 
     def test_update_user_nonexists(self):
-        pass
+        non_existing_user = User(
+            user_handle="nonexistent_handle",
+            github_name="test_github",
+            repositories=["repo1", "repo2"]
+        )
+
+        result = self.mongo_handler.update_user(non_existing_user.user_handle, non_existing_user)
+        self.assertFalse(result)
 
     def test_update_user_handle(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        new_handle = "new_handle"
+        result = self.mongo_handler.update_user_handle("test_handle", new_handle)
+
+        self.assertTrue(result)
+        updated_user = self.mongo_handler.get_user(new_handle)
+
+        self.assertIsNotNone(updated_user)
+        self.assertEqual(updated_user["user_handle"], new_handle)
 
     def test_update_github_name(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        new_github_name = "new_github"
+
+        result = self.mongo_handler.update_github_name("test_handle", new_github_name)
+        self.assertTrue(result)
+        
+        updated_user = self.mongo_handler.get_user("test_handle")
+        self.assertEqual(updated_user["github_name"], new_github_name)
 
     def test_update_repositories(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        new_repositories = ["new_repo1", "new_repo2"]
+        result = self.mongo_handler.update_repositories("test_handle", new_repositories)
+        self.assertTrue(result)
+        updated_user = self.mongo_handler.get_user("test_handle")
+        self.assertEqual(updated_user["repositories"], new_repositories)
 
     # DELETE CASES
     def test_delete_user(self):

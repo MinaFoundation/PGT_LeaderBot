@@ -123,7 +123,7 @@ class MongoDBManagement:
             logger.error(f"Cannot find the user with handle '{user_handle}': {e}")
             raise
 
-    def create_user(self, user: Any) -> User:
+    def create_user(self, user: Any) -> Optional[User]:
         try:
             if not user.validate():
                 raise ValueError("Invalid user data")
@@ -141,17 +141,68 @@ class MongoDBManagement:
             logger.error(f"Failed to create user: {e}")
             raise
 
-    def update_user(self, user: User) -> User:
-        pass
+    def update_user(self, user_handle: str, update_user: User) -> Optional[User]:
+        try:
+            if not self.get_user(user_handle):
+                return None
 
-    def update_user_handle(self, user_handle: str, updated_user_handle: str) -> User:
-        pass
+            if not update_user.validate():
+                raise ValueError("Invalid user data")
 
-    def update_github_name(self, user_handle: str, update_github_name: str) -> User:
-        pass
+            update_user_dict = update_user.to_dict()
+            filter_criteria = {"user_handle": user_handle}
+            result = self.collection.update_one(filter_criteria, {"$set": update_user_dict})
+            if result.acknowledged:
+                return update_user
+            else:
+                raise RuntimeError("Failed to insert user into the database")
+        except ValueError as e:
+            logger.error(f"User validation failed: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Failed to create user: {e}")
 
-    def update_repositories(self, user_handle: str, repositories: List[str]) -> User:
-        pass
+    def update_user_handle(self, user_handle: str, updated_user_handle: str) -> str:
+        try:
+            filter_criteria = {"user_handle": user_handle}
+            result = self.collection.update_one(filter_criteria, {"$set": {"user_handle": updated_user_handle}})
+            if result.acknowledged:
+                return updated_user_handle
+            else:
+                raise RuntimeError("Failed to insert user into the database")
+        except ValueError as e:
+            logger.error(f"User validation failed: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Failed to create user: {e}")
+
+    def update_github_name(self, user_handle: str, update_github_name: str) -> str:
+        try:
+            filter_criteria = {"user_handle": user_handle}
+            result = self.collection.update_one(filter_criteria, {"$set": {"github_name": update_github_name}})
+            if result.acknowledged:
+                return update_github_name
+            else:
+                raise RuntimeError("Failed to insert user into the database")
+        except ValueError as e:
+            logger.error(f"User validation failed: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Failed to create user: {e}")
+
+    def update_repositories(self, user_handle: str, repositories: List[str]) -> List[str]:
+        try:
+            filter_criteria = {"user_handle": user_handle}
+            result = self.collection.update_one(filter_criteria, {"$set": {"repositories": repositories}})
+            if result.acknowledged:
+                return repositories
+            else:
+                raise RuntimeError("Failed to insert user into the database")
+        except ValueError as e:
+            logger.error(f"User validation failed: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Failed to create user: {e}")
 
     def delete_user(self, user_handle: str) -> User:
         pass
