@@ -85,7 +85,7 @@ class TestMongoDBManagement(unittest.TestCase):
     def test_update_user_handle(self):
         self.mongo_handler.create_user(self.test_user)
         new_handle = "new_handle"
-        result = self.mongo_handler.update_user_handle("test_handle", new_handle)
+        result = self.mongo_handler.update_field("test_handle", "user_handle", new_handle)
 
         self.assertTrue(result)
         updated_user = self.mongo_handler.get_user(new_handle)
@@ -97,26 +97,31 @@ class TestMongoDBManagement(unittest.TestCase):
         self.mongo_handler.create_user(self.test_user)
         new_github_name = "new_github"
 
-        result = self.mongo_handler.update_github_name("test_handle", new_github_name)
+        result = self.mongo_handler.update_field("test_handle", "github_name", new_github_name)
         self.assertTrue(result)
-        
+
         updated_user = self.mongo_handler.get_user("test_handle")
         self.assertEqual(updated_user["github_name"], new_github_name)
 
     def test_update_repositories(self):
         self.mongo_handler.create_user(self.test_user)
         new_repositories = ["new_repo1", "new_repo2"]
-        result = self.mongo_handler.update_repositories("test_handle", new_repositories)
+        result = self.mongo_handler.update_field("test_handle", "repositories", new_repositories)
         self.assertTrue(result)
         updated_user = self.mongo_handler.get_user("test_handle")
         self.assertEqual(updated_user["repositories"], new_repositories)
 
     # DELETE CASES
     def test_delete_user(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        result = self.mongo_handler.delete_user("test_handle")
+
+        self.assertTrue(result)
+        self.assertIsNone(self.collection.find_one({"user_handle": "test_handle"}))
 
     def test_delete_nonexists_user(self):
-        pass
+        result = self.mongo_handler.delete_user("nonexistent_handle")
+        self.assertFalse(result)
 
     # AI DECISIONS CASES
     def test_get_ai_decisions_by_user(self):

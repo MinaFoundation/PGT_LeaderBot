@@ -25,6 +25,7 @@ class DailyContributionResponse:
     explanation: str
 
     def to_dict(self):
+        """Converts the dataclass to a dictionary."""
         return asdict(self)
 
 
@@ -36,6 +37,7 @@ class AIDecision:
     response: DailyContributionResponse
 
     def to_dict(self):
+        """Converts the dataclass to a dictionary, including nested response."""
         data = asdict(self)
         data["response"] = self.response.to_dict()
         return data
@@ -52,10 +54,11 @@ class User:
     qualified_daily_contribution_number_by_month: Dict[str, int] = field(
         default_factory=dict
     )
-    qualified_daily_contribution_dates = set()
+    qualified_daily_contribution_dates: set = field(default_factory=set)
     qualified_daily_contribution_streak: int = 0
 
     def validate(self) -> bool:
+        """Validates the User instance."""
         if not isinstance(self.repositories, list) or not all(
             isinstance(repo, str) for repo in self.repositories
         ):
@@ -64,6 +67,7 @@ class User:
         return True
 
     def to_dict(self):
+        """Converts the dataclass to a dictionary."""
         return {
             "user_handle": self.user_handle,
             "github_name": self.github_name,
@@ -83,6 +87,7 @@ class User:
 
 
 def create_ai_decisions_class(data):
+    """Creates a list of AIDecision instances from a list of dictionaries."""
     decisions = []
     for entry in data:
         response_data = entry["response"]
@@ -113,7 +118,7 @@ class MongoDBManagement:
         self.collection: Collection = collection
 
     # USER
-    def get_user(self, user_handle: str) -> Optional[User]:
+    def get_user(self, user_handle: str):
         try:
             user_data = self.collection.find_one({"user_handle": user_handle})
             if user_data:
@@ -131,17 +136,15 @@ class MongoDBManagement:
             user_dict = user.to_dict()
             result = self.collection.insert_one(user_dict)
             if result.inserted_id:
-                return user_dict
+                return user
             else:
                 raise RuntimeError("Failed to insert user into the database")
-        except ValueError as e:
-            logger.error(f"User validation failed: {e}")
-            raise
         except Exception as e:
             logger.error(f"Failed to create user: {e}")
             raise
 
     def update_user(self, user_handle: str, update_user: User) -> Optional[User]:
+        """Updates an existing user in the database."""
         try:
             if not self.get_user(user_handle):
                 return None
@@ -150,62 +153,38 @@ class MongoDBManagement:
                 raise ValueError("Invalid user data")
 
             update_user_dict = update_user.to_dict()
-            filter_criteria = {"user_handle": user_handle}
-            result = self.collection.update_one(filter_criteria, {"$set": update_user_dict})
-            if result.acknowledged:
+            result = self.collection.update_one({"user_handle": user_handle}, {"$set": update_user_dict})
+            if result.modified_count > 0:
                 return update_user
             else:
-                raise RuntimeError("Failed to insert user into the database")
-        except ValueError as e:
-            logger.error(f"User validation failed: {e}")
-            raise
+                raise RuntimeError("Failed to update user in the database")
         except Exception as e:
-            logger.error(f"Failed to create user: {e}")
+            logger.error(f"Failed to update user: {e}")
+            raise
 
-    def update_user_handle(self, user_handle: str, updated_user_handle: str) -> str:
+    def update_field(self, user_handle: str, field_name: str, field_value: Any) -> Any:
+        """Updates a specific field of a user in the database."""
         try:
-            filter_criteria = {"user_handle": user_handle}
-            result = self.collection.update_one(filter_criteria, {"$set": {"user_handle": updated_user_handle}})
-            if result.acknowledged:
-                return updated_user_handle
+            result = self.collection.update_one({"user_handle": user_handle}, {"$set": {field_name: field_value}})
+            if result.modified_count > 0:
+                return field_value
             else:
-                raise RuntimeError("Failed to insert user into the database")
-        except ValueError as e:
-            logger.error(f"User validation failed: {e}")
-            raise
+                raise RuntimeError(f"Failed to update {field_name} for user {user_handle}")
         except Exception as e:
-            logger.error(f"Failed to create user: {e}")
+            logger.error(f"Failed to update {field_name}: {e}")
+            raise
 
-    def update_github_name(self, user_handle: str, update_github_name: str) -> str:
+    def delete_user(self, user_handle: str) -> Optional[str]:
+        """Deletes a user from the database."""
         try:
-            filter_criteria = {"user_handle": user_handle}
-            result = self.collection.update_one(filter_criteria, {"$set": {"github_name": update_github_name}})
-            if result.acknowledged:
-                return update_github_name
-            else:
-                raise RuntimeError("Failed to insert user into the database")
-        except ValueError as e:
-            logger.error(f"User validation failed: {e}")
-            raise
+            result = self.collection.delete_one({"user_handle": user_handle})
+            if result.deleted_count > 0:
+                return user_handle
+            return None
         except Exception as e:
-            logger.error(f"Failed to create user: {e}")
-
-    def update_repositories(self, user_handle: str, repositories: List[str]) -> List[str]:
-        try:
-            filter_criteria = {"user_handle": user_handle}
-            result = self.collection.update_one(filter_criteria, {"$set": {"repositories": repositories}})
-            if result.acknowledged:
-                return repositories
-            else:
-                raise RuntimeError("Failed to insert user into the database")
-        except ValueError as e:
-            logger.error(f"User validation failed: {e}")
+            logger.error(f"Failed to delete user: {e}")
             raise
-        except Exception as e:
-            logger.error(f"Failed to create user: {e}")
-
-    def delete_user(self, user_handle: str) -> User:
-        pass
+        
 
     # AI DECISIONS
     def get_ai_decisions_by_user(self, user_handle: str) -> List[List[AIDecision]]:
