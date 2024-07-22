@@ -123,15 +123,25 @@ class MongoDBManagement:
             user_data = self.collection.find_one({"user_handle": user_handle})
             if user_data:
                 user = User(
-                    user_handle=user_data['user_handle'],
-                    github_name=user_data['github_name'],
-                    repositories=user_data.get('repositories', []),
-                    ai_decisions=user_data.get('ai_decisions', []),
-                    total_daily_contribution_number=user_data.get('total_daily_contribution_number', 0),
-                    total_qualified_daily_contribution_number=user_data.get('total_qualified_daily_contribution_number', 0),
-                    qualified_daily_contribution_number_by_month=user_data.get('qualified_daily_contribution_number_by_month', {}),
-                    qualified_daily_contribution_dates=set(user_data.get('qualified_daily_contribution_dates', [])),
-                    qualified_daily_contribution_streak=user_data.get('qualified_daily_contribution_streak', 0)
+                    user_handle=user_data["user_handle"],
+                    github_name=user_data["github_name"],
+                    repositories=user_data.get("repositories", []),
+                    ai_decisions=user_data.get("ai_decisions", []),
+                    total_daily_contribution_number=user_data.get(
+                        "total_daily_contribution_number", 0
+                    ),
+                    total_qualified_daily_contribution_number=user_data.get(
+                        "total_qualified_daily_contribution_number", 0
+                    ),
+                    qualified_daily_contribution_number_by_month=user_data.get(
+                        "qualified_daily_contribution_number_by_month", {}
+                    ),
+                    qualified_daily_contribution_dates=set(
+                        user_data.get("qualified_daily_contribution_dates", [])
+                    ),
+                    qualified_daily_contribution_streak=user_data.get(
+                        "qualified_daily_contribution_streak", 0
+                    ),
                 )
 
                 if not user.validate():
@@ -172,7 +182,7 @@ class MongoDBManagement:
                 {"user_handle": user_handle}, {"$set": update_user_dict}
             )
             if result.modified_count > 0:
-                return update_user
+                return self.get_user(update_user_dict["user_handle"])
             else:
                 raise RuntimeError("Failed to update user in the database")
         except Exception as e:
@@ -218,7 +228,9 @@ class MongoDBManagement:
             logger.error(f"Failed to get AI decisions for user {user_handle}: {e}")
             raise
 
-    def add_ai_decisions_by_user(self, user_handle: str, ai_decisions: List[AIDecision]):
+    def add_ai_decisions_by_user(
+        self, user_handle: str, ai_decisions: List[AIDecision]
+    ):
         """Adds AI decisions to a specific user."""
         try:
             user = self.get_user(user_handle)

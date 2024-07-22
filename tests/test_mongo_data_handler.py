@@ -173,18 +173,22 @@ class TestMongoDBManagement(unittest.TestCase):
 
     def test_add_ai_decisions_by_user(self):
         self.mongo_handler.create_user(self.test_user)
-        ai_decisions = [AIDecision(
-            username="test_handle",
-            repository="repo1",
-            date="2023-07-21",
-            response=DailyContributionResponse(
+        ai_decisions = [
+            AIDecision(
                 username="test_handle",
+                repository="repo1",
                 date="2023-07-21",
-                is_qualified=True,
-                explanation="Valid contribution"
+                response=DailyContributionResponse(
+                    username="test_handle",
+                    date="2023-07-21",
+                    is_qualified=True,
+                    explanation="Valid contribution",
+                ),
             )
-        )]
-        result = self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions)
+        ]
+        result = self.mongo_handler.add_ai_decisions_by_user(
+            "test_handle", ai_decisions
+        )
         self.assertTrue(result)
 
         user = self.mongo_handler.get_user("test_handle")
@@ -193,7 +197,6 @@ class TestMongoDBManagement(unittest.TestCase):
         print(result)
         print(user)
         self.assertEqual(user, result)
-
 
     # CONTRIBUTION DATA CASES
     def test_get_total_daily_contribution_number(self):
