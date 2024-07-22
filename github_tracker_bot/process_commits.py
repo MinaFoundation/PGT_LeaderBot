@@ -54,7 +54,7 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
                     )
                     return None
     except aiohttp.ClientError as e:
-        logger.error(f"Client error while fetching diff: {e}")
+        logger.error(f"Client error while fetching diff for repo {repo}: {e}")
         raise
     except asyncio.TimeoutError:
         logger.error("Request timed out while fetching diff")
