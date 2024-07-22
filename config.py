@@ -11,6 +11,9 @@ GOOGLE_CREDENTIALS = "leaderbot-kr-6dc75af94571.json"
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
+MONGO_HOST = os.getenv("MONGO_HOST")
+MONGO_DB = os.getenv("MONGO_DB")
+
 if LOG_LEVEL not in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
     print(f"Invalid log level '{LOG_LEVEL}', defaulting to 'INFO'")
     LOG_LEVEL = "INFO"

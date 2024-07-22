@@ -2,11 +2,15 @@ import sys
 import os
 
 import json
+import config
+
 from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from pymongo import MongoClient
+from pymongo.collection import Collection
 
 from log_config import get_logger
 
@@ -98,16 +102,44 @@ def create_ai_decisions_class(data):
     return decisions
 
 
-class MongoClient:
-    def __init__(self):
-        pass
+def get_database():
+    client = MongoClient(config.MONGO_HOST)
+    return client[config.MONGO_DB]
+
+
+class MongoDBManagement:
+    def __init__(self, db, collection):
+        self.db = db
+        self.collection: Collection = collection
 
     # USER
-    def get_user(self, user_handle: str) -> User:
-        pass
+    def get_user(self, user_handle: str) -> Optional[User]:
+        try:
+            user_data = self.collection.find_one({"user_handle": user_handle})
+            if user_data:
+                return user_data
+            return None
+        except Exception as e:
+            logger.error(f"Cannot find the user with handle '{user_handle}': {e}")
+            raise
 
-    def create_user(self, user: User) -> User:
-        pass
+    def create_user(self, user: Any) -> User:
+        try:
+            if not user.validate():
+                raise ValueError("Invalid user data")
+
+            user_dict = user.to_dict()
+            result = self.collection.insert_one(user_dict)
+            if result.inserted_id:
+                return user_dict
+            else:
+                raise RuntimeError("Failed to insert user into the database")
+        except ValueError as e:
+            logger.error(f"User validation failed: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Failed to create user: {e}")
+            raise
 
     def update_user(self, user: User) -> User:
         pass
