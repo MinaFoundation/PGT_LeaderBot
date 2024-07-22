@@ -315,10 +315,26 @@ class TestMongoDBManagement(unittest.TestCase):
         pass
 
     def test_get_qualified_daily_contribution_streak(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        self.mongo_handler.update_field(
+            self.test_user.user_handle, "qualified_daily_contribution_streak", 22
+        )
+
+        total = self.mongo_handler.get_qualified_daily_contribution_streak(
+            "test_handle"
+        )
+        self.assertEqual(total, 22)
 
     def test_set_qualified_daily_contribution_streak(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+
+        result = self.mongo_handler.set_qualified_daily_contribution_streak(
+            "test_handle", 24
+        )
+        self.assertTrue(result)
+
+        user = self.mongo_handler.get_user("test_handle")
+        self.assertEqual(user.qualified_daily_contribution_streak, 24)
 
 
 if __name__ == "__main__":

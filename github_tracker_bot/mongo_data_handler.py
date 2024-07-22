@@ -380,9 +380,33 @@ class MongoDBManagement:
         pass
 
     def get_qualified_daily_contribution_streak(self, user_handle: str):
-        pass
+        """Retrieves the qualified daily contribution streak for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if user:
+                return user.qualified_daily_contribution_streak
+            return 0
+        except Exception as e:
+            logger.error(
+                f"Failed to get qualified daily contribution streak for user {user_handle}: {e}"
+            )
+            raise
 
     def set_qualified_daily_contribution_streak(
         self, user_handle: str, updated_number: str
     ):
-        pass
+        """Sets the total daily contribution streak for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if not user:
+                raise ValueError(f"User with handle '{user_handle}' does not exist")
+
+            user.qualified_daily_contribution_streak = updated_number
+            updated_user = self.update_user(user_handle, user)
+            return updated_user
+        except Exception as e:
+            logger.error(
+                f"Failed to set total daily contribution number for user {user_handle}: {e}"
+            )
+            raise
+
