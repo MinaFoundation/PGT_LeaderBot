@@ -1,9 +1,9 @@
-from datetime import datetime
 import sys
 import os
 
 import config
 
+from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any, Optional, Union
 
