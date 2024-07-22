@@ -85,22 +85,25 @@ class User:
             ),
             "qualified_daily_contribution_streak": self.qualified_daily_contribution_streak,
         }
-    
+
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> 'User':
+    def from_dict(data: Dict[str, Any]) -> "User":
         """Creates a User instance from a dictionary."""
         ai_decisions = [
-            [AIDecision(
-                username=decision["username"],
-                repository=decision["repository"],
-                date=decision["date"],
-                response=DailyContributionResponse(
-                    username=decision["response"]["username"],
-                    date=decision["response"]["date"],
-                    is_qualified=decision["response"]["is_qualified"],
-                    explanation=decision["response"]["explanation"]
+            [
+                AIDecision(
+                    username=decision["username"],
+                    repository=decision["repository"],
+                    date=decision["date"],
+                    response=DailyContributionResponse(
+                        username=decision["response"]["username"],
+                        date=decision["response"]["date"],
+                        is_qualified=decision["response"]["is_qualified"],
+                        explanation=decision["response"]["explanation"],
+                    ),
                 )
-            ) for decision in decisions]
+                for decision in decisions
+            ]
             for decisions in data.get("ai_decisions", [])
         ]
         return User(
@@ -108,11 +111,21 @@ class User:
             github_name=data["github_name"],
             repositories=data.get("repositories", []),
             ai_decisions=ai_decisions,
-            total_daily_contribution_number=data.get("total_daily_contribution_number", 0),
-            total_qualified_daily_contribution_number=data.get("total_qualified_daily_contribution_number", 0),
-            qualified_daily_contribution_number_by_month=data.get("qualified_daily_contribution_number_by_month", {}),
-            qualified_daily_contribution_dates=set(data.get("qualified_daily_contribution_dates", [])),
-            qualified_daily_contribution_streak=data.get("qualified_daily_contribution_streak", 0)
+            total_daily_contribution_number=data.get(
+                "total_daily_contribution_number", 0
+            ),
+            total_qualified_daily_contribution_number=data.get(
+                "total_qualified_daily_contribution_number", 0
+            ),
+            qualified_daily_contribution_number_by_month=data.get(
+                "qualified_daily_contribution_number_by_month", {}
+            ),
+            qualified_daily_contribution_dates=set(
+                data.get("qualified_daily_contribution_dates", [])
+            ),
+            qualified_daily_contribution_streak=data.get(
+                "qualified_daily_contribution_streak", 0
+            ),
         )
 
 
@@ -269,15 +282,20 @@ class MongoDBManagement:
             filtered_decisions = []
             for decision_list in user.ai_decisions:
                 filtered_list = [
-                    decision for decision in decision_list
-                    if since_dt <= datetime.strptime(decision.date, "%Y-%m-%d") <= until_dt
+                    decision
+                    for decision in decision_list
+                    if since_dt
+                    <= datetime.strptime(decision.date, "%Y-%m-%d")
+                    <= until_dt
                 ]
                 if filtered_list:
                     filtered_decisions.append(filtered_list)
 
             return filtered_decisions
         except Exception as e:
-            logger.error(f"Failed to get AI decisions for user {user_handle} in date range: {e}")
+            logger.error(
+                f"Failed to get AI decisions for user {user_handle} in date range: {e}"
+            )
             raise
 
     # CONTRIBUTION DATAS
