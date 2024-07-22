@@ -87,7 +87,7 @@ class User:
 
 
 def create_ai_decisions_class(data):
-    """Creates a list of AIDecision instances from a list of dictionaries."""
+    """Creates a list of AIDecisions instances from a list of dictionaries."""
     decisions = []
     for entry in data:
         response_data = entry["response"]
@@ -118,11 +118,26 @@ class MongoDBManagement:
         self.collection: Collection = collection
 
     # USER
-    def get_user(self, user_handle: str):
+    def get_user(self, user_handle: str) -> Optional[User]:
         try:
             user_data = self.collection.find_one({"user_handle": user_handle})
             if user_data:
-                return user_data
+                user = User(
+                    user_handle=user_data['user_handle'],
+                    github_name=user_data['github_name'],
+                    repositories=user_data.get('repositories', []),
+                    ai_decisions=user_data.get('ai_decisions', []),
+                    total_daily_contribution_number=user_data.get('total_daily_contribution_number', 0),
+                    total_qualified_daily_contribution_number=user_data.get('total_qualified_daily_contribution_number', 0),
+                    qualified_daily_contribution_number_by_month=user_data.get('qualified_daily_contribution_number_by_month', {}),
+                    qualified_daily_contribution_dates=set(user_data.get('qualified_daily_contribution_dates', [])),
+                    qualified_daily_contribution_streak=user_data.get('qualified_daily_contribution_streak', 0)
+                )
+
+                if not user.validate():
+                    logger.error("Invalid user data")
+                    return None
+                return user
             return None
         except Exception as e:
             logger.error(f"Cannot find the user with handle '{user_handle}': {e}")
@@ -153,7 +168,9 @@ class MongoDBManagement:
                 raise ValueError("Invalid user data")
 
             update_user_dict = update_user.to_dict()
-            result = self.collection.update_one({"user_handle": user_handle}, {"$set": update_user_dict})
+            result = self.collection.update_one(
+                {"user_handle": user_handle}, {"$set": update_user_dict}
+            )
             if result.modified_count > 0:
                 return update_user
             else:
@@ -165,11 +182,15 @@ class MongoDBManagement:
     def update_field(self, user_handle: str, field_name: str, field_value: Any) -> Any:
         """Updates a specific field of a user in the database."""
         try:
-            result = self.collection.update_one({"user_handle": user_handle}, {"$set": {field_name: field_value}})
+            result = self.collection.update_one(
+                {"user_handle": user_handle}, {"$set": {field_name: field_value}}
+            )
             if result.modified_count > 0:
                 return field_value
             else:
-                raise RuntimeError(f"Failed to update {field_name} for user {user_handle}")
+                raise RuntimeError(
+                    f"Failed to update {field_name} for user {user_handle}"
+                )
         except Exception as e:
             logger.error(f"Failed to update {field_name}: {e}")
             raise
@@ -184,20 +205,36 @@ class MongoDBManagement:
         except Exception as e:
             logger.error(f"Failed to delete user: {e}")
             raise
-        
 
     # AI DECISIONS
     def get_ai_decisions_by_user(self, user_handle: str) -> List[List[AIDecision]]:
-        pass
+        """Retrieves AI decisions for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if user:
+                return user.ai_decisions
+            return []
+        except Exception as e:
+            logger.error(f"Failed to get AI decisions for user {user_handle}: {e}")
+            raise
+
+    def add_ai_decisions_by_user(self, user_handle: str, ai_decisions: List[AIDecision]):
+        """Adds AI decisions to a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if not user:
+                raise ValueError(f"User with handle '{user_handle}' does not exist")
+
+            user.ai_decisions.append(ai_decisions)
+            result = self.update_user(user_handle, user)
+            return result
+        except Exception as e:
+            logger.error(f"Failed to add AI decisions for user {user_handle}: {e}")
+            raise
 
     def get_ai_decisions_by_user_and_daterange(
         self, user_handle: str, since_data, until_date
     ) -> List[List[AIDecision]]:
-        pass
-
-    def add_ai_decisions_by_user(
-        self, user_handle: str, ai_decisions: List[AIDecision]
-    ):
         pass
 
     # CONTRIBUTION DATAS

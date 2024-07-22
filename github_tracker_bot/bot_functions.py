@@ -206,8 +206,6 @@ def convert_to_dict(data):
         return {key: convert_to_dict(value) for key, value in asdict(data).items()}
     elif isinstance(data, set):
         return list(data)
-    elif isinstance(data, bool):
-        return str(data)
     elif isinstance(data, (rd.AIDecision, rd.DailyContributionResponse)):
         return asdict(data)
     else:
