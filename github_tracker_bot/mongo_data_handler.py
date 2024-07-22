@@ -2,7 +2,6 @@ from datetime import datetime
 import sys
 import os
 
-import json
 import config
 
 from dataclasses import dataclass, field, asdict
