@@ -4,8 +4,10 @@ import asyncio
 import aiohttp
 from datetime import datetime
 from dateutil import parser
-from typing import List, Optional, Dict, Any
 from github import Github
+from typing import List, Optional, Dict, Any
+
+from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -20,7 +22,13 @@ logger = get_logger(__name__)
 GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
+retry_conditions = (
+    retry_if_exception_type(aiohttp.ClientError)
+    | retry_if_exception_type(asyncio.TimeoutError)
+    | retry_if_exception_type(Exception)
+)
 
+@retry(wait=wait_fixed(2), stop=stop_after_attempt(5), retry=retry_conditions)
 async def fetch_diff(repo: str, sha: str) -> Optional[str]:
     url = f"https://api.github.com/repos/{repo}/commits/{sha}"
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
@@ -47,13 +55,13 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
                     return None
     except aiohttp.ClientError as e:
         logger.error(f"Client error while fetching diff: {e}")
-        return None
+        raise
     except asyncio.TimeoutError:
         logger.error("Request timed out while fetching diff")
-        return None
+        raise
     except Exception as e:
         logger.error(f"Unexpected error while fetching diff: {e}")
-        return None
+        raise
 
 
 def concatenate_diff_to_commit_info(

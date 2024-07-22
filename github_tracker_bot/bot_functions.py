@@ -211,6 +211,7 @@ def convert_to_dict(data):
     else:
         return data
 
+
 def create_ai_decisions_class(data):
     """Creates a list of AIDecisions instances from a list of dictionaries."""
     decisions = []
@@ -230,6 +231,7 @@ def create_ai_decisions_class(data):
         )
         decisions.append(decision)
     return decisions
+
 
 def write_to_json(data, filename):
     with open(filename, "w") as f:
