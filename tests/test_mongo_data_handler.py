@@ -270,13 +270,37 @@ class TestMongoDBManagement(unittest.TestCase):
         self.assertEqual(total, 5)
 
     def test_set_total_daily_contribution_number(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+
+        result = self.mongo_handler.set_total_daily_contribution_number(
+            "test_handle", 10
+        )
+        self.assertTrue(result)
+
+        user = self.mongo_handler.get_user("test_handle")
+        self.assertEqual(user.total_daily_contribution_number, 10)
 
     def test_get_total_qualified_daily_contribution_number(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+        self.mongo_handler.update_field(
+            self.test_user.user_handle, "total_qualified_daily_contribution_number", 3
+        )
+
+        total = self.mongo_handler.get_total_qualified_daily_contribution_number(
+            "test_handle"
+        )
+        self.assertEqual(total, 3)
 
     def test_set_total_qualified_daily_contribution_number(self):
-        pass
+        self.mongo_handler.create_user(self.test_user)
+
+        result = self.mongo_handler.set_total_qualified_daily_contribution_number(
+            "test_handle", 10
+        )
+        self.assertTrue(result)
+
+        user = self.mongo_handler.get_user("test_handle")
+        self.assertEqual(user.total_qualified_daily_contribution_number, 10)
 
     def test_get_qualified_daily_contribution_number_by_month(self):
         pass

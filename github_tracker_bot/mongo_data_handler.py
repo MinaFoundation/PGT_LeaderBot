@@ -300,20 +300,66 @@ class MongoDBManagement:
 
     # CONTRIBUTION DATAS
     def get_total_daily_contribution_number(self, user_handle: str) -> int:
-        pass
+        """Retrieves the total daily contribution number for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if user:
+                return user.total_daily_contribution_number
+            return 0
+        except Exception as e:
+            logger.error(
+                f"Failed to get total daily contribution number for user {user_handle}: {e}"
+            )
+            raise
 
     def set_total_daily_contribution_number(
         self, user_handle: str, updated_number: int
-    ) -> User:
-        pass
+    ) -> Optional[User]:
+        """Sets the total daily contribution number for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if not user:
+                raise ValueError(f"User with handle '{user_handle}' does not exist")
+
+            user.total_daily_contribution_number = updated_number
+            updated_user = self.update_user(user_handle, user)
+            return updated_user
+        except Exception as e:
+            logger.error(
+                f"Failed to set total daily contribution number for user {user_handle}: {e}"
+            )
+            raise
 
     def get_total_qualified_daily_contribution_number(self, user_handle: str) -> int:
-        pass
+        """Retrieves the total qualified daily contribution number for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if user:
+                return user.total_qualified_daily_contribution_number
+            return 0
+        except Exception as e:
+            logger.error(
+                f"Failed to get total qualified daily contribution number for user {user_handle}: {e}"
+            )
+            raise
 
     def set_total_qualified_daily_contribution_number(
         self, user_handle: str, updated_number: int
-    ) -> User:
-        pass
+    ) -> Optional[User]:
+        """Sets the total qualified daily contribution number for a specific user."""
+        try:
+            user = self.get_user(user_handle)
+            if not user:
+                raise ValueError(f"User with handle '{user_handle}' does not exist")
+
+            user.total_qualified_daily_contribution_number = updated_number
+            updated_user = self.update_user(user_handle, user)
+            return updated_user
+        except Exception as e:
+            logger.error(
+                f"Failed to set total qualified daily contribution number for user {user_handle}: {e}"
+            )
+            raise
 
     def get_qualified_daily_contribution_number_by_month(
         self, user_handle: str
