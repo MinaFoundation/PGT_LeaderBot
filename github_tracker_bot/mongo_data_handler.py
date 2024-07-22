@@ -128,27 +128,6 @@ class User:
         )
 
 
-def create_ai_decisions_class(data):
-    """Creates a list of AIDecisions instances from a list of dictionaries."""
-    decisions = []
-    for entry in data:
-        response_data = entry["response"]
-        response = DailyContributionResponse(
-            username=response_data["username"],
-            date=response_data["date"],
-            is_qualified=response_data["is_qualified"],
-            explanation=response_data["explanation"],
-        )
-        decision = AIDecision(
-            username=entry["username"],
-            repository=entry["repository"],
-            date=entry["date"],
-            response=response,
-        )
-        decisions.append(decision)
-    return decisions
-
-
 def get_database():
     client = MongoClient(config.MONGO_HOST)
     return client[config.MONGO_DB]

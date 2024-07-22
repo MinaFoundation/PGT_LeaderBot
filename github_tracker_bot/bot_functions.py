@@ -114,7 +114,7 @@ async def get_user_results_from_sheet_by_date(
 
         for ai_decisions in results:
             if ai_decisions:
-                ai_decisions_class = rd.create_ai_decisions_class(ai_decisions)
+                ai_decisions_class = create_ai_decisions_class(ai_decisions)
                 full_results.append(ai_decisions_class)
 
         logger.debug(f"Full results: {full_results}")
@@ -211,6 +211,25 @@ def convert_to_dict(data):
     else:
         return data
 
+def create_ai_decisions_class(data):
+    """Creates a list of AIDecisions instances from a list of dictionaries."""
+    decisions = []
+    for entry in data:
+        response_data = entry["response"]
+        response = rd.DailyContributionResponse(
+            username=response_data["username"],
+            date=response_data["date"],
+            is_qualified=response_data["is_qualified"],
+            explanation=response_data["explanation"],
+        )
+        decision = rd.AIDecision(
+            username=entry["username"],
+            repository=entry["repository"],
+            date=entry["date"],
+            response=response,
+        )
+        decisions.append(decision)
+    return decisions
 
 def write_to_json(data, filename):
     with open(filename, "w") as f:
