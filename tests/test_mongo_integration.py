@@ -17,7 +17,7 @@ client = MongoClient(config.MONGO_HOST)
 db = client[config.MONGO_DB]
 collection = db[config.MONGO_COLLECTION]
 
-# collection.delete_many({})
+#collection.delete_many({})
 
 mongo_manager = MongoDBManagement(db, collection)
 x = mongo_manager.get_user("berkingurcan")
