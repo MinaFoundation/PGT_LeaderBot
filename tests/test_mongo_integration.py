@@ -42,7 +42,7 @@ collection = db[config.MONGO_COLLECTION]
 # collection.delete_many({})
 
 since_date = "2024-05-01T00:00:00Z"  # ISO 8601 format
-until_date = "2024-05-30T00:00:00Z"
+until_date = "2024-05-31T00:00:00Z"
 
 
 mongo_manager = MongoDBManagement(db, collection)
