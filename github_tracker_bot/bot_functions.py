@@ -93,9 +93,7 @@ def connect_db(host, db, collection):
     mongo_manager = rd.MongoDBManagement(db, collection)
     return mongo_manager
 
-
 mongo_manager = connect_db(config.MONGO_HOST, config.MONGO_DB, config.MONGO_COLLECTION)
-
 
 async def get_user_results_from_sheet_by_date(
     username, spreadsheet_id, since_date, until_date, sheet_data_from=None
