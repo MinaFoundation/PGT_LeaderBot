@@ -142,6 +142,7 @@ async def get_user_results_from_sheet_by_date(
         ]
 
         results = await asyncio.gather(*tasks)
+        results = [result for result in results if result is not None and result != []]
 
         for ai_decisions in results:
             if ai_decisions:
@@ -206,6 +207,9 @@ async def get_result(username, repo_link, since_date, until_date):
             until_date,
         )
 
+        if not commit_infos:
+            return None
+        
         ai_decisions = []
 
         if commit_infos:
@@ -236,7 +240,7 @@ async def get_result(username, repo_link, since_date, until_date):
 
     except Exception as e:
         logger.error(f"An error occurred while getting result: {e}")
-
+        return None
 
 async def process_commit_day(username, repo_link, commits_day, commits_data):
     try:
