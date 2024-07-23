@@ -11,6 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from pymongo import MongoClient
 from pymongo.collection import Collection
+from pymongo.errors import ConnectionFailure
 
 from log_config import get_logger
 
@@ -128,11 +129,6 @@ class User:
         )
 
 
-def get_database():
-    client = MongoClient(config.MONGO_HOST)
-    return client[config.MONGO_DB]
-
-
 class MongoDBManagement:
     def __init__(self, db, collection):
         self.db = db
@@ -166,7 +162,7 @@ class MongoDBManagement:
             else:
                 raise RuntimeError("Failed to insert user into the database")
         except Exception as e:
-            logger.error(f"Failed to create user: {e}")
+            logger.error(f"Failed to create user {user.user_handle}: {e}")
             raise
 
     def update_user(self, user_handle: str, update_user: User) -> Optional[User]:
@@ -185,9 +181,9 @@ class MongoDBManagement:
             if result.modified_count > 0:
                 return self.get_user(update_user_dict["user_handle"])
             else:
-                raise RuntimeError("Failed to update user in the database")
+                raise RuntimeError(f"Failed to update user {user_handle} in the database")
         except Exception as e:
-            logger.error(f"Failed to update user: {e}")
+            logger.error(f"Failed to update user, {user_handle}: {e}")
             raise
 
     def update_field(self, user_handle: str, field_name: str, field_value: Any) -> Any:

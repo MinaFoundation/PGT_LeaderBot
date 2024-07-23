@@ -17,6 +17,11 @@ def testmongo(ctx):
 
 
 @task
+def testint(ctx):
+    ctx.run(f"python -m unittest tests/test_mongo_integration.py")
+
+
+@task
 def testss(ctx):
     ctx.run(f"python -m unittest tests/test_spreadsheet_to_list_of_user.py")
 

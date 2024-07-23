@@ -13,6 +13,7 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 MONGO_HOST = os.getenv("MONGO_HOST")
 MONGO_DB = os.getenv("MONGO_DB")
+MONGO_COLLECTION = os.getenv("MONGO_COLLECTION")
 
 if LOG_LEVEL not in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
     print(f"Invalid log level '{LOG_LEVEL}', defaulting to 'INFO'")
