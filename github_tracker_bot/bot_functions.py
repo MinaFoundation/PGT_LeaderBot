@@ -5,6 +5,8 @@ import sys
 import os
 import json
 import asyncio
+
+from dataclasses import asdict
 from collections import OrderedDict, defaultdict
 from typing import List
 
@@ -26,7 +28,7 @@ from helpers.spreadsheet_handlers import (
     find_user,
 )
 import github_tracker_bot.mongo_data_handler as rd
-from dataclasses import asdict
+from pymongo import MongoClient
 
 
 def count_qualified_contributions_by_date(full_result, since_date, until_date):
@@ -83,6 +85,18 @@ async def get_all_results_from_sheet_by_date(spreadsheet_id, since_date, until_d
         logger.error(f"An error occurred while fetching results from sheet: {e}")
 
 
+def connect_db(host, db, collection):
+    client = MongoClient(host)
+    db = client[db]
+    collection = db[collection]
+
+    mongo_manager = rd.MongoDBManagement(db, collection)
+    return mongo_manager
+
+
+mongo_manager = connect_db(config.MONGO_HOST, config.MONGO_DB, config.MONGO_COLLECTION)
+
+
 async def get_user_results_from_sheet_by_date(
     username, spreadsheet_id, since_date, until_date, sheet_data_from=None
 ):
@@ -101,9 +115,26 @@ async def get_user_results_from_sheet_by_date(
 
         users = spreadsheet_to_list_of_user(sheet_data)
         user = find_user(users, username)
+
         if not user:
             logger.error(f"User not found: {username}")
             return None
+
+        db_user = mongo_manager.get_user(user.user_handle)
+        if not db_user:
+            logger.info(f"Creating new user in the database: {user.user_handle}")
+            db_user = rd.User(
+                user_handle=user.user_handle,
+                github_name=user.github_name,
+                repositories=user.repositories,
+            )
+            try:
+                db_user = mongo_manager.create_user(db_user)
+            except Exception as e:
+                logger.error(e)
+                return None
+        else:
+            logger.info(f"User already exists in the database: {user.user_handle}")
 
         tasks = [
             get_result(user.github_name, repository, since_date, until_date)
@@ -115,6 +146,23 @@ async def get_user_results_from_sheet_by_date(
         for ai_decisions in results:
             if ai_decisions:
                 ai_decisions_class = create_ai_decisions_class(ai_decisions)
+                if db_user:
+                    logger.info(
+                        f"Updating AI Decisions for existing user in the database: {user.user_handle}"
+                    )
+                    try:
+                        u = mongo_manager.add_ai_decisions_by_user(
+                            db_user.user_handle, ai_decisions_class
+                        )
+                        if u:
+                            logger.info(
+                                f"Updated succesfully AI Decision for existing user in the database: {user.user_handle}"
+                            )
+                    except Exception as e:
+                        logger.error(
+                            f"Error encountered while updating AI Decision: {e}"
+                        )
+
                 full_results.append(ai_decisions_class)
 
         logger.debug(f"Full results: {full_results}")
@@ -123,6 +171,23 @@ async def get_user_results_from_sheet_by_date(
         qualified_contribution_count = count_qualified_contributions_by_date(
             full_results, since_date, until_date
         )
+
+        if db_user:
+            logger.info(
+                f"Adding qualified daily contribution dates for existing user in the database: {user.user_handle}"
+            )
+            try:
+                u = mongo_manager.add_qualified_daily_contribution_dates(
+                    db_user.user_handle, qualified_contribution_count["qualified_days"]
+                )
+                if u:
+                    logger.info(
+                        f"Added successfully qualified daily contribution dates for existing user in the database: {user.user_handle}"
+                    )
+            except Exception as e:
+                logger.error(
+                    f"Error encountered while adding qualified daily  contribution dates {e}"
+                )
 
         logger.debug(qualified_contribution_count)
         return full_results, qualified_contribution_count

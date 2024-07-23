@@ -181,7 +181,9 @@ class MongoDBManagement:
             if result.modified_count > 0:
                 return self.get_user(update_user_dict["user_handle"])
             else:
-                raise RuntimeError(f"Failed to update user {user_handle} in the database")
+                raise RuntimeError(
+                    f"Failed to update user {user_handle} in the database"
+                )
         except Exception as e:
             logger.error(f"Failed to update user, {user_handle}: {e}")
             raise
@@ -407,7 +409,7 @@ class MongoDBManagement:
             raise
 
     def set_qualified_daily_contribution_dates(
-        self, user_handle: str, set_of_dates: Union[set[str], List[str]]
+        self, user_handle: str, set_of_dates: Union[set, List[str]]
     ):
         """Sets in a set qualified daily contribution dates"""
         try:
@@ -416,8 +418,7 @@ class MongoDBManagement:
                 raise ValueError(f"User with handle '{user_handle}' does not exist")
 
             set_of_dates_to_dict = dict.fromkeys(set_of_dates, 1)
-            user.qualified_daily_contribution_dates = set_of_dates_to_dict
-            updated_user = self.update_user(user_handle, user)
+            updated_user = self.update_field(user_handle, "qualified_daily_contribution_dates", set_of_dates_to_dict)
             return updated_user
         except Exception as e:
             logger.error(
