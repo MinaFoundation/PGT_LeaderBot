@@ -418,7 +418,9 @@ class MongoDBManagement:
                 raise ValueError(f"User with handle '{user_handle}' does not exist")
 
             set_of_dates_to_dict = dict.fromkeys(set_of_dates, 1)
-            updated_user = self.update_field(user_handle, "qualified_daily_contribution_dates", set_of_dates_to_dict)
+            updated_user = self.update_field(
+                user_handle, "qualified_daily_contribution_dates", set_of_dates_to_dict
+            )
             return updated_user
         except Exception as e:
             logger.error(

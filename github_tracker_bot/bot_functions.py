@@ -209,7 +209,7 @@ async def get_result(username, repo_link, since_date, until_date):
 
         if not commit_infos:
             return None
-        
+
         ai_decisions = []
 
         if commit_infos:
@@ -241,6 +241,7 @@ async def get_result(username, repo_link, since_date, until_date):
     except Exception as e:
         logger.error(f"An error occurred while getting result: {e}")
         return None
+
 
 async def process_commit_day(username, repo_link, commits_day, commits_data):
     try:

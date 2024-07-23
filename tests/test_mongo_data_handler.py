@@ -420,7 +420,7 @@ class TestMongoDBManagement(unittest.TestCase):
         expected_dates = set(initial_dates + new_dates)
         user = self.mongo_handler.get_user(self.test_user.user_handle)
         self.assertEqual(set(user.qualified_daily_contribution_dates), expected_dates)
-    
+
     def test_add_qualified_daily_contribution_dates_from_zero(self):
         self.mongo_handler.create_user(self.test_user)
 
