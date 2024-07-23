@@ -6,6 +6,7 @@ from log_config import get_logger
 
 logger = get_logger(__name__)
 
+
 async def get_sheet_data(spreadsheet_id: str) -> List[dict]:
     sheet_data: List[dict] = rs.read_sheet(spreadsheet_id)
     return sheet_data
