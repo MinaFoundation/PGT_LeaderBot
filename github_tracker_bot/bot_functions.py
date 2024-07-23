@@ -319,7 +319,7 @@ def write_full_to_json(data, filename):
 if __name__ == "__main__":
     username = "berkingurcan"
     repo_link = "https://github.com/UmstadAI/zkappumstad"
-    since_date = "2024-05-01T00:00:00Z"  # ISO 8601 format
+    since_date = "2024-03-01T00:00:00Z"  # ISO 8601 format
     until_date = "2024-05-30T00:00:00Z"
 
     asyncio.run(
