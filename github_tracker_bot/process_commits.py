@@ -28,6 +28,7 @@ retry_conditions = (
     | retry_if_exception_type(Exception)
 )
 
+
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(5), retry=retry_conditions)
 async def fetch_diff(repo: str, sha: str) -> Optional[str]:
     url = f"https://api.github.com/repos/{repo}/commits/{sha}"
