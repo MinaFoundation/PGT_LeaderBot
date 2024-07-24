@@ -1,0 +1,26 @@
+version: '3.10'
+
+services:
+  app:
+    build: .
+    environment:
+      - GITHUB_TOKEN=your_github_token
+      - DISCORD_TOKEN=your_discord_token
+      - GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
+      - OPENAI_API_KEY=your_openai_api_key
+      - MONGO_HOST=mongodb://localhost:27017/
+      - MONGO_DB=example_db
+      - MONGO_COLLECTION=example_collection
+      - SPREADSHEET_ID=spread_sheet_id
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - .:/app
+    command: ["python", "github_tracker_bot/bot.py"]
+
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
