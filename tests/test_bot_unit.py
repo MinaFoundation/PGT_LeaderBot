@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch, AsyncMock, MagicMock
 from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
+import github_tracker_bot.bot as bot
 from github_tracker_bot.bot import (
     app,
     get_dates_for_today,
@@ -13,13 +14,13 @@ from github_tracker_bot.bot import (
     scheduler,
 )
 
-client = TestClient(app)
+client = TestClient(bot.app)
 
 
 class TestGithubTrackerBot(unittest.TestCase):
 
-    @patch("bot.get_dates_for_today")
-    @patch("bot.get_all_results_from_sheet_by_date", new_callable=AsyncMock)
+    @patch("github_tracker_bot.bot.get_dates_for_today")
+    @patch("github_tracker_bot.bot.get_all_results_from_sheet_by_date", new_callable=AsyncMock)
     def test_run_scheduled_task(self, mock_get_results, mock_get_dates):
         mock_get_dates.return_value = (
             "2023-01-01T00:00:00+00:00",
@@ -27,11 +28,11 @@ class TestGithubTrackerBot(unittest.TestCase):
         )
         mock_get_results.return_value = None
 
-        asyncio.run(run_scheduled_task())
+        asyncio.run(bot.run_scheduled_task())
         mock_get_results.assert_awaited_once()
 
     def test_get_dates_for_today(self):
-        since_date, until_date = get_dates_for_today()
+        since_date, until_date = bot.get_dates_for_today()
         today = datetime.now(timezone.utc).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
@@ -40,7 +41,7 @@ class TestGithubTrackerBot(unittest.TestCase):
         self.assertEqual(since_date, today.isoformat())
         self.assertEqual(until_date, expected_until_date.isoformat())
 
-    @patch("bot.scheduler", new_callable=AsyncMock)
+    @patch("github_tracker_bot.bot.scheduler", new_callable=AsyncMock)
     def test_control_scheduler_start(self, mock_scheduler):
         response = client.post(
             "/control-scheduler", json={"action": "start", "interval_minutes": 5}
@@ -51,13 +52,13 @@ class TestGithubTrackerBot(unittest.TestCase):
             response.json().get("message"),
         )
 
-    @patch("bot.scheduler", new_callable=AsyncMock)
+    @patch("github_tracker_bot.bot.scheduler", new_callable=AsyncMock)
     def test_control_scheduler_stop(self, mock_scheduler):
         response = client.post("/control-scheduler", json={"action": "stop"})
         self.assertEqual(response.status_code, 200)
         self.assertIn("Scheduler stopped", response.json().get("message"))
 
-    @patch("bot.get_all_results_from_sheet_by_date", new_callable=AsyncMock)
+    @patch("github_tracker_bot.bot.get_all_results_from_sheet_by_date", new_callable=AsyncMock)
     def test_run_task(self, mock_get_results):
         mock_get_results.return_value = None
         response = client.post(
@@ -75,25 +76,27 @@ class TestGithubTrackerBot(unittest.TestCase):
 
     def test_validate_datetime(self):
         with self.assertRaises(ValueError):
-            TaskTimeFrame(since="invalid-date", until="2023-01-02T00:00:00+00:00")
+            bot.TaskTimeFrame(since="invalid-date", until="2023-01-02T00:00:00+00:00")
         with self.assertRaises(ValueError):
-            TaskTimeFrame(since="2023-01-01T00:00:00+00:00", until="invalid-date")
+            bot.TaskTimeFrame(since="2023-01-01T00:00:00+00:00", until="invalid-date")
+        with self.assertRaises(ValueError):
+            bot.TaskTimeFrame(since="2023-02-29T00:00:00+00:00", until="2023-01-02T00:00:00+00:00")
 
     def test_scheduler(self):
         with patch("aioschedule.every") as mock_every, patch(
-            "bot.run_scheduled_task", new_callable=AsyncMock
+            "github_tracker_bot.bot.run_scheduled_task", new_callable=AsyncMock
         ) as mock_run_task:
             mock_job = MagicMock()
             mock_every.return_value.minutes.do.return_value = mock_job
 
             async def run_scheduler():
-                schedule_task = asyncio.create_task(scheduler(1))
+                schedule_task = asyncio.create_task(bot.scheduler(1))
                 await asyncio.sleep(0.1)
                 schedule_task.cancel()
 
             asyncio.run(run_scheduler())
             mock_every.return_value.minutes.do.assert_called_once_with(
-                run_scheduled_task
+                bot.run_scheduled_task
             )
             mock_run_task.assert_not_awaited()
 
