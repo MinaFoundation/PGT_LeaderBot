@@ -59,7 +59,7 @@ Tool that will track and rank contributions across the different Mina developer 
     invoke test
     ```
 
-8. Run github tracker bot:
+8. Run [github tracker bot](#github-tracker-bot):
     ```sh
     invoke bot
     ```
@@ -300,13 +300,29 @@ class User:
 ```
 </details>
 
+#### MongoDBManagement
+
+This class can be used to initalize and use database management. Explained [here](#database-management)
+
 
 ### Scripts
-Main scripts
+Scripts Explanation
 ### Helpers
-Helper functions
-### Database Usage
-DB usage
+Helper functions explanations
+### Database Management
+[This](./github_tracker_bot/mongo_data_handler.py) database management script provides functionalities to manage user data and AI decisions in a MongoDB database. It supports creating, reading, updating, and deleting user records, as well as managing AI decisions and contribution data associated with users.
+
+#### Features
+1. ##### User Management:
+    - **Create, Read, Update, Delete (CRUD) Operations:** Manage user records in the database including creation, retrieval, updating user details, and deletion.
+    - **Validation:** Each user instance undergoes validation to ensure data integrity before any CRUD operation.
+2. ##### AI Decision Handling:
+    - **Retrieve AI Decisions:** Fetch AI decisions based on user identity, with options to filter by date range.
+    - **Add AI Decisions:** Append new AI decisions to a user’s existing record.
+    - **Update Contribution Data:** Recalculates and updates user statistics based on new AI decisions, utilizing helper functions for detailed metrics like total and qualified contributions, monthly breakdowns, and streak calculations. These calculations made in [here.](./github_tracker_bot/helpers/helper_functions.py)
+3. ##### Contribution Data Management:
+    - **Get/Set Operations for Contribution Metrics:** Retrieve or update contribution-related metrics such as total daily contributions, qualified contributions, and contribution streaks.
+    - **Date-wise Management:** Manage specific dates for qualified contributions, allowing for additions, updates, and retrieval.
 
 
 
