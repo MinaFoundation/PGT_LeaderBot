@@ -12,7 +12,7 @@ def test(ctx):
 
 
 @task
-def testbotunit(ctx):
+def testbot(ctx):
     ctx.run(f"python -m unittest tests/test_bot_unit.py")
 
 
