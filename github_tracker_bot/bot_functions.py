@@ -174,22 +174,7 @@ async def get_user_results_from_sheet_by_date(
         )
 
         if db_user:
-            logger.info(
-                f"Adding qualified daily contribution dates for existing user in the database: {user.user_handle}"
-            )
-            try:
-                u = mongo_manager.add_qualified_daily_contribution_dates(
-                    db_user.user_handle, qualified_contribution_count["qualified_days"]
-                )
-                if u:
-                    logger.info(
-                        f"Added successfully qualified daily contribution dates for existing user in the database: {user.user_handle}"
-                    )
-            except Exception as e:
-                logger.error(
-                    f"Error encountered while adding qualified daily  contribution dates {e}"
-                )
-
+            logger.info(f"Updating contribution values for user: {db_user.user_handle}")
             try:
                 updated = mongo_manager.update_all_contribution_datas_from_ai_decisions(db_user.user_handle)
                 if updated:
@@ -327,8 +312,8 @@ def write_full_to_json(data, filename):
 if __name__ == "__main__":
     username = "berkingurcan"
     repo_link = "https://github.com/UmstadAI/zkappumstad"
-    since_date = "2024-03-01T00:00:00Z"  # ISO 8601 format
-    until_date = "2024-05-30T00:00:00Z"
+    since_date = "2024-06-01T00:00:00Z"  # ISO 8601 format
+    until_date = "2024-06-30T00:00:00Z"
 
     asyncio.run(
         get_all_results_from_sheet_by_date(
