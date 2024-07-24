@@ -155,7 +155,152 @@ This endpoint allows you to start or stop the scheduler that runs tasks at speci
 
 
 ### Classes
-Classes
+
+#### User
+The [`User`](./github_tracker_bot/mongo_data_handler.py) class is a nested dataclass designed to store and manage information about a user, including their GitHub-related activities and AI decisions regarding their contributions. This class stores 4 necessary data:
+- **user_handle**: `str`
+- **github_name**: `str`
+- **repositories**: `List[str]`
+- **ai_decisions**: `List[List[AIDecision]]`
+
+Remaining fields can be calculated using helper functions in the [helper_functions.py](./github_tracker_bot/helpers/helper_functions.py).
+
+#### AIDecision
+
+The `AIDecision` Class stores AI decision related to a user's daily contribution for specific github repository. It includes details about the repository, date, and a nested response indicating the qualification status of the contribution which is `DailyContributionResponse` Class.
+
+- **username**: `str`
+- **repository**: `str`
+- **date**: `str`
+- **response**: `DailyContributionResponse`
+
+#### DailyContributionResponse
+
+The `DailyContributionResponse` class is another dataclass to store information about a user's daily contribution response returned by OPENAI API for specific repository. It includes details about the contribution's qualification status and an AI explanation for it. 
+
+- **username**: str
+- **date**: str
+- **is_qualified**: bool
+- **explanation**: str
+
+<details>
+<summary>Click to see full code of <b>User, AIDecision and DailyContributionResponse</b> Classes 
+</summary>
+
+```py
+@dataclass
+class DailyContributionResponse:
+    username: str
+    date: str
+    is_qualified: bool
+    explanation: str
+
+    def to_dict(self):
+        """Converts the dataclass to a dictionary."""
+        return asdict(self)
+
+@dataclass
+class AIDecision:
+    username: str
+    repository: str
+    date: str
+    response: DailyContributionResponse
+
+    def to_dict(self):
+        """Converts the dataclass to a dictionary, including nested response."""
+        data = asdict(self)
+        data["response"] = self.response.to_dict()
+        return data
+
+
+@dataclass
+class User:
+    user_handle: str
+    github_name: str
+    repositories: List[str]
+    ai_decisions: List[List[AIDecision]] = field(default_factory=list)
+    total_daily_contribution_number: int = 0
+    total_qualified_daily_contribution_number: int = 0
+    qualified_daily_contribution_number_by_month: Dict[str, int] = field(
+        default_factory=dict
+    )
+    qualified_daily_contribution_dates: set = field(default_factory=set)
+    qualified_daily_contribution_streak: int = 0
+
+    def validate(self) -> bool:
+        """Validates the User instance."""
+        if not isinstance(self.repositories, list) or not all(
+            isinstance(repo, str) for repo in self.repositories
+        ):
+            logger.error("Invalid repository list")
+            return False
+        return True
+
+    def to_dict(self):
+        """Converts the dataclass to a dictionary."""
+        return {
+            "user_handle": self.user_handle,
+            "github_name": self.github_name,
+            "repositories": self.repositories,
+            "ai_decisions": [
+                [decision.to_dict() for decision in decisions]
+                for decisions in self.ai_decisions
+            ],
+            "total_daily_contribution_number": self.total_daily_contribution_number,
+            "total_qualified_daily_contribution_number": self.total_qualified_daily_contribution_number,
+            "qualified_daily_contribution_number_by_month": self.qualified_daily_contribution_number_by_month,
+            "qualified_daily_contribution_dates": list(
+                self.qualified_daily_contribution_dates
+            ),
+            "qualified_daily_contribution_streak": self.qualified_daily_contribution_streak,
+        }
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> "User":
+        """Creates a User instance from a dictionary."""
+        ai_decisions = [
+            [
+                AIDecision(
+                    username=decision["username"],
+                    repository=decision["repository"],
+                    date=decision["date"],
+                    response=DailyContributionResponse(
+                        username=decision["response"]["username"],
+                        date=decision["response"]["date"],
+                        is_qualified=decision["response"]["is_qualified"],
+                        explanation=decision["response"]["explanation"],
+                    ),
+                )
+                for decision in decisions
+            ]
+            for decisions in data.get("ai_decisions", [])
+        ]
+        return User(
+            user_handle=data["user_handle"],
+            github_name=data["github_name"],
+            repositories=data.get("repositories", []),
+            ai_decisions=ai_decisions,
+            total_daily_contribution_number=data.get(
+                "total_daily_contribution_number", 0
+            ),
+            total_qualified_daily_contribution_number=data.get(
+                "total_qualified_daily_contribution_number", 0
+            ),
+            qualified_daily_contribution_number_by_month=data.get(
+                "qualified_daily_contribution_number_by_month", {}
+            ),
+            qualified_daily_contribution_dates=set(
+                data.get("qualified_daily_contribution_dates", [])
+            ),
+            qualified_daily_contribution_streak=data.get(
+                "qualified_daily_contribution_streak", 0
+            ),
+        )
+
+```
+</details>
+
+
 ### Scripts
 Main scripts
 ### Helpers
