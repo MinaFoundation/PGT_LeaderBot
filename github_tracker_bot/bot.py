@@ -1,12 +1,18 @@
+import time
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import asyncio
 from datetime import datetime, timedelta, timezone
-import time
+
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel, Field, field_validator
 
 import aioschedule as schedule
 
-from bot_functions import get_all_results_from_sheet_by_date
+from github_tracker_bot.bot_functions import get_all_results_from_sheet_by_date
 
 import config
 from log_config import get_logger

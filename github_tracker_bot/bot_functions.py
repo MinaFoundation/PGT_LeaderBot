@@ -19,10 +19,10 @@ from log_config import get_logger
 
 logger = get_logger(__name__)
 
-from commit_scraper import get_user_commits_in_repo
-from process_commits import process_commits
-from ai_decide_commits import decide_daily_commits
-from helpers.spreadsheet_handlers import (
+from github_tracker_bot.commit_scraper import get_user_commits_in_repo
+from github_tracker_bot.process_commits import process_commits
+from github_tracker_bot.ai_decide_commits import decide_daily_commits
+from github_tracker_bot.helpers.spreadsheet_handlers import (
     spreadsheet_to_list_of_user,
     get_sheet_data,
     find_user,

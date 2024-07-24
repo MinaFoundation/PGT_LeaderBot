@@ -12,8 +12,8 @@ from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_t
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import config
-import helpers.extract_unnecessary_diff as lib
-import helpers.handle_daily_commits_exceed_data as exceed_handler
+import github_tracker_bot.helpers.extract_unnecessary_diff as lib
+import github_tracker_bot.helpers.handle_daily_commits_exceed_data as exceed_handler
 
 from log_config import get_logger
 

@@ -1,8 +1,14 @@
 import unittest
 from fastapi.testclient import TestClient
-from github_tracker_bot.bot import app
 
-client = TestClient(app)
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../'))
+
+import github_tracker_bot.bot as bot
+
+
+client = TestClient(bot.app)
 
 class TestIntegration(unittest.TestCase):
     
