@@ -11,7 +11,10 @@ client = TestClient(bot.app)
 class TestGithubTrackerBot(unittest.TestCase):
 
     @patch("github_tracker_bot.bot.get_dates_for_today")
-    @patch("github_tracker_bot.bot.get_all_results_from_sheet_by_date", new_callable=AsyncMock)
+    @patch(
+        "github_tracker_bot.bot.get_all_results_from_sheet_by_date",
+        new_callable=AsyncMock,
+    )
     def test_run_scheduled_task(self, mock_get_results, mock_get_dates):
         mock_get_dates.return_value = (
             "2023-01-01T00:00:00+00:00",
@@ -49,7 +52,10 @@ class TestGithubTrackerBot(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Scheduler stopped", response.json().get("message"))
 
-    @patch("github_tracker_bot.bot.get_all_results_from_sheet_by_date", new_callable=AsyncMock)
+    @patch(
+        "github_tracker_bot.bot.get_all_results_from_sheet_by_date",
+        new_callable=AsyncMock,
+    )
     def test_run_task(self, mock_get_results):
         mock_get_results.return_value = None
         response = client.post(
@@ -71,7 +77,9 @@ class TestGithubTrackerBot(unittest.TestCase):
         with self.assertRaises(ValueError):
             bot.TaskTimeFrame(since="2023-01-01T00:00:00+00:00", until="invalid-date")
         with self.assertRaises(ValueError):
-            bot.TaskTimeFrame(since="2023-02-29T00:00:00+00:00", until="2023-01-02T00:00:00+00:00")
+            bot.TaskTimeFrame(
+                since="2023-02-29T00:00:00+00:00", until="2023-01-02T00:00:00+00:00"
+            )
 
     def test_scheduler(self):
         with patch("aioschedule.every") as mock_every, patch(
