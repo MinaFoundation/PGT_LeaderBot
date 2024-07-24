@@ -12,12 +12,22 @@ def test(ctx):
 
 
 @task
+def testbotunit(ctx):
+    ctx.run(f"python -m unittest tests/test_bot_unit.py")
+
+
+@task
+def testbotint(ctx):
+    ctx.run(f"python -m unittest tests/test_bot_integration.py")
+
+
+@task
 def testmongo(ctx):
     ctx.run(f"python -m unittest tests/test_mongo_data_handler.py")
 
 
 @task
-def testint(ctx):
+def testmongoint(ctx):
     ctx.run(f"python -m unittest tests/test_mongo_integration.py")
 
 
