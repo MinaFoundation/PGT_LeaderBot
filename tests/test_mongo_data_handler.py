@@ -367,7 +367,7 @@ class TestMongoDBManagement(unittest.TestCase):
             "mario_zito"
         )
 
-        print(r)
+        pass
 
     def test_get_total_daily_contribution_number(self):
         self.mongo_handler.create_user(self.test_user)

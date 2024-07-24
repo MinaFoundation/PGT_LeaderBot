@@ -33,7 +33,7 @@ berkingurcan = mongo_manager.get_user("berkingurcan")
 dfst = mongo_manager.get_user("dfst")
 mario_zito = mongo_manager.get_user("mario_zito")
 
-print(berkingurcan)
+# print(berkingurcan)
 
 # print(json.dumps(x.to_dict(), indent=3))
 

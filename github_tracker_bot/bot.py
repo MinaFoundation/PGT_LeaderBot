@@ -35,7 +35,9 @@ class TaskTimeFrame(BaseModel):
     @field_validator("since", "until")
     def validate_datetime(cls, value):
         try:
-            datetime.fromisoformat(value.replace("Z", "+00:00"))
+            parsed_date = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            if parsed_date.day != int(value[8:10]):
+                raise ValueError
             return value
         except ValueError as e:
             raise ValueError("Datetime must be in ISO 8601 format") from e
