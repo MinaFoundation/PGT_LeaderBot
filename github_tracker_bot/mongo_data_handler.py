@@ -316,7 +316,7 @@ class MongoDBManagement:
 
         except Exception as e:
             logger.error(
-                f"Failed to update all contribution data for user {user_handle}: e"
+                f"Failed to update all contribution data for user {user_handle}: {e}"
             )
             raise
 

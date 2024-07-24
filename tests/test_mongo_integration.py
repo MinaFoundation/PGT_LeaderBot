@@ -31,8 +31,9 @@ until_date = "2024-05-31T00:00:00Z"
 mongo_manager = MongoDBManagement(db, collection)
 berkingurcan = mongo_manager.get_user("berkingurcan")
 dfst = mongo_manager.get_user("dfst")
+mario_zito = mongo_manager.get_user("mario_zito")
 
-print(berkingurcan.to_dict)
+print(mario_zito.to_dict())
 
 # print(json.dumps(x.to_dict(), indent=3))
 
