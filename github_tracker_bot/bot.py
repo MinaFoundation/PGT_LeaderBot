@@ -42,6 +42,7 @@ def get_dates_for_today():
 async def run_scheduled_task():
     try:
         since_date, until_date = get_dates_for_today()
+        logger.info(f"Getting results between {since_date} and {until_date}")
         await get_all_results_from_sheet_by_date(config.SPREADSHEET_ID, since_date, until_date)
     except Exception as e:
         logger.error(f"An error occurred while running the scheduled task: {e}")
