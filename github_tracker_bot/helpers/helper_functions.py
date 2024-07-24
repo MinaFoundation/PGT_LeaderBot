@@ -19,7 +19,7 @@ def count_all_contribution_data(full_result):
                 qualified_daily_contribution_days.add(decision.date)
 
     sorted_total = sorted(total_daily_contribution_days)
-    sorted_qualified = sorted_total(qualified_daily_contribution_days)
+    sorted_qualified = sorted(qualified_daily_contribution_days)
 
     return {
         "total_daily_contribution_number": len(sorted_total),

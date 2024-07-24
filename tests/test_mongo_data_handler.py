@@ -260,6 +260,66 @@ class TestMongoDBManagement(unittest.TestCase):
         self.assertEqual(user, result)
 
     # CONTRIBUTION DATA CASES
+    def test_update_all_contribution_datas_from_ai_decisions(self):
+        self.mongo_handler.create_user(self.test_user)
+
+        ai_decisions_1 = [
+            AIDecision(
+                username="test_handle",
+                repository="repo1",
+                date="2023-07-20",
+                response=DailyContributionResponse(
+                    username="test_handle",
+                    date="2023-07-20",
+                    is_qualified=True,
+                    explanation="Valid contribution",
+                ),
+            ),
+            AIDecision(
+                username="test_handle",
+                repository="repo1",
+                date="2023-07-23",
+                response=DailyContributionResponse(
+                    username="test_handle",
+                    date="2023-07-23",
+                    is_qualified=False,
+                    explanation="Valid contribution",
+                ),
+            ),
+        ]
+        ai_decisions_2 = [
+            AIDecision(
+                username="test_handle",
+                repository="repo1",
+                date="2023-07-21",
+                response=DailyContributionResponse(
+                    username="test_handle",
+                    date="2023-07-21",
+                    is_qualified=True,
+                    explanation="Valid contribution",
+                ),
+            ),
+            AIDecision(
+                username="test_handle",
+                repository="repo2",
+                date="2023-07-22",
+                response=DailyContributionResponse(
+                    username="test_handle",
+                    date="2023-07-22",
+                    is_qualified=True,
+                    explanation="Valid contribution",
+                ),
+            ),
+        ]
+        self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions_1)
+        self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions_2)
+
+        self.mongo_handler.update_all_contribution_datas_from_ai_decisions("test_handle")
+        user = self.mongo_handler.get_user("test_handle")
+        
+        self.assertEqual(user.total_daily_contribution_number, 4)
+        self.assertEqual(user.total_qualified_daily_contribution_number, 3)
+
     def test_get_total_daily_contribution_number(self):
         self.mongo_handler.create_user(self.test_user)
         self.mongo_handler.update_field(

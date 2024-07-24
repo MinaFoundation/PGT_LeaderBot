@@ -32,6 +32,7 @@ mongo_manager = MongoDBManagement(db, collection)
 berkingurcan = mongo_manager.get_user("berkingurcan")
 dfst = mongo_manager.get_user("dfst")
 
+print(berkingurcan.qualified_daily_contributio_dates)
 
 # print(json.dumps(x.to_dict(), indent=3))
 

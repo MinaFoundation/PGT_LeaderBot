@@ -190,6 +190,14 @@ async def get_user_results_from_sheet_by_date(
                     f"Error encountered while adding qualified daily  contribution dates {e}"
                 )
 
+            try:
+                updated = mongo_manager.update_all_contribution_datas_from_ai_decisions(db_user.user_handle)
+                if updated:
+                    logger.info(f"All user contribution fields are updated for user: {updated.user_handle}")
+
+            except Exception as e:
+                logger.error(f"Error encountered while updating contribution fields for user: {db_user.user_handle}: {e}")
+
         logger.debug(qualified_contribution_count)
         return full_results, qualified_contribution_count
 
