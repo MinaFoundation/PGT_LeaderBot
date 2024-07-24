@@ -4,6 +4,7 @@ from typing import Dict, List
 from dateutil import parser
 from datetime import datetime, timedelta
 
+
 def count_all_contribution_data(full_result):
     """
     Returns all total_daily_contribution_number, total_qualified_daily_contribution_number, qualified_daily_contribution_dates
@@ -23,7 +24,7 @@ def count_all_contribution_data(full_result):
     return {
         "total_daily_contribution_number": len(sorted_total),
         "total_qualified_daily_contribution_number": len(sorted_qualified),
-        "qualified_daily_contribution_dates": sorted_qualified
+        "qualified_daily_contribution_dates": sorted_qualified,
     }
 
 
@@ -52,25 +53,29 @@ def count_qualified_contributions_by_date(full_result, since_date, until_date):
         "total_days_count": len(sorted_total_days),
     }
 
-def get_qualified_daily_contribution_number_by_month(dates: List[str]) -> Dict[str, int]:
+
+def get_qualified_daily_contribution_number_by_month(
+    dates: List[str],
+) -> Dict[str, int]:
     date_objects = [datetime.strptime(date, "%Y-%m-%d") for date in dates]
-    
+
     monthly_contribution = defaultdict(int)
-    
+
     for date in date_objects:
         month_key = date.strftime("%Y-%m")
         monthly_contribution[month_key] += 1
-    
+
     return dict(monthly_contribution)
+
 
 def calculate_streak(dates) -> int:
     date_objects = [datetime.strptime(date, "%Y-%m-%d") for date in dates]
-    
+
     date_objects.sort()
-    
+
     longest_streak = 0
     current_streak = 1
-    
+
     for i in range(1, len(date_objects)):
         if date_objects[i] == date_objects[i - 1] + timedelta(days=1):
             current_streak += 1
@@ -78,8 +83,8 @@ def calculate_streak(dates) -> int:
             if current_streak > longest_streak:
                 longest_streak = current_streak
             current_streak = 1
-    
+
     if current_streak > longest_streak:
         longest_streak = current_streak
-    
+
     return longest_streak

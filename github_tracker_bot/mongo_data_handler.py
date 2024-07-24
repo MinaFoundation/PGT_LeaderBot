@@ -13,6 +13,12 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.errors import ConnectionFailure
 
+from github_tracker_bot.helpers.helper_functions import (
+    count_all_contribution_data,
+    get_qualified_daily_contribution_number_by_month,
+    calculate_streak,
+)
+
 from log_config import get_logger
 
 logger = get_logger(__name__)
@@ -275,6 +281,45 @@ class MongoDBManagement:
             raise
 
     # CONTRIBUTION DATAS
+    def update_all_contribution_datas_from_ai_decisions(
+        self, user_handle
+    ) -> Optional[User]:
+        """Updates all contribution data by calculating ai decisions with helper functions"""
+        try:
+            user = self.get_user(user_handle)
+            ai_decisions = user.ai_decisions
+
+            calculated_data = count_all_contribution_data(ai_decisions)
+
+            user.total_daily_contribution_number = calculated_data[
+                "total_daily_contribution_number"
+            ]
+            user.total_qualified_daily_contribution_number = calculated_data[
+                "total_qualified_daily_contribution_number"
+            ]
+
+            user.qualified_daily_contribution_dates = calculated_data[
+                "qualified_daily_contribution_dates"
+            ]
+            user.qualified_daily_contribution_number_by_month = (
+                get_qualified_daily_contribution_number_by_month(
+                    user.qualified_daily_contribution_dates
+                )
+            )
+
+            user.qualified_daily_contribution_streak = calculate_streak(
+                user.qualified_daily_contribution_dates
+            )
+
+            updated_user = self.update_user(user_handle, user)
+            return updated_user
+
+        except Exception as e:
+            logger.error(
+                f"Failed to update all contribution data for user {user_handle}: e"
+            )
+            raise
+
     def get_total_daily_contribution_number(self, user_handle: str) -> int:
         """Retrieves the total daily contribution number for a specific user."""
         try:
