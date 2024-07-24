@@ -335,7 +335,7 @@ Discord Bot
 
 --------------
 
-## Contributions
+## Contributions
 To make a contribution, follow these steps:
 
 1. Make an issue that includes details about the feature or bug or something else.
