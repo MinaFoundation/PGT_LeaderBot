@@ -1,5 +1,8 @@
 # LeaderBot
-Tool that will track and rank contributions across the different Mina developer programs.
+Tool that will track and rank contributions across the different Mina developer programs. Consists of two bot:
+
+1. **[Github Tracker Bot](#github-tracker-bot)**
+2. **[Leaderbot](#leaderbot-1)**
 
 ## Getting Started
 
@@ -324,5 +327,7 @@ Helper functions explanations
     - **Get/Set Operations for Contribution Metrics:** Retrieve or update contribution-related metrics such as total daily contributions, qualified contributions, and contribution streaks.
     - **Date-wise Management:** Manage specific dates for qualified contributions, allowing for additions, updates, and retrieval.
 
+-------
 
-
+## Leaderbot
+Discord Bot
