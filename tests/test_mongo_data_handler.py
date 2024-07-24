@@ -320,6 +320,13 @@ class TestMongoDBManagement(unittest.TestCase):
         self.assertEqual(user.total_daily_contribution_number, 4)
         self.assertEqual(user.total_qualified_daily_contribution_number, 3)
 
+    def test_update_case_1(self):
+        user = User(user_handle='mario_zito', github_name='mazito', repositories=['https://github.com/zkcloudworker/zkcloudworker-aws', 'https://github.com/Identicon-Dao/socialcap'], ai_decisions=[[AIDecision(username='mazito', repository='https://github.com/Identicon-Dao/socialcap', date='2024-05-13', response=DailyContributionResponse(username='mazito', date='2024-05-13', is_qualified=True, explanation="The commit adds a new feature by introducing a 'payedBy' field to the Masterplan, which enhances the functionality of the application. This change is meaningful and contributes to the overall user experience. The code is well-structured and follows coding standards, making it a qualified commit.")), AIDecision(username='mazito', repository='https://github.com/Identicon-Dao/socialcap', date='2024-05-16', response=DailyContributionResponse(username='mazito', date='2024-05-16', is_qualified=True, explanation='The first commit introduces a significant change by adding authentication checks in the load function, which enhances the security and functionality of the application. The code is well-structured and follows coding standards. Although the subsequent commits are merge commits, they do not detract from the overall impact of the first commit. Therefore, the total contributions for the day are qualified.'))]], total_daily_contribution_number=2, total_qualified_daily_contribution_number=2, qualified_daily_contribution_number_by_month={'2024-05': 2}, qualified_daily_contribution_dates={'2024-05-13', '2024-05-16'}, qualified_daily_contribution_streak=1)
+        self.mongo_handler.create_user(user)
+        r = self.mongo_handler.update_all_contribution_datas_from_ai_decisions("mario_zito")
+
+        print(r)
+
     def test_get_total_daily_contribution_number(self):
         self.mongo_handler.create_user(self.test_user)
         self.mongo_handler.update_field(

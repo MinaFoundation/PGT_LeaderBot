@@ -184,7 +184,7 @@ class MongoDBManagement:
             result = self.collection.update_one(
                 {"user_handle": user_handle}, {"$set": update_user_dict}
             )
-            if result.modified_count > 0:
+            if result.modified_count >= 0:
                 return self.get_user(update_user_dict["user_handle"])
             else:
                 raise RuntimeError(
