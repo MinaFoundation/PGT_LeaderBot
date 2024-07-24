@@ -1,11 +1,12 @@
+from collections import defaultdict
 import json
-from typing import Dict
+from typing import Dict, List
 import unittest
 import config
 from unittest.mock import patch, MagicMock
 
-from datetime import datetime
 from dateutil import parser
+from datetime import datetime, timedelta
 
 from pymongo import MongoClient
 from pymongo.collection import Collection
@@ -66,11 +67,37 @@ def count_qualified_contributions_by_date(full_result, since_date, until_date):
         "total_days_count": len(sorted_total_days),
     }
 
-def get_qualified_daily_contribution_number_by_month(full_result) -> Dict[str, int]:
-    pass
+def get_qualified_daily_contribution_number_by_month(dates: List[str]) -> Dict[str, int]:
+    date_objects = [datetime.strptime(date, "%Y-%m-%d") for date in dates]
+    
+    monthly_contribution = defaultdict(int)
+    
+    for date in date_objects:
+        month_key = date.strftime("%Y-%m")
+        monthly_contribution[month_key] += 1
+    
+    return dict(monthly_contribution)
 
-def calculate_streak(full_result) -> int:
-    pass
+def calculate_streak(dates) -> int:
+    date_objects = [datetime.strptime(date, "%Y-%m-%d") for date in dates]
+    
+    date_objects.sort()
+    
+    longest_streak = 0
+    current_streak = 1
+    
+    for i in range(1, len(date_objects)):
+        if date_objects[i] == date_objects[i - 1] + timedelta(days=1):
+            current_streak += 1
+        else:
+            if current_streak > longest_streak:
+                longest_streak = current_streak
+            current_streak = 1
+    
+    if current_streak > longest_streak:
+        longest_streak = current_streak
+    
+    return longest_streak
 
 
 client = MongoClient(config.MONGO_HOST)
@@ -95,6 +122,8 @@ dfst_c = count_qualified_contributions_by_date(
 
 print(f"{berkingurcan.user_handle} commit count {json.dumps(berkin_c, indent=4)}")
 print(f"{dfst.user_handle} commit count {json.dumps(dfst_c, indent=4)}")
+
+print(calculate_streak(berkin_c["total_days"]))
 
 # print(json.dumps(x.to_dict(), indent=3))
 
