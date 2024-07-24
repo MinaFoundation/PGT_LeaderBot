@@ -4,15 +4,6 @@ from unittest.mock import patch, AsyncMock, MagicMock
 from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 import github_tracker_bot.bot as bot
-from github_tracker_bot.bot import (
-    app,
-    get_dates_for_today,
-    run_scheduled_task,
-    control_scheduler,
-    ScheduleControl,
-    TaskTimeFrame,
-    scheduler,
-)
 
 client = TestClient(bot.app)
 
