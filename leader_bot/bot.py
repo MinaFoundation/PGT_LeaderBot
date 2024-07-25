@@ -9,7 +9,13 @@ from discord import app_commands
 
 import config
 from log_config import get_logger
-from sheet_functions import format_for_discord, read_sheet
+from sheet_functions import (
+    format_for_discord,
+    read_sheet,
+    create_new_spreadsheet,
+    share_spreadsheet,
+    insert_user,
+)
 
 logger = get_logger(__name__)
 
@@ -32,7 +38,27 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
-    await message.channel.send(format_for_discord(read_sheet(config.SPREADSHEET_ID)))
+
+
+@tree.command(
+    name="commits-db",
+    description="It will create a google sheet with the contributions data",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(
+    interaction: discord.Interaction, spreadsheet_name: str, email_address: str = None
+):
+    await interaction.response.defer()
+    channel = interaction.channel
+
+    created_spreadsheet_id = create_new_spreadsheet(spreadsheet_name)
+
+    share_spreadsheet(created_spreadsheet_id, email_address or config.GMAIL_ADDRESS)
+
+    await interaction.followup.send(
+        f"Spreadsheet is created with id: `{created_spreadsheet_id}` and name `{spreadsheet_name}`. "
+        f"You can see the spreadsheet in this link: https://docs.google.com/spreadsheets/d/{created_spreadsheet_id}"
+    )
 
 
 client.run(config.DISCORD_TOKEN)

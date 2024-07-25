@@ -10,12 +10,16 @@ import config
 from log_config import get_logger
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-from config import GOOGLE_CREDENTIALS, SPREADSHEET_ID
+from config import GOOGLE_CREDENTIALS, SPREADSHEET_IDs
 
 logger = get_logger(__name__)
 
 SERVICE_ACCOUNT_FILE = GOOGLE_CREDENTIALS
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
 RANGE_NAME = "A1:D99999"
 
 
@@ -28,6 +32,18 @@ def get_google_sheets_service():
         return service
     except Exception as e:
         logger.error(f"Failed to create Google Sheets service: {e}")
+
+
+def get_google_drive_service():
+    try:
+        creds = Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
+        service = build("drive", "v3", credentials=creds)
+        return service
+    except Exception as e:
+        logger.error(f"Failed to create Google Drive service: {e}")
+        None
 
 
 def read_sheet(spreadsheet_id):
@@ -47,6 +63,40 @@ def read_sheet(spreadsheet_id):
     except Exception as e:
         logger.error(f"Failed to read Google Sheets data: {e}")
         return []
+
+
+def create_new_spreadsheet(title: str):
+    service = get_google_sheets_service()
+    try:
+        spreadsheet = {"properties": {"title": title}}
+        spreadsheet = (
+            service.spreadsheets()
+            .create(body=spreadsheet, fields="spreadsheetId")
+            .execute()
+        )
+        logger.info(f"Spreadsheet created with ID: {spreadsheet.get('spreadsheetId')}")
+        return spreadsheet.get('spreadsheetId')
+    except Exception as e:
+        logger.error(f"Failed to create new spreadsheet: {e}")
+        return None
+
+
+def share_spreadsheet(spreadsheet_id: str, email: str):
+    drive_service = get_google_drive_service()
+    if drive_service is None:
+        logger.error("Google Sheets service is not available.")
+        return None
+    try:
+        permissions = [{"type": "user", "role": "writer", "emailAddress": email}]
+        for permission in permissions:
+            drive_service.permissions().create(
+                fileId=spreadsheet_id,
+                body=permission,
+                supportsAllDrives=True,
+            ).execute()
+        logger.info(f"Spreadsheet {spreadsheet_id} shared with {email}")
+    except Exception as e:
+        logger.error(f"Failed to share spreadsheet: {e}")
 
 
 # Example usage
