@@ -52,7 +52,7 @@ async def on_command(
     channel = interaction.channel
 
     created_spreadsheet_id = create_new_spreadsheet(spreadsheet_name)
-
+    
     share_spreadsheet(created_spreadsheet_id, email_address or config.GMAIL_ADDRESS)
 
     await interaction.followup.send(

@@ -69,3 +69,8 @@ def leaderbot(ctx):
 @task
 def shfunc(ctx):
     ctx.run("python leader_bot/sheet_functions.py")
+
+@task
+def dbf(ctx):
+    ctx.run("python leader_bot/db_functions.py")
+

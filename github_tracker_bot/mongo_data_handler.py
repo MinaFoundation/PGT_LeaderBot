@@ -156,6 +156,21 @@ class MongoDBManagement:
             logger.error(f"Cannot find the user with handle '{user_handle}': {e}")
             raise
 
+    def get_users(self) -> List[Optional[User]]:
+        try:
+            users_data = self.collection.find({})
+            users = []
+            for user_data in users_data:
+                user = User.from_dict(user_data)
+                if user.validate():
+                    users.append(user)
+                else:
+                    logger.error(f"Invalid user data for user_handle: {user_data.get('user_handle')}")
+            return users
+        except Exception as e:
+            logger.error(f"Cannot retrieve users: {e}")
+            raise
+
     def create_user(self, user: Any) -> Optional[User]:
         try:
             if not user.validate():

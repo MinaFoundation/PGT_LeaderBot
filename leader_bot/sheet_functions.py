@@ -12,6 +12,8 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from config import GOOGLE_CREDENTIALS, SPREADSHEET_IDs
 
+from db_functions import fetch_db_get_users
+
 logger = get_logger(__name__)
 
 SERVICE_ACCOUNT_FILE = GOOGLE_CREDENTIALS
@@ -80,6 +82,8 @@ def create_new_spreadsheet(title: str):
         logger.error(f"Failed to create new spreadsheet: {e}")
         return None
 
+def fill_created_spreadsheet_with_users():
+    users = fetch_db_get_users()
 
 def share_spreadsheet(spreadsheet_id: str, email: str):
     drive_service = get_google_drive_service()
