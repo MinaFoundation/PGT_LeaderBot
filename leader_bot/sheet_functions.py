@@ -47,7 +47,10 @@ def read_sheet(spreadsheet_id):
     except Exception as e:
         logger.error(f"Failed to read Google Sheets data: {e}")
         return []
-    
+
+
+# Example usage
+# print(format_for_discord(read_sheet(config.SPREADSHEET_ID)))
 def format_for_discord(data: List[List[str]]) -> str:
     if not data:
         return "No data found."
@@ -59,7 +62,6 @@ def format_for_discord(data: List[List[str]]) -> str:
     row_emoji = "➡️"
 
     formatted_message = f"{header_emoji} " + " | ".join(headers) + "\n"
-
     formatted_message += "➖" * (len(headers) * 8) + "\n"
 
     for row in rows:
@@ -67,7 +69,6 @@ def format_for_discord(data: List[List[str]]) -> str:
 
     return formatted_message
 
-print(format_for_discord(read_sheet(config.SPREADSHEET_ID)))
 
 def insert_data(spreadsheet_id, range_name, values):
     service = get_google_sheets_service()

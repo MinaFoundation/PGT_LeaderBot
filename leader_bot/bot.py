@@ -34,4 +34,5 @@ async def on_message(message):
         return
     await message.channel.send(format_for_discord(read_sheet(config.SPREADSHEET_ID)))
 
+
 client.run(config.DISCORD_TOKEN)
