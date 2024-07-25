@@ -59,8 +59,6 @@ async def on_command(
         created_spreadsheet_id
     )
 
-    print(res)
-
     await interaction.followup.send(
         f"Spreadsheet is created with id: `{created_spreadsheet_id}` and name `{spreadsheet_name}`. "
         f"You can see the spreadsheet in this link: https://docs.google.com/spreadsheets/d/{created_spreadsheet_id}"

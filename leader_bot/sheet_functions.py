@@ -93,7 +93,8 @@ def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
                 "Total Daily Contribution Number",
                 "Total Qualified Daily Contribution Number",
                 "Qualified Daily Contribution Number by Month",
-                "Qualified Daily Contribution Dates" "Best Streak",
+                "Qualified Daily Contribution Dates",
+                "Best Streak",
             ]
         ]
 
