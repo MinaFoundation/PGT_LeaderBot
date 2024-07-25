@@ -114,7 +114,36 @@ This endpoint allows you to run a task immediately and manually for a specified 
 }
 ```
 
-#### 2. Control Scheduler
+#### 2. Run task for specific user:
+**Endpoint:** `/run-task-for-user`  
+**Method:** `POST`
+
+This endpoint allows you to run a task immediately and manually for a specified time frame and specific user.
+
+##### Request Body:
+
+- `username` (str): username in the sheet
+- `since` (str): Start datetime in ISO 8601 format (e.g., `2023-07-24T00:00:00Z`).
+- `until` (str): End datetime in ISO 8601 format (e.g., `2023-07-25T00:00:00Z`).
+
+##### Example Request:
+
+```json
+{
+    "username": berkingurcan,
+    "since": "2023-07-24T00:00:00Z",
+    "until": "2023-07-25T00:00:00Z"
+}
+```
+
+##### Example Response:
+```json
+{
+  "message": "Task run successfully with provided times"
+}
+```
+
+#### 3. Control Scheduler
 
 **Endpoint:** `/control-scheduler`  
 **Method:** `POST`
