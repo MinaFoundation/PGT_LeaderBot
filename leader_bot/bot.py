@@ -16,6 +16,7 @@ from sheet_functions import (
     share_spreadsheet,
     insert_user,
     fill_created_spreadsheet_with_users_except_ai_decisions,
+    update_created_spreadsheet_with_users_except_ai_decisions
 )
 
 logger = get_logger(__name__)
@@ -62,6 +63,24 @@ async def on_command(
     await interaction.followup.send(
         f"Spreadsheet is created with id: `{created_spreadsheet_id}` and name `{spreadsheet_name}`. "
         f"You can see the spreadsheet in this link: https://docs.google.com/spreadsheets/d/{created_spreadsheet_id}"
+    )
+
+@tree.command(
+    name="commits-db-update",
+    description="It will update the google sheet with the updated contributions data",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(
+    interaction: discord.Interaction, spreadsheet_id: str, email_address: str = None
+):
+    await interaction.response.defer()
+    channel = interaction.channel
+
+    updated_spreadsheet_id = update_created_spreadsheet_with_users_except_ai_decisions(spreadsheet_id)
+
+    await interaction.followup.send(
+        f"Spreadsheet is updated with id: `{spreadsheet_id}`. "
+        f"You can see the spreadsheet in this link: https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
     )
 
 

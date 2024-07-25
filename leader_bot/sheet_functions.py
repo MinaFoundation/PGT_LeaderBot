@@ -122,6 +122,30 @@ def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
     except Exception as e:
         logger.error(f"Failed to fill spreadsheet: {e}")
 
+def update_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
+    try:
+        users = fetch_db_get_users()
+        data = []
+
+        for user in users:
+            data.append(
+                [
+                    user.user_handle,
+                    user.github_name,
+                    ", ".join(user.repositories),
+                    user.total_daily_contribution_number,
+                    user.total_qualified_daily_contribution_number,
+                    str(user.qualified_daily_contribution_number_by_month),
+                    str(user.qualified_daily_contribution_dates),
+                    user.qualified_daily_contribution_streak,
+                ]
+            )
+
+        result = update_data(spreadsheed_id, "A2", data)
+        return result
+    except Exception as e:
+        logger.error(f"Failed to fill spreadsheet: {e}")
+
 
 def share_spreadsheet(spreadsheet_id: str, email: str):
     drive_service = get_google_drive_service()
