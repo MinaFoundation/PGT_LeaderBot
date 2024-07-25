@@ -93,7 +93,7 @@ def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
                 "Total Daily Contribution Number",
                 "Total Qualified Daily Contribution Number",
                 "Qualified Daily Contribution Number by Month",
-                "Best Streak",
+                "Qualified Daily Contribution Dates" "Best Streak",
             ]
         ]
 
@@ -111,13 +111,16 @@ def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
                     user.total_daily_contribution_number,
                     user.total_qualified_daily_contribution_number,
                     str(user.qualified_daily_contribution_number_by_month),
+                    str(user.qualified_daily_contribution_dates),
                     user.qualified_daily_contribution_streak,
                 ]
             )
+
         result = insert_data(spreadsheed_id, "A1", data)
         return result
     except Exception as e:
         logger.error(f"Failed to fill spreadsheet: {e}")
+
 
 def share_spreadsheet(spreadsheet_id: str, email: str):
     drive_service = get_google_drive_service()
