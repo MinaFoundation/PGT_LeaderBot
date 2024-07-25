@@ -15,6 +15,7 @@ from sheet_functions import (
     create_new_spreadsheet,
     share_spreadsheet,
     insert_user,
+    fill_created_spreadsheet_with_users_except_ai_decisions,
 )
 
 logger = get_logger(__name__)
@@ -52,8 +53,13 @@ async def on_command(
     channel = interaction.channel
 
     created_spreadsheet_id = create_new_spreadsheet(spreadsheet_name)
-    
+
     share_spreadsheet(created_spreadsheet_id, email_address or config.GMAIL_ADDRESS)
+    res = fill_created_spreadsheet_with_users_except_ai_decisions(
+        created_spreadsheet_id
+    )
+
+    print(res)
 
     await interaction.followup.send(
         f"Spreadsheet is created with id: `{created_spreadsheet_id}` and name `{spreadsheet_name}`. "

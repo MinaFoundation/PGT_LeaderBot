@@ -10,7 +10,7 @@ import config
 from log_config import get_logger
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-from config import GOOGLE_CREDENTIALS, SPREADSHEET_IDs
+from config import GOOGLE_CREDENTIALS, SPREADSHEET_ID
 
 from db_functions import fetch_db_get_users
 
@@ -77,13 +77,47 @@ def create_new_spreadsheet(title: str):
             .execute()
         )
         logger.info(f"Spreadsheet created with ID: {spreadsheet.get('spreadsheetId')}")
-        return spreadsheet.get('spreadsheetId')
+        return spreadsheet.get("spreadsheetId")
     except Exception as e:
         logger.error(f"Failed to create new spreadsheet: {e}")
         return None
 
-def fill_created_spreadsheet_with_users():
-    users = fetch_db_get_users()
+
+def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
+    try:
+        column_names = [
+            [
+                "User Handle",
+                "Github Name",
+                "Repositories",
+                "Total Daily Contribution Number",
+                "Total Qualified Daily Contribution Number",
+                "Qualified Daily Contribution Number by Month",
+                "Best Streak",
+            ]
+        ]
+
+        column_insert_result = insert_data(spreadsheed_id, "A1", column_names)
+
+        users = fetch_db_get_users()
+        data = []
+
+        for user in users:
+            data.append(
+                [
+                    user.user_handle,
+                    user.github_name,
+                    ", ".join(user.repositories),
+                    user.total_daily_contribution_number,
+                    user.total_qualified_daily_contribution_number,
+                    str(user.qualified_daily_contribution_number_by_month),
+                    user.qualified_daily_contribution_streak,
+                ]
+            )
+        result = insert_data(spreadsheed_id, "A1", data)
+        return result
+    except Exception as e:
+        logger.error(f"Failed to fill spreadsheet: {e}")
 
 def share_spreadsheet(spreadsheet_id: str, email: str):
     drive_service = get_google_drive_service()

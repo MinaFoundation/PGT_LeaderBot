@@ -24,6 +24,7 @@ def connect_db(host, db, collection):
 
 mongo_manager = connect_db(config.MONGO_HOST, config.MONGO_DB, config.MONGO_COLLECTION)
 
+
 def fetch_db_get_users() -> List[Optional[mongo.User]]:
     users = mongo_manager.get_users()
     return users
