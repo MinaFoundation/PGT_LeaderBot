@@ -12,7 +12,10 @@ from pydantic import BaseModel, Field, field_validator
 
 import aioschedule as schedule
 
-from github_tracker_bot.bot_functions import get_all_results_from_sheet_by_date, get_user_results_from_sheet_by_date
+from github_tracker_bot.bot_functions import (
+    get_all_results_from_sheet_by_date,
+    get_user_results_from_sheet_by_date,
+)
 
 import config
 from log_config import get_logger
@@ -80,6 +83,7 @@ async def run_task(time_frame: TaskTimeFrame):
         logger.error(f"An error occurred while running the task: {e}")
         return {"message": f"An error occurred: {e}"}
 
+
 @app.post("/run-task-for-user")
 async def run_task_for_user(username: str, time_frame: TaskTimeFrame):
     try:
@@ -90,6 +94,7 @@ async def run_task_for_user(username: str, time_frame: TaskTimeFrame):
     except Exception as e:
         logger.error(f"An error occurred while running the task: {e}")
         return {"message": f"An error occurred: {e}"}
+
 
 @app.post("/control-scheduler")
 async def control_scheduler(control: ScheduleControl):

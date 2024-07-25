@@ -7,6 +7,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
+GUILD_ID = os.getenv("GUILD_ID")
+
 GOOGLE_CREDENTIALS = "leaderbot-kr-6dc75af94571.json"
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

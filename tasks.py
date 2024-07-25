@@ -59,3 +59,13 @@ def botf(ctx):
 @task
 def decide(ctx):
     ctx.run("python github_tracker_bot/ai_decide_commits.py")
+
+
+@task
+def leaderbot(ctx):
+    ctx.run("python leader_bot/bot.py")
+
+
+@task
+def shfunc(ctx):
+    ctx.run("python leader_bot/sheet_functions.py")

@@ -25,7 +25,6 @@ def get_google_sheets_service():
         return service
     except Exception as e:
         logger.error(f"Failed to create Google Sheets service: {e}")
-        sys.exit(1)
 
 
 def read_sheet(spreadsheet_id):
