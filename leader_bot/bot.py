@@ -2,6 +2,8 @@ import os
 import sys
 import json
 
+from datetime import datetime
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import discord
@@ -16,8 +18,10 @@ from sheet_functions import (
     share_spreadsheet,
     insert_user,
     fill_created_spreadsheet_with_users_except_ai_decisions,
-    update_created_spreadsheet_with_users_except_ai_decisions
+    update_created_spreadsheet_with_users_except_ai_decisions,
+    create_leaderboard_sheet
 )
+from leaderboard_functions import create_leaderboard_by_month
 
 logger = get_logger(__name__)
 
@@ -29,6 +33,7 @@ intents.guilds = True
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
+spread_sheet_id = None
 
 @client.event
 async def on_ready():
@@ -50,6 +55,7 @@ async def on_message(message):
 async def on_command(
     interaction: discord.Interaction, spreadsheet_name: str, email_address: str = None
 ):
+    global spread_sheet_id
     await interaction.response.defer()
     channel = interaction.channel
 
@@ -64,6 +70,7 @@ async def on_command(
         f"Spreadsheet is created with id: `{created_spreadsheet_id}` and name `{spreadsheet_name}`. "
         f"You can see the spreadsheet in this link: https://docs.google.com/spreadsheets/d/{created_spreadsheet_id}"
     )
+    spread_sheet_id = created_spreadsheet_id
 
 @tree.command(
     name="commits-db-update",
@@ -71,17 +78,43 @@ async def on_command(
     guild=discord.Object(id=config.GUILD_ID),
 )
 async def on_command(
-    interaction: discord.Interaction, spreadsheet_id: str, email_address: str = None
+    interaction: discord.Interaction, spreadsheet_id: str
 ):
+    global spread_sheet_id
     await interaction.response.defer()
     channel = interaction.channel
 
     updated_spreadsheet_id = update_created_spreadsheet_with_users_except_ai_decisions(spreadsheet_id)
 
     await interaction.followup.send(
-        f"Spreadsheet is updated with id: `{spreadsheet_id}`. "
-        f"You can see the spreadsheet in this link: https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
+        f"Spreadsheet is updated with id: `{updated_spreadsheet_id}`. "
+        f"You can see the spreadsheet in this link: https://docs.google.com/spreadsheets/d/{updated_spreadsheet_id}"
     )
+
+    spread_sheet_id = updated_spreadsheet_id
+
+@tree.command(
+    name="leaderboard-create",
+    description="It will create leaderboard",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(
+    interaction: discord.Interaction, spreadsheet_id: str = None, date: str = None
+):
+    global spread_sheet_id
+    await interaction.response.defer()
+    channel = interaction.channel
+
+    if date:
+        year, month = date.split('-')
+    else:
+        now = datetime.now()
+        formatted_date = now.strftime("%Y-%m")
+        year, month = formatted_date.split('-')
+
+    leaderboard = create_leaderboard_by_month(year, month)
+    create_leaderboard_sheet(spreadsheet_id or spread_sheet_id, leaderboard, year, month)
+    await interaction.followup.send(str(leaderboard))
 
 
 client.run(config.DISCORD_TOKEN)

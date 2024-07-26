@@ -82,6 +82,46 @@ def create_new_spreadsheet(title: str):
         logger.error(f"Failed to create new spreadsheet: {e}")
         return None
 
+def create_leaderboard_sheet(spreadsheet_id: str, leaderboard: List[List[str]], year: str, month: str):
+    service = get_google_sheets_service()
+    try:
+        requests = [{
+            "addSheet": {
+                "properties": {
+                    "title": f"Leaderboard {year}-{month}"
+                }
+            }
+        }]
+        
+        body = {
+            'requests': requests
+        }
+        
+        response = service.spreadsheets().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body=body
+        ).execute()
+
+        sheet_id = response['replies'][0]['addSheet']['properties']['sheetId']
+        logger.info(f"Leaderboard sheet created with ID: {sheet_id}")
+
+        range_name = f"Leaderboard {year}-{month}"
+        value_range_body = {
+            "range": range_name,
+            "values": leaderboard
+        }
+        
+        service.spreadsheets().values().update(
+            spreadsheetId=spreadsheet_id,
+            range=range_name,
+            valueInputOption='RAW',
+            body=value_range_body
+        ).execute()
+
+        logger.info("Leaderboard data has been written to the new sheet.")
+    
+    except Exception as e:
+        logger.error(f"Failed to create leaderboard sheet: {e}")
 
 def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
     try:
