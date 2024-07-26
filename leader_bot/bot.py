@@ -25,6 +25,7 @@ from leaderboard_functions import (
     create_leaderboard_by_month,
     format_leaderboard_for_discord,
 )
+from modals import UserModal
 
 logger = get_logger(__name__)
 
@@ -124,14 +125,13 @@ async def on_command(
     )
     await interaction.followup.send(format_leaderboard_for_discord(leaderboard))
 
+
 @tree.command(
     name="leaderboard-view",
     description="It will show leaderboard in the discord channel",
     guild=discord.Object(id=config.GUILD_ID),
 )
-async def on_command(
-    interaction: discord.Interaction, date: str = None
-):
+async def on_command(interaction: discord.Interaction, date: str = None):
     await interaction.response.defer()
     channel = interaction.channel
 
@@ -141,11 +141,26 @@ async def on_command(
         now = datetime.now()
         formatted_date = now.strftime("%Y-%m")
         year, month = formatted_date.split("-")
-        
+
     leaderboard = create_leaderboard_by_month(year, month)
     await interaction.followup.send(format_leaderboard_for_discord(leaderboard))
 
 
+@tree.command(
+    name="main-sheet-edit",
+    description="Edit Google Sheets from Discord",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(interaction: discord.Interaction, operation: str):
+    if operation not in ["insert", "update", "add_repo", "delete"]:
+        await interaction.followup.send(
+            "Invalid operation. Please choose one of: insert, update, add_repo, delete.",
+            ephemeral=True,
+        )
+        return
+
+    modal = UserModal(operation=operation)
+    await interaction.response.send_modal(modal)
 
 
 client.run(config.DISCORD_TOKEN)

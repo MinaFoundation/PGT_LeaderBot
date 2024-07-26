@@ -128,7 +128,6 @@ def create_leaderboard_sheet(
         logger.error(f"Failed to create leaderboard sheet: {e}")
 
 
-
 def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
     try:
         column_names = [
