@@ -84,44 +84,69 @@ def create_new_spreadsheet(title: str):
 
 def create_leaderboard_sheet(spreadsheet_id: str, leaderboard: List[List[str]], year: str, month: str):
     service = get_google_sheets_service()
+    sheet_title = f"Leaderboard {year}-{month}"
+    
     try:
-        requests = [{
+        # Get the spreadsheet details
+        spreadsheet = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+        sheet_list = spreadsheet.get('sheets', [])
+        
+        # Check if the sheet already exists and delete it
+        for sheet in sheet_list:
+            if sheet['properties']['title'] == sheet_title:
+                sheet_id = sheet['properties']['sheetId']
+                delete_request = {
+                    "deleteSheet": {
+                        "sheetId": sheet_id
+                    }
+                }
+                delete_body = {
+                    'requests': [delete_request]
+                }
+                service.spreadsheets().batchUpdate(
+                    spreadsheetId=spreadsheet_id,
+                    body=delete_body
+                ).execute()
+                logger.info(f"Deleted existing sheet with title: {sheet_title}")
+                break
+
+        # Create the new sheet
+        create_request = {
             "addSheet": {
                 "properties": {
-                    "title": f"Leaderboard {year}-{month}"
+                    "title": sheet_title
                 }
             }
-        }]
-        
-        body = {
-            'requests': requests
         }
-        
+        create_body = {
+            'requests': [create_request]
+        }
         response = service.spreadsheets().batchUpdate(
             spreadsheetId=spreadsheet_id,
-            body=body
+            body=create_body
         ).execute()
+        
+        new_sheet_id = response['replies'][0]['addSheet']['properties']['sheetId']
+        logger.info(f"Leaderboard sheet created with ID: {new_sheet_id}")
 
-        sheet_id = response['replies'][0]['addSheet']['properties']['sheetId']
-        logger.info(f"Leaderboard sheet created with ID: {sheet_id}")
-
-        range_name = f"Leaderboard {year}-{month}"
+        # Update the new sheet with leaderboard data
+        range_name = sheet_title
         value_range_body = {
             "range": range_name,
             "values": leaderboard
         }
-        
         service.spreadsheets().values().update(
             spreadsheetId=spreadsheet_id,
             range=range_name,
             valueInputOption='RAW',
             body=value_range_body
         ).execute()
-
+        
         logger.info("Leaderboard data has been written to the new sheet.")
     
     except Exception as e:
         logger.error(f"Failed to create leaderboard sheet: {e}")
+
 
 def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
     try:
