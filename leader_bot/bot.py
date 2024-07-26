@@ -123,8 +123,9 @@ async def on_command(
     create_leaderboard_sheet(
         spreadsheet_id or spread_sheet_id, leaderboard, year, month
     )
-    await interaction.followup.send(format_leaderboard_for_discord(leaderboard))
-
+    messages = format_leaderboard_for_discord(leaderboard)
+    for msg in messages:
+        await interaction.followup.send(msg)
 
 @tree.command(
     name="leaderboard-view",
@@ -143,7 +144,9 @@ async def on_command(interaction: discord.Interaction, date: str = None):
         year, month = formatted_date.split("-")
 
     leaderboard = create_leaderboard_by_month(year, month)
-    await interaction.followup.send(format_leaderboard_for_discord(leaderboard))
+    messages = format_leaderboard_for_discord(leaderboard)
+    for msg in messages:
+        await interaction.followup.send(msg)
 
 
 @tree.command(
