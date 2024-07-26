@@ -23,6 +23,7 @@ from sheet_functions import (
     add_repository_for_user,
 )
 
+
 class UserModal(Modal, title="User Information"):
     def __init__(
         self,
@@ -70,22 +71,30 @@ class UserModal(Modal, title="User Information"):
             elif self.operation == "update":
                 updated_user = update_user(discord_handle, github_name, repositories)
                 if not updated_user:
-                    await interaction.followup.send(f"Cannot found user named {discord_handle}")
+                    await interaction.followup.send(
+                        f"Cannot found user named {discord_handle}"
+                    )
             elif self.operation == "add_repo":
                 for repo in repositories:
                     add_repository_for_user(discord_handle, repo)
             elif self.operation == "delete":
                 updated_user = delete_user(discord_handle)
                 if not updated_user:
-                    await interaction.followup.send(f"User with Discord handle {discord_handle} not found.")
+                    await interaction.followup.send(
+                        f"User with Discord handle {discord_handle} not found."
+                    )
 
             await interaction.followup.send(
                 f"{self.operation.capitalize()} operation completed.", ephemeral=True
             )
         except Exception as e:
             logger.error(f"Error in on_submit: {e}")
-            await interaction.followup.send('Oops! Something went wrong.', ephemeral=True)
+            await interaction.followup.send(
+                "Oops! Something went wrong.", ephemeral=True
+            )
 
-    async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
+    async def on_error(
+        self, interaction: discord.Interaction, error: Exception
+    ) -> None:
         logger.error(f"Error in on_error: {error}")
-        await interaction.followup.send('Oops! Something went wrong.', ephemeral=True)
+        await interaction.followup.send("Oops! Something went wrong.", ephemeral=True)
