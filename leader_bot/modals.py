@@ -58,28 +58,34 @@ class UserModal(Modal, title="User Information"):
             self.add_item(self.repositories)
 
     async def on_submit(self, interaction: discord.Interaction):
-        discord_handle = self.discord_handle.value
-        github_name = self.github_name.value
-        repositories = self.repositories.value.split(",")
+        await interaction.response.defer()
 
-        if self.operation == "insert":
-            insert_user(discord_handle, github_name, repositories)
-        elif self.operation == "update":
-            updated_user = update_user(discord_handle, github_name, repositories)
-            if not updated_user:
-                await interaction.response.send_message(f"Cannot found user named {discord_handle}")
-        elif self.operation == "add_repo":
-            for repo in repositories:
-                add_repository_for_user(discord_handle, repo)
-        elif self.operation == "delete":
-            updated_user = delete_user(discord_handle)
-            if not updated_user:
-                await interaction.response.send_message(f"User with Discord handle {discord_handle} not found.")
+        try:
+            discord_handle = self.discord_handle.value
+            github_name = self.github_name.value
+            repositories = self.repositories.value.split(",")
 
-        await interaction.response.send_message(
-            f"{self.operation.capitalize()} operation completed.", ephemeral=True
-        )
+            if self.operation == "insert":
+                insert_user(discord_handle, github_name, repositories)
+            elif self.operation == "update":
+                updated_user = update_user(discord_handle, github_name, repositories)
+                if not updated_user:
+                    await interaction.followup.send(f"Cannot found user named {discord_handle}")
+            elif self.operation == "add_repo":
+                for repo in repositories:
+                    add_repository_for_user(discord_handle, repo)
+            elif self.operation == "delete":
+                updated_user = delete_user(discord_handle)
+                if not updated_user:
+                    await interaction.followup.send(f"User with Discord handle {discord_handle} not found.")
+
+            await interaction.followup.send(
+                f"{self.operation.capitalize()} operation completed.", ephemeral=True
+            )
+        except Exception as e:
+            logger.error(f"Error in on_submit: {e}")
+            await interaction.followup.send('Oops! Something went wrong.', ephemeral=True)
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
-        await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
-        logger.error()
+        logger.error(f"Error in on_error: {error}")
+        await interaction.followup.send('Oops! Something went wrong.', ephemeral=True)
