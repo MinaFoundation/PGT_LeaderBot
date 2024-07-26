@@ -19,7 +19,9 @@ def get_data_for_year_month():
         dates_with_user_handles = {}
 
         for user in users:
-            dates_with_user_handles[user.user_handle] = user.qualified_daily_contribution_number_by_month
+            dates_with_user_handles[user.user_handle] = (
+                user.qualified_daily_contribution_number_by_month
+            )
 
         return dates_with_user_handles
     except Exception as e:
@@ -40,5 +42,26 @@ def create_leaderboard_by_month(year: str, month: str):
     formatted_leaderboard = [["Rank", "User Handle", "Contributions"]]
     for rank, (user_handle, contributions) in enumerate(leaderboard, start=1):
         formatted_leaderboard.append([rank, user_handle, contributions])
-    
+
     return formatted_leaderboard
+
+
+def format_leaderboard_for_discord(leaderboard):
+    trophy_emojis = ["🥇", "🥈", "🥉"]
+    leaderboard_message = "🏆 **Leaderboard** 🏆\n\n"
+
+    for entry in leaderboard[1:]:
+        rank = entry[0]
+        user_handle = entry[1]
+        contributions = entry[2]
+
+        if rank <= len(trophy_emojis):
+            rank_str = trophy_emojis[rank - 1]
+        else:
+            rank_str = f"{rank}. "
+
+        leaderboard_message += (
+            f"{rank_str} **{user_handle}** - {contributions} contributions\n"
+        )
+
+    return leaderboard_message

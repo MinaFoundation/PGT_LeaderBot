@@ -19,9 +19,12 @@ from sheet_functions import (
     insert_user,
     fill_created_spreadsheet_with_users_except_ai_decisions,
     update_created_spreadsheet_with_users_except_ai_decisions,
-    create_leaderboard_sheet
+    create_leaderboard_sheet,
 )
-from leaderboard_functions import create_leaderboard_by_month
+from leaderboard_functions import (
+    create_leaderboard_by_month,
+    format_leaderboard_for_discord,
+)
 
 logger = get_logger(__name__)
 
@@ -34,6 +37,7 @@ client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
 spread_sheet_id = None
+
 
 @client.event
 async def on_ready():
@@ -72,26 +76,28 @@ async def on_command(
     )
     spread_sheet_id = created_spreadsheet_id
 
+
 @tree.command(
     name="commits-db-update",
     description="It will update the google sheet with the updated contributions data",
     guild=discord.Object(id=config.GUILD_ID),
 )
-async def on_command(
-    interaction: discord.Interaction, spreadsheet_id: str
-):
+async def on_command(interaction: discord.Interaction, spreadsheet_id: str):
     global spread_sheet_id
     await interaction.response.defer()
     channel = interaction.channel
 
-    updated_spreadsheet_id = update_created_spreadsheet_with_users_except_ai_decisions(spreadsheet_id)
+    updated_spreadsheet_id = update_created_spreadsheet_with_users_except_ai_decisions(
+        spreadsheet_id
+    )
 
     await interaction.followup.send(
-        f"Spreadsheet is updated with id: `{updated_spreadsheet_id}`. "
-        f"You can see the spreadsheet in this link: https://docs.google.com/spreadsheets/d/{updated_spreadsheet_id}"
+        f"Spreadsheet is updated with id: `{spread_sheet_id}`. "
+        f"You can see the spreadsheet in this link: https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
     )
 
     spread_sheet_id = updated_spreadsheet_id
+
 
 @tree.command(
     name="leaderboard-create",
@@ -106,15 +112,40 @@ async def on_command(
     channel = interaction.channel
 
     if date:
-        year, month = date.split('-')
+        year, month = date.split("-")
     else:
         now = datetime.now()
         formatted_date = now.strftime("%Y-%m")
-        year, month = formatted_date.split('-')
+        year, month = formatted_date.split("-")
 
     leaderboard = create_leaderboard_by_month(year, month)
-    create_leaderboard_sheet(spreadsheet_id or spread_sheet_id, leaderboard, year, month)
-    await interaction.followup.send(str(leaderboard))
+    create_leaderboard_sheet(
+        spreadsheet_id or spread_sheet_id, leaderboard, year, month
+    )
+    await interaction.followup.send(format_leaderboard_for_discord(leaderboard))
+
+@tree.command(
+    name="leaderboard-view",
+    description="It will show leaderboard in the discord channel",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(
+    interaction: discord.Interaction, date: str = None
+):
+    await interaction.response.defer()
+    channel = interaction.channel
+
+    if date:
+        year, month = date.split("-")
+    else:
+        now = datetime.now()
+        formatted_date = now.strftime("%Y-%m")
+        year, month = formatted_date.split("-")
+        
+    leaderboard = create_leaderboard_by_month(year, month)
+    await interaction.followup.send(format_leaderboard_for_discord(leaderboard))
+
+
 
 
 client.run(config.DISCORD_TOKEN)
