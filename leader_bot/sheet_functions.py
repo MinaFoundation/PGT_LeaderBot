@@ -87,11 +87,9 @@ def create_leaderboard_sheet(spreadsheet_id: str, leaderboard: List[List[str]], 
     sheet_title = f"Leaderboard {year}-{month}"
     
     try:
-        # Get the spreadsheet details
         spreadsheet = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
         sheet_list = spreadsheet.get('sheets', [])
         
-        # Check if the sheet already exists and delete it
         for sheet in sheet_list:
             if sheet['properties']['title'] == sheet_title:
                 sheet_id = sheet['properties']['sheetId']
@@ -110,7 +108,6 @@ def create_leaderboard_sheet(spreadsheet_id: str, leaderboard: List[List[str]], 
                 logger.info(f"Deleted existing sheet with title: {sheet_title}")
                 break
 
-        # Create the new sheet
         create_request = {
             "addSheet": {
                 "properties": {
@@ -129,7 +126,6 @@ def create_leaderboard_sheet(spreadsheet_id: str, leaderboard: List[List[str]], 
         new_sheet_id = response['replies'][0]['addSheet']['properties']['sheetId']
         logger.info(f"Leaderboard sheet created with ID: {new_sheet_id}")
 
-        # Update the new sheet with leaderboard data
         range_name = sheet_title
         value_range_body = {
             "range": range_name,
