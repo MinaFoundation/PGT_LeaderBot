@@ -367,7 +367,7 @@ Helper functions explanations
 -------
 
 ## Leaderbot
-Discord Bot for interacting with Google Sheets and data gotten from Github Scraper Bot to Mongo DB.
+Discord Bot for interacting with Google Sheets and data received from Github Scraper Bot to Mongo DB.
 
 ### Usage
 Explained [here](#installation--setup).
