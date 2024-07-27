@@ -430,6 +430,28 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 * **operation:** Operation to perform on the sheet. Valid options are: **`insert`** for adding new user, **`update`** to update user data, **`add_repo`** to add repository, **`delete`** the user data.
 
+#### **`/leaderboard-start-auto-post`**
+
+**Description:** Automatically posts the leaderboard and updates the sheet with given id every day at a specified time.
+
+**Usage:**
+
+`/leaderboard-start-auto-post date: <YYYY-MM> time: <HH:MM> spreadsheet_id: <optional id>`
+
+* **date:** Date in "YYYY-MM" format.
+* **time:** Time in "HH-MM" format.
+* **spreadsheet_id:** (Optional) ID of the Google Sheet. If not provided, the last created or updated sheet will be used. If not created or updated before, it will post leader bot but will not update any sheet.
+
+#### **`/leaderboard-stop-auto-post`**
+
+**Description:** Stops the auto-post leaderboard task started for a specific date.
+
+**Usage:**
+
+`/leaderboard-stop-auto-post date: <YYYY-MM>`
+
+* **date:** Date in "YYYY-MM" format for which the auto-post task should be stopped.
+
 --------------
 
 ## Contributions
