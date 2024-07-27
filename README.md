@@ -53,9 +53,12 @@ Tool that will track and rank contributions across the different Mina developer 
 
     SPREADSHEET_ID='spread_sheet_id'
     LOG_LEVEL=DEBUG
+
+    GUILD_ID=XXXXXXXX
+    GMAIL_ADDRESS=xyz@gmail.com
     ```
 
-6. You need to have google credentials .json file which has access your spreadsheet in the root folder. [Click for more information.](https://developers.google.com/workspace/guides/create-credentials)
+6. You need to have google credentials .json file which has access your spreadsheet in the root folder. Need to enable Google Sheets API and Google Drive API. [Click for more information.](https://developers.google.com/workspace/guides/create-credentials)
 
 7. Run tests:
     ```sh
@@ -68,6 +71,8 @@ Tool that will track and rank contributions across the different Mina developer 
     ```
 
     For other invoke tasks look to: [tasks.py](./tasks.py)
+
+9. To run [Leaderbot](#leaderbot-1) discord bot, you need to have Discord bot in a specific server.
 
 -------------------------
 ## Github Tracker Bot
@@ -359,8 +364,67 @@ Helper functions explanations
 -------
 
 ## Leaderbot
-Discord Bot
+Discord Bot for interacting with Google Sheets and data gotten from Github Scraper Bot to Mongo DB.
 
+### Usage
+Explained [here](#installation--setup).
+
+Additionally, need to enable google drive api to use sheet sharing functionality.
+
+### Commands
+
+#### **`/commits-db`**
+
+**Description:** Creates a Google Sheet with contributions data.
+
+**Usage:**
+
+`/commits-db spreadsheet_name: <name> email_address: <optional email>`
+
+* **spreadsheet_name:** Name for the new Google Sheet.
+* **email_address:** (Optional) Email address to share the spreadsheet with. If not provided, the default email from the configuration will be used.
+
+#### **`/commits-db-update`**
+
+**Description:** Updates the Google Sheet with the latest contributions data in the Mongo DB. 
+
+**Usage:**
+
+`/commits-db-update spreadsheet_id: <id>`
+
+* **spreadsheet_id:** Copy and Paste ID of the Google Sheet to be updated.
+
+#### **`leaderboard-create`**
+
+**Description:** Creates a leaderboard sheet in the specified sheet for a specific month by using current data. If `spreadsheet_id` is empty it will use the last created or updated sheet id. After creating the leaderboard, it will send the leaderboard to discord channel as message.
+
+**Usage:**
+
+`/leaderboard-create spreadsheet_id: <optional id> date: <YYYY-MM>`
+
+* **spreadsheet_id:** (Optional) ID of the Google Sheet to store the leaderboard. If not provided, the last created or updated sheet will be used.
+* **date:** (Optional) Date in "YYYY-MM" format. If not provided, the current month will be used.
+
+#### **`/leaderboard-view`**
+
+**Description:** Displays the leaderboard in the Discord channel.
+
+**Usage:**
+
+`/leaderboard-view date: <YYYY-MM>`
+
+* **date:** (Optional) Date in "YYYY-MM" format. If not provided, the current month will be used.
+
+
+#### **`/main-sheet-edit`**
+
+**Description:** Creates a modal to edit the Google Sheet which includes commits data from Discord.
+
+**Usage:**
+
+`/main-sheet-edit operation: <operation>`
+
+* **operation:** Operation to perform on the sheet. Valid options are: **`insert`** for adding new user, **`update`** to update user data, **`add_repo`** to add repository, **`delete`** the user data.
 
 --------------
 
