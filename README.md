@@ -124,22 +124,21 @@ This endpoint allows you to run a task immediately and manually for a specified 
 ```
 
 #### 2. Run task for specific user:
-**Endpoint:** `/run-task-for-user`  
+**Endpoint:** `/run-task-for-user?username=johndoe`  
 **Method:** `POST`
 
 This endpoint allows you to run a task immediately and manually for a specified time frame and specific user.
 
 ##### Request Body:
 
-- `username` (str): username in the sheet
 - `since` (str): Start datetime in ISO 8601 format (e.g., `2023-07-24T00:00:00Z`).
 - `until` (str): End datetime in ISO 8601 format (e.g., `2023-07-25T00:00:00Z`).
 
 ##### Example Request:
+Endpoint: `/run-task-for-user?username=berkingurcan`
 
 ```json
 {
-    "username": berkingurcan,
     "since": "2023-07-24T00:00:00Z",
     "until": "2023-07-25T00:00:00Z"
 }

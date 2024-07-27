@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
 
 import aioschedule as schedule
@@ -85,7 +85,7 @@ async def run_task(time_frame: TaskTimeFrame):
 
 
 @app.post("/run-task-for-user")
-async def run_task_for_user(username: str, time_frame: TaskTimeFrame):
+async def run_task_for_user(time_frame: TaskTimeFrame, username: str = Query(...),):
     try:
         await get_user_results_from_sheet_by_date(
             username, config.SPREADSHEET_ID, time_frame.since, time_frame.until
