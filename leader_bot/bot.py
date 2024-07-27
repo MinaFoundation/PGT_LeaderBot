@@ -9,6 +9,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import discord
 from discord import app_commands
 
+from discord.ext import tasks
+from datetime import datetime, timedelta
+
 import config
 from log_config import get_logger
 from sheet_functions import (
@@ -38,6 +41,9 @@ client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
 spread_sheet_id = None
+auto_post_task = None
+auto_post_tasks = {}
+task_details = {}
 
 
 @client.event
@@ -102,7 +108,7 @@ async def on_command(interaction: discord.Interaction, spreadsheet_id: str):
 
 @tree.command(
     name="leaderboard-create",
-    description="It will create leaderboard",
+    description="It will create or update leaderboard",
     guild=discord.Object(id=config.GUILD_ID),
 )
 async def on_command(
@@ -165,6 +171,85 @@ async def on_command(interaction: discord.Interaction, operation: str):
 
     modal = UserModal(operation=operation)
     await interaction.response.send_modal(modal)
+
+
+@tree.command(
+    name="leaderboard-start-auto-post",
+    description="It will automatically post the leaderboard every day at a specified time",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(
+    interaction: discord.Interaction, date: str, time: str, spreadsheet_id: str = None
+):
+    global auto_post_task, task_details
+    await interaction.response.defer()
+    channel = interaction.channel
+
+    year, month = date.split("-")
+    hour, minute = map(int, time.split(":"))
+
+    task_id = f"{year}-{month}"
+
+    task_details[task_id] = {
+        "year": year,
+        "month": month,
+        "spreadsheet_id": spreadsheet_id or spread_sheet_id,
+        "hour": hour,
+        "minute": minute,
+        "channel": channel,
+    }
+
+    if not task_details[task_id]["spreadsheet_id"]:
+        await interaction.followup.send(
+            f"Spreadsheet id is missing; it will not update the spreadsheet!"
+        )
+
+    if task_id not in auto_post_tasks or not auto_post_tasks[task_id].is_running():
+        auto_post_tasks[task_id] = tasks.loop(minutes=1)(auto_post_leaderboard(task_id))
+        auto_post_tasks[task_id].start()
+
+    await interaction.followup.send(
+        f"Auto-post leaderboard task started for {date} at {time}."
+    )
+
+
+@tree.command(
+    name="leaderboard-stop-auto-post",
+    description="It will stop the auto-post leaderboard task for a specific date (YYYY-MM)",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def leaderboard_stop_auto_post(interaction: discord.Interaction, date: str):
+    await interaction.response.defer()
+
+    if date in auto_post_tasks and auto_post_tasks[date].is_running():
+        auto_post_tasks[date].cancel()
+        await interaction.followup.send(
+            f"Auto-post leaderboard task stopped for {date}."
+        )
+    else:
+        await interaction.followup.send(
+            f"No auto-post leaderboard task is currently running for {date}."
+        )
+
+
+def auto_post_leaderboard(task_id):
+    async def inner():
+        now = datetime.now()
+        details = task_details[task_id]
+        if now.hour == details["hour"] and now.minute == details["minute"]:
+            leaderboard = create_leaderboard_by_month(details["year"], details["month"])
+            create_leaderboard_sheet(
+                details["spreadsheet_id"],
+                leaderboard,
+                details["year"],
+                details["month"],
+            )
+            messages = format_leaderboard_for_discord(leaderboard)
+            channel = details["channel"]
+            for msg in messages:
+                await channel.send(msg)
+
+    return inner
 
 
 client.run(config.DISCORD_TOKEN)
