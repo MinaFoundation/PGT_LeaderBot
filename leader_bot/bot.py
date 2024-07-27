@@ -127,6 +127,7 @@ async def on_command(
     for msg in messages:
         await interaction.followup.send(msg)
 
+
 @tree.command(
     name="leaderboard-view",
     description="It will show leaderboard in the discord channel",

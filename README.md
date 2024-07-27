@@ -74,6 +74,10 @@ Tool that will track and rank contributions across the different Mina developer 
 
 9. To run [Leaderbot](#leaderbot-1) discord bot, you need to have Discord bot in a specific server.
 
+    ```sh
+    invoke leaderbot
+    ```
+
 -------------------------
 ## Github Tracker Bot
 

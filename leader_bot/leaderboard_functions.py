@@ -52,13 +52,14 @@ def split_message(message, limit=2000):
     """
     chunks = []
     while len(message) > limit:
-        split_pos = message.rfind('\n', 0, limit)
+        split_pos = message.rfind("\n", 0, limit)
         if split_pos == -1:
             split_pos = limit
         chunks.append(message[:split_pos])
         message = message[split_pos:].lstrip()
     chunks.append(message)
     return chunks
+
 
 def format_leaderboard_for_discord(leaderboard):
     trophy_emojis = ["🥇", "🥈", "🥉"]
