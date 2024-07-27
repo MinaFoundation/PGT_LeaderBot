@@ -397,7 +397,7 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 * **spreadsheet_id:** Copy and Paste ID of the Google Sheet to be updated.
 
-#### **`leaderboard-create`**
+#### **`/leaderboard-create`**
 
 **Description:** Creates and updates a leaderboard sheet in the specified sheet for a specific month by using current data. If `spreadsheet_id` is empty it will use the last created or updated sheet id. After creating the leaderboard, it will send the leaderboard to discord channel as message. If the leaderboard exists for specified date, it updates the leaderboard.
 
