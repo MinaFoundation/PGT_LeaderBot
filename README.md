@@ -376,24 +376,24 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 ### Commands
 
-#### **`/commits-db`**
+#### **`/commits-sheet-create`**
 
 **Description:** Creates a Google Sheet with contributions data.
 
 **Usage:**
 
-`/commits-db spreadsheet_name: <name> email_address: <optional email>`
+`/commits-sheet-create spreadsheet_name: <name> email_address: <optional email>`
 
 * **spreadsheet_name:** Name for the new Google Sheet.
 * **email_address:** (Optional) Email address to share the spreadsheet with. If not provided, the default email from the configuration will be used.
 
-#### **`/commits-db-update`**
+#### **`/commits-sheet-update`**
 
 **Description:** Updates the Google Sheet with the latest contributions data in the Mongo DB. 
 
 **Usage:**
 
-`/commits-db-update spreadsheet_id: <id>`
+`/commits-sheet-update spreadsheet_id: <id>`
 
 * **spreadsheet_id:** Copy and Paste ID of the Google Sheet to be updated.
 

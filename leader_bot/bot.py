@@ -59,7 +59,7 @@ async def on_message(message):
 
 
 @tree.command(
-    name="commits-db",
+    name="commits-sheet-create",
     description="It will create a google sheet with the contributions data",
     guild=discord.Object(id=config.GUILD_ID),
 )
@@ -85,7 +85,7 @@ async def on_command(
 
 
 @tree.command(
-    name="commits-db-update",
+    name="commits-sheet-update",
     description="It will update the google sheet with the updated contributions data",
     guild=discord.Object(id=config.GUILD_ID),
 )
@@ -143,6 +143,7 @@ async def on_command(interaction: discord.Interaction, date: str = None):
     await interaction.response.defer()
     channel = interaction.channel
 
+    # TODO if date is not corect format send message
     if date:
         year, month = date.split("-")
     else:
