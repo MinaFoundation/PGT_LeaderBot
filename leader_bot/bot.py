@@ -121,6 +121,27 @@ async def on_command(interaction: discord.Interaction, spreadsheet_id: str):
 
 
 @tree.command(
+    name="main-sheet-edit",
+    description="Edit Google Sheets from Discord",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(interaction: discord.Interaction, operation: str):
+    try:
+        if operation not in ["insert", "update", "add_repo", "delete"]:
+            await interaction.followup.send(
+                "Invalid operation. Please choose one of: insert, update, add_repo, delete.",
+                ephemeral=True,
+            )
+            return
+
+        modal = UserModal(operation=operation)
+        await interaction.response.send_modal(modal)
+    except Exception as e:
+        logger.error(f"Error in main-sheet-edit command: {e}")
+        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
+
+
+@tree.command(
     name="leaderboard-create",
     description="It will create or update leaderboard",
     guild=discord.Object(id=config.GUILD_ID),
@@ -149,27 +170,6 @@ async def on_command(
             await interaction.followup.send(msg, ephemeral=True)
     except Exception as e:
         logger.error(f"Error in leaderboard-create command: {e}")
-        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
-
-
-@tree.command(
-    name="main-sheet-edit",
-    description="Edit Google Sheets from Discord",
-    guild=discord.Object(id=config.GUILD_ID),
-)
-async def on_command(interaction: discord.Interaction, operation: str):
-    try:
-        if operation not in ["insert", "update", "add_repo", "delete"]:
-            await interaction.followup.send(
-                "Invalid operation. Please choose one of: insert, update, add_repo, delete.",
-                ephemeral=True,
-            )
-            return
-
-        modal = UserModal(operation=operation)
-        await interaction.response.send_modal(modal)
-    except Exception as e:
-        logger.error(f"Error in main-sheet-edit command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
 
 
