@@ -34,6 +34,7 @@ logger = get_logger(__name__)
 
 intents = discord.Intents.default()
 intents.messages = True
+intents.members = True
 intents.message_content = True
 intents.guilds = True
 
@@ -355,6 +356,20 @@ async def on_command(
     except Exception as e:
         logger.error(f"Error in leaderboard-closure-month: {e}")
         await interaction.followup.send(f"Please check your input: {e}", ephemeral=True)
+
+
+@tree.command(
+    name="get-members",
+    description="Get and print all members of the guild",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def get_members(interaction: discord.Interaction):
+    await interaction.response.defer()
+    channel = interaction.channel
+    
+    members = interaction.guild.members
+    member_list = [{member.name: member.id} for member in members]
+    print(member_list)
 
 
 client.run(config.DISCORD_TOKEN)
