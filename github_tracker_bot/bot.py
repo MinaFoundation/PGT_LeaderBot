@@ -85,7 +85,10 @@ async def run_task(time_frame: TaskTimeFrame):
 
 
 @app.post("/run-task-for-user")
-async def run_task_for_user(time_frame: TaskTimeFrame, username: str = Query(...),):
+async def run_task_for_user(
+    time_frame: TaskTimeFrame,
+    username: str = Query(...),
+):
     try:
         await get_user_results_from_sheet_by_date(
             username, config.SPREADSHEET_ID, time_frame.since, time_frame.until
