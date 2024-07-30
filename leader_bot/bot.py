@@ -28,6 +28,7 @@ from leaderboard_functions import (
     create_leaderboard_by_month,
     format_leaderboard_for_discord,
 )
+from db_functions import insert_discord_users, get_discord_user_id
 from modals import UserModal
 
 logger = get_logger(__name__)
@@ -359,17 +360,24 @@ async def on_command(
 
 
 @tree.command(
-    name="get-members",
-    description="Get and print all members of the guild",
+    name="get-members-and-insert-to-db",
+    description="Get and insert all members of the guild to the db in new collection",
     guild=discord.Object(id=config.GUILD_ID),
 )
-async def get_members(interaction: discord.Interaction):
+async def on_command(interaction: discord.Interaction):
     await interaction.response.defer()
     channel = interaction.channel
-    
-    members = interaction.guild.members
-    member_list = [{member.name: member.id} for member in members]
-    print(member_list)
+
+    try:
+        members = interaction.guild.members
+        member_list = [{member.name: member.id} for member in members]
+        logger.info(member_list)
+        result = insert_discord_users(member_list)
+        if result:
+            await interaction.followup.send(f"Users successfully inserted")
+    except Exception as e:
+        logger.error(f"An error occured: {e}")
+        await interaction.followup.send(f"An error occured: {e}", ephemeral=True)
 
 
 client.run(config.DISCORD_TOKEN)

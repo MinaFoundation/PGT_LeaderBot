@@ -10,7 +10,7 @@ from log_config import get_logger
 
 logger = get_logger(__name__)
 
-from db_functions import fetch_db_get_users
+from db_functions import fetch_db_get_users, get_discord_user_id
 
 
 def get_data_for_year_month():
@@ -126,6 +126,13 @@ def format_leaderboard_for_discord(leaderboard):
         else:
             rank_str = f"{rank}. "
 
-        leaderboard_message += f"{rank_str} **{user_handle}** **|** {contributions} contributions **|** 🗓️ in the last {days_since_first_contribution} days\n"
+        discord_user_id = get_discord_user_id(user_handle)
+
+        if discord_user_id:
+            user_mention = f"<@{discord_user_id}>"
+        else:
+            user_mention = user_handle
+
+        leaderboard_message += f"{rank_str} **{user_mention}** **|** {contributions} contributions **|** 🗓️ in the last {days_since_first_contribution} days\n"
 
     return split_message(leaderboard_message)
