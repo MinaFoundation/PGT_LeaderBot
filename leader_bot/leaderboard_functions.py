@@ -58,14 +58,24 @@ def create_leaderboard_by_month(year: str, month: str):
     for user_handle, contributions in data.items():
         if target_date in contributions:
             first_date_str = min(
-                [date for date in qualified_dates[user_handle] if date.startswith(target_date)], 
-                default=None
+                [
+                    date
+                    for date in qualified_dates[user_handle]
+                    if date.startswith(target_date)
+                ],
+                default=None,
             )
             if first_date_str:
                 first_date = datetime.strptime(first_date_str, "%Y-%m-%d")
                 last_date = datetime(int(year), int(month), last_day_of_month)
                 days_since_first_contribution = (last_date - first_date).days
-                leaderboard.append((user_handle, contributions[target_date], days_since_first_contribution))
+                leaderboard.append(
+                    (
+                        user_handle,
+                        contributions[target_date],
+                        days_since_first_contribution,
+                    )
+                )
 
     leaderboard.sort(key=lambda x: x[1], reverse=True)
 
