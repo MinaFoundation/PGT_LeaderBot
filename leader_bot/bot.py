@@ -178,11 +178,17 @@ async def on_command(
     description="It will show leaderboard in the discord channel",
     guild=discord.Object(id=config.GUILD_ID),
 )
-async def on_command(interaction: discord.Interaction, date: str = None):
+async def on_command(
+    interaction: discord.Interaction, thread_id: str, date: str = None
+):
     await interaction.response.defer()
     channel = interaction.channel
 
     try:
+        thread = await interaction.guild.fetch_channel(thread_id)
+        if not isinstance(thread, discord.Thread):
+            raise ValueError("The provided ID does not belong to a thread.")
+
         if date:
             year, month = date.split("-")
         else:
@@ -192,8 +198,15 @@ async def on_command(interaction: discord.Interaction, date: str = None):
 
         leaderboard = create_leaderboard_by_month(year, month)
         messages = format_leaderboard_for_discord(leaderboard)
+
+        bot_user_id = interaction.client.user.id
+        async for message in thread.history(limit=None):
+            if message.author.id == bot_user_id:
+                await message.delete()
+
         for msg in messages:
-            await interaction.followup.send(msg)
+            await thread.send(msg)
+
     except Exception as e:
         logger.error(f"Error in leaderboard-view command: {e}")
         await interaction.followup.send(f"Please check your input: {e}", ephemeral=True)
