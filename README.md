@@ -411,12 +411,13 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 #### **`/leaderboard-view`**
 
-**Description:** Displays the leaderboard in the Discord channel.
+**Description:** Displays the leaderboard in the specified Discord Forum thread.
 
 **Usage:**
 
-`/leaderboard-view date: <YYYY-MM>`
+`/leaderboard-view thread_id: <THREAD_ID> date: <YYYY-MM>`
 
+* **thread_id:** The ID of the thread where the leaderboard should be displayed.
 * **date:** (Optional) Date in "YYYY-MM" format. If not provided, the current month will be used.
 
 
