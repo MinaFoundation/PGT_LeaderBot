@@ -146,7 +146,7 @@ async def on_command(
         )
         messages = format_leaderboard_for_discord(leaderboard)
         for msg in messages:
-            await interaction.followup.send(msg)
+            await interaction.followup.send(msg, ephemeral=True)
     except Exception as e:
         logger.error(f"Error in leaderboard-create command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
