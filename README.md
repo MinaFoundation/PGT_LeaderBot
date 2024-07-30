@@ -455,13 +455,15 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 #### **`/leaderboard-closure-month`**
 
-**Description:** Opens a thread which includes Leaderboard for the month. Gets forum channel id from the .env file.
+**Description:** Opens a thread that includes the Leaderboard for the month. Gets the forum channel ID from the .env file.
 
 **Usage:**
 
-`/leaderboard-closure-month: <YYYY-MM>`
+`/leaderboard-closure-month: <YYYY-MM> <commit_filter>`
 
-* **date:** Date in "YYYY-MM" format.
+* **date:** (Optional) Date in "YYYY-MM" format. Default is now.
+* **commit_filter:**(Optional) Commit filter number to show only contributions greater than or equal to the specified number. Default is 10.
+
 
 --------------
 
