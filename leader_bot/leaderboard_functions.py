@@ -54,6 +54,7 @@ def create_leaderboard_by_month(year: str, month: str):
 
     current_date = datetime.now()
 
+    # Check this later is it working well
     for user_handle, contributions in data.items():
         if target_date in contributions:
             first_date_str = min(
