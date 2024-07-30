@@ -327,15 +327,18 @@ async def on_command(
         forum_channel = interaction.guild.get_channel(forum_channel_id)
         if date:
             year, month = date.split("-")
+            date_obj = datetime.strptime(f"{year}-{month}", "%Y-%m")
         else:
             now = datetime.now()
+            date_obj = now
             formatted_date = now.strftime("%Y-%m")
             year, month = formatted_date.split("-")
 
         leaderboard = create_leaderboard_by_month(year, month)
         messages = format_leaderboard_for_discord(leaderboard)
+        month_name = date_obj.strftime("%B") 
 
-        thread_title = f"🏆 **Leaderboard | {year}-{month} ** 🏆"
+        thread_title = f"Leaderboard | {year} {month_name}"
         thread, _ = await forum_channel.create_thread(name=thread_title, content=messages[0])
 
         if len(messages) > 0:
