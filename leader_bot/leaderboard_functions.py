@@ -71,13 +71,13 @@ def create_leaderboard_by_month(year: str, month: str, commit_filter: int = 0):
                 days_since_first_contribution = (last_date - first_date).days
 
                 if contributions[target_date] >= commit_filter:
-                        leaderboard.append(
-                            (
-                                user_handle,
-                                contributions[target_date],
-                                days_since_first_contribution,
-                            )
+                    leaderboard.append(
+                        (
+                            user_handle,
+                            contributions[target_date],
+                            days_since_first_contribution,
                         )
+                    )
 
     leaderboard.sort(key=lambda x: x[1], reverse=True)
 

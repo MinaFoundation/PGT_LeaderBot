@@ -317,7 +317,9 @@ def auto_post_leaderboard(task_id):
     description="It will create forum thread for leaderboard in the discord forum channel",
     guild=discord.Object(id=config.GUILD_ID),
 )
-async def on_command(interaction: discord.Interaction, date: str = None, commit_filter: int = 10):
+async def on_command(
+    interaction: discord.Interaction, date: str = None, commit_filter: int = 10
+):
     await interaction.response.defer()
     channel = interaction.channel
 
