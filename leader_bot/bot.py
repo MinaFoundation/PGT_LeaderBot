@@ -241,7 +241,8 @@ async def on_command(
 
         if not task_details[task_id]["spreadsheet_id"]:
             await interaction.followup.send(
-                f"Spreadsheet id is missing; it will not update the spreadsheet!"
+                f"Spreadsheet id is missing; it will not update the spreadsheet!",
+                ephemeral=True,
             )
 
         if task_id not in auto_post_tasks or not auto_post_tasks[task_id].is_running():
@@ -251,7 +252,7 @@ async def on_command(
             auto_post_tasks[task_id].start()
 
         await interaction.followup.send(
-            f"Auto-post leaderboard task started for {date} at {time}."
+            f"Auto-post leaderboard task started for {date} at {time}.", ephemeral=True
         )
     except Exception as e:
         logger.error(f"Error in leaderboard-start-auto-post command: {e}")
@@ -270,11 +271,12 @@ async def leaderboard_stop_auto_post(interaction: discord.Interaction, date: str
         if date in auto_post_tasks and auto_post_tasks[date].is_running():
             auto_post_tasks[date].cancel()
             await interaction.followup.send(
-                f"Auto-post leaderboard task stopped for {date}."
+                f"Auto-post leaderboard task stopped for {date}.", ephemeral=True
             )
         else:
             await interaction.followup.send(
-                f"No auto-post leaderboard task is currently running for {date}."
+                f"No auto-post leaderboard task is currently running for {date}.",
+                ephemeral=True,
             )
     except Exception as e:
         logger.error(f"Error in leaderboard-stop-auto-post command: {e}")
