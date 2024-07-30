@@ -153,6 +153,27 @@ async def on_command(
 
 
 @tree.command(
+    name="main-sheet-edit",
+    description="Edit Google Sheets from Discord",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(interaction: discord.Interaction, operation: str):
+    try:
+        if operation not in ["insert", "update", "add_repo", "delete"]:
+            await interaction.followup.send(
+                "Invalid operation. Please choose one of: insert, update, add_repo, delete.",
+                ephemeral=True,
+            )
+            return
+
+        modal = UserModal(operation=operation)
+        await interaction.response.send_modal(modal)
+    except Exception as e:
+        logger.error(f"Error in main-sheet-edit command: {e}")
+        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
+
+
+@tree.command(
     name="leaderboard-view",
     description="It will show leaderboard in the discord channel",
     guild=discord.Object(id=config.GUILD_ID),
@@ -176,27 +197,6 @@ async def on_command(interaction: discord.Interaction, date: str = None):
     except Exception as e:
         logger.error(f"Error in leaderboard-view command: {e}")
         await interaction.followup.send(f"Please check your input: {e}", ephemeral=True)
-
-
-@tree.command(
-    name="main-sheet-edit",
-    description="Edit Google Sheets from Discord",
-    guild=discord.Object(id=config.GUILD_ID),
-)
-async def on_command(interaction: discord.Interaction, operation: str):
-    try:
-        if operation not in ["insert", "update", "add_repo", "delete"]:
-            await interaction.followup.send(
-                "Invalid operation. Please choose one of: insert, update, add_repo, delete.",
-                ephemeral=True,
-            )
-            return
-
-        modal = UserModal(operation=operation)
-        await interaction.response.send_modal(modal)
-    except Exception as e:
-        logger.error(f"Error in main-sheet-edit command: {e}")
-        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
 
 
 @tree.command(
