@@ -300,6 +300,10 @@ def auto_post_leaderboard(task_id):
                 )
                 messages = format_leaderboard_for_discord(leaderboard)
                 channel = details["channel"]
+                bot_user_id = client.user.id
+                async for message in channel.history(limit=None):
+                    if message.author.id == bot_user_id:
+                        await message.delete()
                 for msg in messages:
                     await channel.send(msg)
         except Exception as e:
