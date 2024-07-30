@@ -317,7 +317,7 @@ def auto_post_leaderboard(task_id):
     description="It will create forum thread for leaderboard in the discord forum channel",
     guild=discord.Object(id=config.GUILD_ID),
 )
-async def on_command(interaction: discord.Interaction, date: str = None):
+async def on_command(interaction: discord.Interaction, date: str = None, commit_filter: int = 10):
     await interaction.response.defer()
     channel = interaction.channel
 
@@ -333,7 +333,7 @@ async def on_command(interaction: discord.Interaction, date: str = None):
             formatted_date = now.strftime("%Y-%m")
             year, month = formatted_date.split("-")
 
-        leaderboard = create_leaderboard_by_month(year, month)
+        leaderboard = create_leaderboard_by_month(year, month, commit_filter)
         messages = format_leaderboard_for_discord(leaderboard)
         month_name = date_obj.strftime("%B")
 

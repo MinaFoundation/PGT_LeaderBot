@@ -43,7 +43,7 @@ def get_qualified_dates():
         logger.error(f"Could not fetch the data: {e}")
 
 
-def create_leaderboard_by_month(year: str, month: str):
+def create_leaderboard_by_month(year: str, month: str, commit_filter: int = 0):
     data = get_data_for_year_month()
     qualified_dates = get_qualified_dates()
 
@@ -69,13 +69,15 @@ def create_leaderboard_by_month(year: str, month: str):
                 first_date = datetime.strptime(first_date_str, "%Y-%m-%d")
                 last_date = datetime(int(year), int(month), last_day_of_month)
                 days_since_first_contribution = (last_date - first_date).days
-                leaderboard.append(
-                    (
-                        user_handle,
-                        contributions[target_date],
-                        days_since_first_contribution,
-                    )
-                )
+
+                if contributions[target_date] >= commit_filter:
+                        leaderboard.append(
+                            (
+                                user_handle,
+                                contributions[target_date],
+                                days_since_first_contribution,
+                            )
+                        )
 
     leaderboard.sort(key=lambda x: x[1], reverse=True)
 
