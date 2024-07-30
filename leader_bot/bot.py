@@ -313,7 +313,7 @@ def auto_post_leaderboard(task_id):
 
 @tree.command(
     name="leaderboard-closure-month",
-    description="It will show leaderboard in the discord channel",
+    description="It will create forum thread for leaderboard in the discord forum channel",
     guild=discord.Object(id=config.GUILD_ID),
 )
 async def on_command(
