@@ -56,6 +56,7 @@ Tool that will track and rank contributions across the different Mina developer 
 
     GUILD_ID=XXXXXXXX
     GMAIL_ADDRESS=xyz@gmail.com
+    LEADERBOARD_FORUM_CHANNEL_ID=XXXXXXXXXXXXXXXXX
     ```
 
 6. You need to have google credentials .json file which has access your spreadsheet in the root folder. Need to enable Google Sheets API and Google Drive API. [Click for more information.](https://developers.google.com/workspace/guides/create-credentials)
