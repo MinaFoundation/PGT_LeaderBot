@@ -311,14 +311,13 @@ def auto_post_leaderboard(task_id):
 
     return inner
 
+
 @tree.command(
     name="leaderboard-closure-month",
     description="It will create forum thread for leaderboard in the discord forum channel",
     guild=discord.Object(id=config.GUILD_ID),
 )
-async def on_command(
-    interaction: discord.Interaction, date: str = None
-):
+async def on_command(interaction: discord.Interaction, date: str = None):
     await interaction.response.defer()
     channel = interaction.channel
 
@@ -336,16 +335,20 @@ async def on_command(
 
         leaderboard = create_leaderboard_by_month(year, month)
         messages = format_leaderboard_for_discord(leaderboard)
-        month_name = date_obj.strftime("%B") 
+        month_name = date_obj.strftime("%B")
 
         thread_title = f"Leaderboard | {year} {month_name}"
-        thread, _ = await forum_channel.create_thread(name=thread_title, content=messages[0])
+        thread, _ = await forum_channel.create_thread(
+            name=thread_title, content=messages[0]
+        )
 
         if len(messages) > 0:
             for msg in messages[1:]:
                 await thread.send(msg)
 
-        await interaction.followup.send(f"Leaderboard thread created: {thread.jump_url}", ephemeral=True)
+        await interaction.followup.send(
+            f"Leaderboard thread created: {thread.jump_url}", ephemeral=True
+        )
 
     except Exception as e:
         logger.error(f"Error in leaderboard-closure-month: {e}")
