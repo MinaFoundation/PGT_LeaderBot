@@ -311,5 +311,42 @@ def auto_post_leaderboard(task_id):
 
     return inner
 
+@tree.command(
+    name="leaderboard-closure-month",
+    description="It will show leaderboard in the discord channel",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(
+    interaction: discord.Interaction, date: str = None
+):
+    await interaction.response.defer()
+    channel = interaction.channel
+
+    try:
+        forum_channel_id = int(config.LEADERBOARD_FORUM_CHANNEL_ID)
+        forum_channel = interaction.guild.get_channel(forum_channel_id)
+        if date:
+            year, month = date.split("-")
+        else:
+            now = datetime.now()
+            formatted_date = now.strftime("%Y-%m")
+            year, month = formatted_date.split("-")
+
+        leaderboard = create_leaderboard_by_month(year, month)
+        messages = format_leaderboard_for_discord(leaderboard)
+
+        thread_title = f"🏆 **Leaderboard | {year}-{month} ** 🏆"
+        thread, _ = await forum_channel.create_thread(name=thread_title, content=messages[0])
+
+        if len(messages) > 0:
+            for msg in messages[1:]:
+                await thread.send(msg)
+
+        await interaction.followup.send(f"Leaderboard thread created: {thread.jump_url}", ephemeral=True)
+
+    except Exception as e:
+        logger.error(f"Error in leaderboard-view command: {e}")
+        await interaction.followup.send(f"Please check your input: {e}", ephemeral=True)
+
 
 client.run(config.DISCORD_TOKEN)
