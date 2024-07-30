@@ -453,6 +453,16 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 * **date:** Date in "YYYY-MM" format for which the auto-post task should be stopped.
 
+#### **`/leaderboard-closure-month`**
+
+**Description:** Opens a thread which includes Leaderboard for the month. Gets forum channel id from the .env file.
+
+**Usage:**
+
+`/leaderboard-closure-month: <YYYY-MM>`
+
+* **date:** Date in "YYYY-MM" format.
+
 --------------
 
 ## Contributions

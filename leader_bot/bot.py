@@ -345,7 +345,7 @@ async def on_command(
         await interaction.followup.send(f"Leaderboard thread created: {thread.jump_url}", ephemeral=True)
 
     except Exception as e:
-        logger.error(f"Error in leaderboard-view command: {e}")
+        logger.error(f"Error in leaderboard-closure-month: {e}")
         await interaction.followup.send(f"Please check your input: {e}", ephemeral=True)
 
 
