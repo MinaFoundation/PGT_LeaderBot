@@ -473,7 +473,7 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 #### **`/run-task-for-user`**
 
-**Description:** Uses the Github Scraper Bot API [`/run-task-for-user`](#2-run-task-for-specific-user) [endpoint](#2-run-task-for-specific-user).
+**Description:** Uses the Github Tracker Bot API [`/run-task-for-user`](#2-run-task-for-specific-user) [endpoint](#2-run-task-for-specific-user).
 
 **Usage:**
 `/run-task-for-user: <username> <since> <until>`
@@ -481,6 +481,16 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 * **username:** Username for data to scraped.
 * **since:** "YYYY-MM-DD" format since date.
 * **until:** "YYYY-MM-DD" format until date.
+
+#### **`/control-scheduler`**
+
+**Description:** Uses the Github Tracker Bot API [`/control-scheduler`](#3-control-scheduler) [endpoint](#3-control-scheduler) to control the scheduler (start/stop) with an optional interval.
+
+**Usage:**
+`/control-scheduler: <action> <interval>`
+
+* **action:** `start` or `stop`
+* **interval:** Time interval to run scheduler.
 
 
 --------------

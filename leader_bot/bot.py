@@ -388,14 +388,16 @@ async def on_command(interaction: discord.Interaction):
 
 
 def convert_to_iso8601(date_str):
-    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-    iso8601_str = date_obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    iso8601_str = date_obj.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     return iso8601_str
 
-async def fetch(session, url, method='GET', data=None, params=None):
+
+async def fetch(session, url, method="GET", data=None, params=None):
     async with session.request(method, url, json=data, params=params) as response:
         return await response.json()
+
 
 @tree.command(
     name="run-task-for-user",
@@ -410,16 +412,40 @@ async def run_task_for_user(
         until = convert_to_iso8601(until)
 
         await interaction.response.defer()
-        url = f"{config.ENDPOINT}/run-task-for-user"
+        url = f"{config.GTP_ENDPOINT}/run-task-for-user"
         payload = {"since": since, "until": until}
         params = {"username": username}
 
         async with aiohttp.ClientSession() as session:
-            response_data = await fetch(session, url, method='POST', data=payload, params=params)
+            response_data = await fetch(
+                session, url, method="POST", data=payload, params=params
+            )
 
         await interaction.followup.send(response_data["message"])
     except Exception as e:
         logger.error(f"Error in run-task-for-user command: {e}")
+        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
+
+
+@tree.command(
+    name="control-scheduler",
+    description="Control the scheduler (start/stop) with an optional interval",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def control_scheduler(
+    interaction: discord.Interaction, action: str, interval: int = None
+):
+    try:
+        await interaction.response.defer()
+        url = f"{config.GTP_ENDPOINT}/control-scheduler"
+        payload = {"action": action, "interval_minutes": interval}
+
+        async with aiohttp.ClientSession() as session:
+            response_data = await fetch(session, url, method="POST", data=payload)
+
+        await interaction.followup.send(response_data["message"])
+    except Exception as e:
+        logger.error(f"Error in control-scheduler command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
 
 
