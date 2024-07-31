@@ -471,6 +471,18 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 **Usage:**
 `/get-members-and-insert-to-db`
 
+#### **`/run-task-for-user`**
+
+**Description:** Uses the Github Scraper Bot API [`/run-task-for-user`](#2-run-task-for-specific-user) [endpoint](#2-run-task-for-specific-user).
+
+**Usage:**
+`/run-task-for-user: <username> <since> <until>`
+
+* **username:** Username for data to scraped.
+* **since:** "YYYY-MM-DD" format since date.
+* **until:** "YYYY-MM-DD" format until date.
+
+
 --------------
 
 ## Contributions
