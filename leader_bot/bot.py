@@ -1,6 +1,5 @@
 import os
 import sys
-import json
 
 from datetime import datetime
 
@@ -15,20 +14,18 @@ from datetime import datetime, timedelta
 import config
 from log_config import get_logger
 from sheet_functions import (
-    format_for_discord,
-    read_sheet,
     create_new_spreadsheet,
     share_spreadsheet,
-    insert_user,
     fill_created_spreadsheet_with_users_except_ai_decisions,
     update_created_spreadsheet_with_users_except_ai_decisions,
     create_leaderboard_sheet,
+    write_users_to_csv,
 )
 from leaderboard_functions import (
     create_leaderboard_by_month,
     format_leaderboard_for_discord,
 )
-from db_functions import insert_discord_users, get_discord_user_id
+from db_functions import insert_discord_users
 from modals import UserModal
 
 logger = get_logger(__name__)
@@ -349,6 +346,15 @@ async def on_command(
         if len(messages) > 0:
             for msg in messages[1:]:
                 await thread.send(msg)
+
+        file_path = "user_data.csv"
+        result = write_users_to_csv(file_path)
+
+        if "successfully" in result:
+            await thread.send(file=discord.File(file_path))
+            os.remove(file_path)
+        else:
+            await interaction.response.send_message(result, ephemeral=True)
 
         await interaction.followup.send(
             f"Leaderboard thread created: {thread.jump_url}", ephemeral=True

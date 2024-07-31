@@ -1,6 +1,6 @@
 import os
 import sys
-import json
+import csv
 from typing import List
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -166,6 +166,47 @@ def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
         return result
     except Exception as e:
         logger.error(f"Failed to fill spreadsheet: {e}")
+
+
+def write_users_to_csv(file_path):
+    try:
+        column_names = [
+            "User Handle",
+            "Github Name",
+            "Repositories",
+            "Total Daily Contribution Number",
+            "Total Qualified Daily Contribution Number",
+            "Qualified Daily Contribution Number by Month",
+            "Qualified Daily Contribution Dates",
+            "Best Streak",
+        ]
+
+        users = fetch_db_get_users()
+        data = []
+
+        for user in users:
+            data.append(
+                [
+                    user.user_handle,
+                    user.github_name,
+                    ", ".join(user.repositories),
+                    user.total_daily_contribution_number,
+                    user.total_qualified_daily_contribution_number,
+                    str(user.qualified_daily_contribution_number_by_month),
+                    str(user.qualified_daily_contribution_dates),
+                    user.qualified_daily_contribution_streak,
+                ]
+            )
+
+        with open(file_path, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(column_names)
+            writer.writerows(data)
+
+        return f"Data successfully written to {file_path}"
+    except Exception as e:
+        logger.error(f"Failed to write to CSV: {e}")
+        return f"Failed to write to CSV: {e}"
 
 
 def update_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
