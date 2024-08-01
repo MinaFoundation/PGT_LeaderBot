@@ -1,4 +1,3 @@
-import time
 import sys
 import os
 
@@ -7,10 +6,17 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends, Request, status
+from fastapi.security import (
+    OAuth2AuthorizationCodeBearer,
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+    SecurityScopes,
+)
 from pydantic import BaseModel, Field, field_validator
 
 import aioschedule as schedule
+import httpx
 
 from github_tracker_bot.bot_functions import (
     get_all_results_from_sheet_by_date,
@@ -24,6 +30,26 @@ logger = get_logger(__name__)
 
 app = FastAPI()
 scheduler_task = None
+
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl=f"https://discord.com/api/oauth2/authorize?client_id={config.DISCORD_CLIENT_ID}&redirect_uri={config.DISCORD_REDIRECT_URI}&response_type=code&scope=identify",
+    tokenUrl="https://discord.com/api/oauth2/token",
+    scopes={"identify": "Access your Discord identity"},
+)
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            "https://discord.com/api/users/@me",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=400, detail="Invalid authentication credentials"
+            )
+        user_data = response.json()
+        return user_data
 
 
 class ScheduleControl(BaseModel):
@@ -71,6 +97,10 @@ async def scheduler(interval_minutes):
         await schedule.run_pending()
         await asyncio.sleep(1)
 
+@app.get("/callback")
+async def callback(request: Request):
+    pass
+
 
 @app.post("/run-task")
 async def run_task(time_frame: TaskTimeFrame):
@@ -88,7 +118,11 @@ async def run_task(time_frame: TaskTimeFrame):
 async def run_task_for_user(
     time_frame: TaskTimeFrame,
     username: str = Query(...),
+    user: dict = Depends(get_current_user),
 ):
+    if user["id"] != config.DISCORD_BOT_USER_ID:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    
     try:
         await get_user_results_from_sheet_by_date(
             username, config.SPREADSHEET_ID, time_frame.since, time_frame.until
