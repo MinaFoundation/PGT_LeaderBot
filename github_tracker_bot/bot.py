@@ -1,6 +1,8 @@
 import sys
 import os
 
+from fastapi.responses import RedirectResponse
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import asyncio
@@ -30,26 +32,6 @@ logger = get_logger(__name__)
 
 app = FastAPI()
 scheduler_task = None
-
-oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    authorizationUrl=f"https://discord.com/api/oauth2/authorize?client_id={config.DISCORD_CLIENT_ID}&redirect_uri={config.DISCORD_REDIRECT_URI}&response_type=code&scope=identify",
-    tokenUrl="https://discord.com/api/oauth2/token",
-    scopes={"identify": "Access your Discord identity"},
-)
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            "https://discord.com/api/users/@me",
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=400, detail="Invalid authentication credentials"
-            )
-        user_data = response.json()
-        return user_data
 
 
 class ScheduleControl(BaseModel):
@@ -97,9 +79,64 @@ async def scheduler(interval_minutes):
         await schedule.run_pending()
         await asyncio.sleep(1)
 
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+TOKEN_URL = 'https://discord.com/api/oauth2/token'
+API_URL = 'https://discord.com/api/users/@me'
+
+class User(BaseModel):
+    id: str
+    username: str
+    discriminator: str
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            'https://discord.com/api/users/@me',
+            headers={'Authorization': f'Bearer {token}'}
+        )
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        user_info = response.json()
+        return User(**user_info)
+
+@app.get("/login")
+def login():
+    oauth2_url = config.DISCORD_OAUTH_URL
+    return RedirectResponse(url=oauth2_url)
+
+
 @app.get("/callback")
-async def callback(request: Request):
-    pass
+async def callback(code: str):
+    async with httpx.AsyncClient() as client:
+        token_response = await client.post(
+            TOKEN_URL,
+            data={
+                'client_id': config.DISCORD_CLIENT_ID,
+                'client_secret': config.DISCORD_CLIENT_SECRET,
+                'grant_type': 'authorization_code',
+                'code': code,
+                'redirect_uri': config.DISCORD_REDIRECT_URI
+            },
+            headers={'Content-Type': 'application/x-www-form-urlencoded'}
+        )
+        token_response.raise_for_status()
+        tokens = token_response.json()
+        access_token = tokens['access_token']
+
+        user_response = await client.get(
+            API_URL,
+            headers={'Authorization': f'Bearer {access_token}'}
+        )
+        user_response.raise_for_status()
+        user_info = user_response.json()
+
+    return user_info
 
 
 @app.post("/run-task")
@@ -118,11 +155,13 @@ async def run_task(time_frame: TaskTimeFrame):
 async def run_task_for_user(
     time_frame: TaskTimeFrame,
     username: str = Query(...),
-    user: dict = Depends(get_current_user),
+    user: User = Depends(get_current_user),
 ):
     if user["id"] != config.DISCORD_BOT_USER_ID:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
+
     try:
         await get_user_results_from_sheet_by_date(
             username, config.SPREADSHEET_ID, time_frame.since, time_frame.until
