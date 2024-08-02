@@ -343,7 +343,7 @@ async def on_command(
             year, month = formatted_date.split("-")
 
         leaderboard = create_leaderboard_by_month(year, month, commit_filter)
-        messages = format_leaderboard_for_discord(leaderboard)
+        messages = format_leaderboard_for_discord(leaderboard, date, True)
         month_name = date_obj.strftime("%B")
 
         thread_title = f"Leaderboard | {year} {month_name}"
