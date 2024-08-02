@@ -44,12 +44,20 @@ Tool that will track and rank contributions across the different Mina developer 
     ```
     GITHUB_TOKEN='your_github_token'
     DISCORD_TOKEN='your_discord_token'
-    GOOGLE_SHEETS_CREDENTIALS='path_to_your_google_sheets_credentials.json'
     OPENAI_API_KEY='your_openai_api_key'
+
+    DISCORD_CLIENT_ID=XXXXXXXXXXXXX
+    DISCORD_CLIENT_SECRET=XXXXXXXXXXXXXX
+
+    ALLOWED_IPS=127.0.0.1,127.0.0.2
+
+    GOOGLE_SHEETS_CREDENTIALS='path_to_your_google_sheets_credentials.json'
 
     MONGO_HOST='mongodb://localhost:27017/'
     MONGO_DB="example_db"
     MONGO_COLLECTION="example_collection"
+
+    GTP_ENDPOINT=http://localhost:8000
 
     SPREADSHEET_ID='spread_sheet_id'
     LOG_LEVEL=DEBUG

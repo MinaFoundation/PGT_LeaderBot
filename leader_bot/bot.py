@@ -28,6 +28,7 @@ from leaderboard_functions import (
 )
 from db_functions import insert_discord_users
 from modals import UserModal
+import utils
 
 logger = get_logger(__name__)
 
@@ -44,6 +45,10 @@ spread_sheet_id = None
 auto_post_task = None
 auto_post_tasks = {}
 task_details = {}
+
+AUTH_TOKEN = utils.hasher(
+    config.DISCORD_TOKEN, config.DISCORD_CLIENT_ID, config.DISCORD_CLIENT_SECRET
+)
 
 
 @client.event
@@ -415,11 +420,13 @@ async def run_task_for_user(
         url = f"{config.GTP_ENDPOINT}/run-task-for-user"
         payload = {"since": since, "until": until}
         params = {"username": username}
+        headers = {"Authorization": AUTH_TOKEN}
 
         async with aiohttp.ClientSession() as session:
-            response_data = await fetch(
-                session, url, method="POST", data=payload, params=params
-            )
+            async with session.post(
+                url, json=payload, params=params, headers=headers
+            ) as response:
+                response_data = await response.json()
 
         await interaction.followup.send(response_data["message"])
     except Exception as e:
@@ -433,15 +440,19 @@ async def run_task_for_user(
     guild=discord.Object(id=config.GUILD_ID),
 )
 async def control_scheduler(
-    interaction: discord.Interaction, action: str, interval: int = None
+    interaction: discord.Interaction, action: str, interval: int = 1
 ):
     try:
         await interaction.response.defer()
         url = f"{config.GTP_ENDPOINT}/control-scheduler"
         payload = {"action": action, "interval_minutes": interval}
+        headers = {"Authorization": AUTH_TOKEN}
 
         async with aiohttp.ClientSession() as session:
-            response_data = await fetch(session, url, method="POST", data=payload)
+            async with session.post(
+                url, json=payload, params=None, headers=headers
+            ) as response:
+                response_data = await response.json()
 
         await interaction.followup.send(response_data["message"])
     except Exception as e:

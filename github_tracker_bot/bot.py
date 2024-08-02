@@ -1,13 +1,16 @@
-import time
 import sys
 import os
+import utils
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Query, Depends, Request, status
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+
 from pydantic import BaseModel, Field, field_validator
 
 import aioschedule as schedule
@@ -22,13 +25,25 @@ from log_config import get_logger
 
 logger = get_logger(__name__)
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.errors import RateLimitExceeded
+
 app = FastAPI()
+
+limiter = Limiter(key_func=get_remote_address, default_limits=["5/minute"])
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
 scheduler_task = None
 
 
 class ScheduleControl(BaseModel):
     action: str
-    interval_minutes: int = None
+    interval_minutes: int = 1
 
 
 class TaskTimeFrame(BaseModel):
@@ -70,6 +85,36 @@ async def scheduler(interval_minutes):
     while True:
         await schedule.run_pending()
         await asyncio.sleep(1)
+
+
+@app.middleware("http")
+async def check_auth_token(request: Request, call_next):
+    discord_token = config.DISCORD_TOKEN
+    client_id = config.DISCORD_CLIENT_ID
+    client_secret = config.DISCORD_CLIENT_SECRET
+
+    auth_token = utils.hasher(discord_token, client_id, client_secret)
+
+    request_token = request.headers.get("Authorization")
+    if request_token != auth_token:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"message": "Unauthorized"},
+        )
+    response = await call_next(request)
+    return response
+
+
+@app.middleware("http")
+async def ip_whitelist(request: Request, call_next):
+    client_ip = request.client.host
+    if client_ip not in config.ALLOWED_IPS:
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"message": "Forbidden: IP address not allowed"},
+        )
+    response = await call_next(request)
+    return response
 
 
 @app.post("/run-task")
