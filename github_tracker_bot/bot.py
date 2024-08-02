@@ -1,12 +1,16 @@
 import sys
 import os
 
+import utils
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import asyncio
 from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI, HTTPException, Query, Depends, Request, status
+from fastapi.responses import JSONResponse
+
 from pydantic import BaseModel, Field, field_validator
 
 import aioschedule as schedule
@@ -69,6 +73,24 @@ async def scheduler(interval_minutes):
     while True:
         await schedule.run_pending()
         await asyncio.sleep(1)
+
+
+@app.middleware("http")
+async def check_auth_token(request: Request, call_next):
+    discord_token = config.DISCORD_TOKEN
+    client_id = config.DISCORD_CLIENT_ID
+    client_secret = config.DISCORD_CLIENT_SECRET
+
+    auth_token = utils.hasher(discord_token, client_id, client_secret)
+
+    request_token = request.headers.get("Authorization")
+    if request_token != auth_token:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"message": "Unauthorized"},
+        )
+    response = await call_next(request)
+    return response
 
 
 @app.post("/run-task")
