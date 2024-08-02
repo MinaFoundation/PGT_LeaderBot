@@ -440,7 +440,7 @@ async def run_task_for_user(
     guild=discord.Object(id=config.GUILD_ID),
 )
 async def control_scheduler(
-    interaction: discord.Interaction, action: str, interval: int = None
+    interaction: discord.Interaction, action: str, interval: int = 1
 ):
     try:
         await interaction.response.defer()

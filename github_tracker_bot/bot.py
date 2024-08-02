@@ -1,6 +1,5 @@
 import sys
 import os
-
 import utils
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -8,8 +7,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-from fastapi import FastAPI, HTTPException, Query, Depends, Request, status
 from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Query, Depends, Request, status
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -43,7 +43,7 @@ scheduler_task = None
 
 class ScheduleControl(BaseModel):
     action: str
-    interval_minutes: int = None
+    interval_minutes: int = 1
 
 
 class TaskTimeFrame(BaseModel):
@@ -100,6 +100,18 @@ async def check_auth_token(request: Request, call_next):
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content={"message": "Unauthorized"},
+        )
+    response = await call_next(request)
+    return response
+
+
+@app.middleware("http")
+async def ip_whitelist(request: Request, call_next):
+    client_ip = request.client.host
+    if client_ip not in config.ALLOWED_IPS:
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"message": "Forbidden: IP address not allowed"},
         )
     response = await call_next(request)
     return response
