@@ -112,10 +112,10 @@ def split_message(message, limit=2000):
 def format_leaderboard_for_discord(leaderboard, req_date=None, is_month_closure=False):
     trophy_emojis = ["🥇", "🥈", "🥉"]
     current_date = datetime.now().strftime("%B %d, %Y")
-    
+
     if is_month_closure and req_date:
         leaderboard_message = f"🏆 **Leaderboard | {req_date}** 🏆\n\n"
-    else:    
+    else:
         leaderboard_message = f"🏆 **Leaderboard | {current_date}** 🏆\n\n"
 
     for entry in leaderboard[1:]:

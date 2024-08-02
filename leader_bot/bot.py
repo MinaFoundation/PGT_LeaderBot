@@ -212,7 +212,9 @@ async def on_command(
         for msg in messages:
             await thread.send(msg)
 
-        await interaction.followup.send(f"Posted to {thread_id} successfully.", ephemeral=True)
+        await interaction.followup.send(
+            f"Posted to {thread_id} successfully.", ephemeral=True
+        )
 
     except Exception as e:
         logger.error(f"Error in leaderboard-view command: {e}")
