@@ -36,7 +36,7 @@ class TestGithubTrackerBot(unittest.TestCase):
         self.assertEqual(until_date, expected_until_date.isoformat())
 
     @patch("github_tracker_bot.bot.scheduler", new_callable=AsyncMock)
-    def test_control_scheduler_start(self, mock_scheduler):
+    def test_control_scheduler_start(self):
         response = client.post(
             "/control-scheduler", json={"action": "start", "interval_minutes": 5}
         )
@@ -47,7 +47,7 @@ class TestGithubTrackerBot(unittest.TestCase):
         )
 
     @patch("github_tracker_bot.bot.scheduler", new_callable=AsyncMock)
-    def test_control_scheduler_stop(self, mock_scheduler):
+    def test_control_scheduler_stop(self):
         response = client.post("/control-scheduler", json={"action": "stop"})
         self.assertEqual(response.status_code, 200)
         self.assertIn("Scheduler stopped", response.json().get("message"))

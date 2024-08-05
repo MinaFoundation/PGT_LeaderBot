@@ -1,6 +1,5 @@
 import sys
 import os
-
 import config
 
 from datetime import datetime
@@ -9,9 +8,7 @@ from typing import List, Dict, Any, Optional, Union
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from pymongo import MongoClient
 from pymongo.collection import Collection
-from pymongo.errors import ConnectionFailure
 
 from github_tracker_bot.helpers.helper_functions import (
     count_all_contribution_data,

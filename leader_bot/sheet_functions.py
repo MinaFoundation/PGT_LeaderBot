@@ -2,8 +2,6 @@ import os
 import sys
 import csv
 from typing import List
-from datetime import datetime
-import pandas as pd
 
 from github_tracker_bot.mongo_data_handler import AIDecision
 
@@ -14,7 +12,7 @@ import config
 from log_config import get_logger
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-from config import GOOGLE_CREDENTIALS, SPREADSHEET_ID
+from config import GOOGLE_CREDENTIALS
 
 from db_functions import fetch_db_get_users
 

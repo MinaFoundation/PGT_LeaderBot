@@ -8,8 +8,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 
 from fastapi.responses import JSONResponse
-from fastapi import FastAPI, HTTPException, Query, Depends, Request, status
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi import FastAPI, HTTPException, Query, Request, status
 
 from pydantic import BaseModel, Field, field_validator
 
