@@ -541,6 +541,13 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 **Usage:**
 `/get-all-data-to-csv`
 
+#### **`/get-blockchain-summary`**
+
+**Description:** Fetchs MINA Explorer Rest api and sends blockchain summary as a message
+
+**Usage:**
+`/get-blockchain-summary`
+
 --------------
 
 ## Contributions
