@@ -22,7 +22,7 @@ from sheet_functions import (
     create_leaderboard_sheet,
     write_users_to_csv,
     write_ai_decisions_to_csv,
-    write_users_to_csv_monthly
+    write_users_to_csv_monthly,
 )
 from leaderboard_functions import (
     create_leaderboard_by_month,
@@ -497,13 +497,13 @@ async def control_scheduler(
     guild=discord.Object(id=config.GUILD_ID),
 )
 async def on_command(
-    interaction: discord.Interaction, user_handle: str, since: str, until: str
+    interaction: discord.Interaction, username: str, since: str, until: str
 ):
     try:
         await interaction.response.defer()
-        ai_decisions = get_ai_decisions_by_user_and_timeframe(user_handle, since, until)
+        ai_decisions = get_ai_decisions_by_user_and_timeframe(username, since, until)
 
-        file_path = "ai_decisions_by_user.csv"
+        file_path = f"ai_decisions_by_user_{username}.csv"
         result = write_ai_decisions_to_csv(file_path, ai_decisions)
         if "successful" in result:
             await interaction.channel.send(file=discord.File(file_path))
@@ -512,6 +512,27 @@ async def on_command(
         await interaction.followup.send("AI decisions here: ", ephemeral=True)
     except Exception as e:
         logger.error(f"Error in get-ai-decisions-by-user command: {e}")
+        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
+
+
+@tree.command(
+    name="get-all-data-to-csv",
+    description="Gets all db data and export it to csv.",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(interaction: discord.Interaction):
+    try:
+        await interaction.response.defer()
+
+        file_path = "all_data.csv"
+        result = write_users_to_csv(file_path)
+        if "successfully" in result:
+            await interaction.channel.send(file=discord.File(file_path))
+            os.remove(file_path)
+
+        await interaction.followup.send("All data is here: ", ephemeral=True)
+    except Exception as e:
+        logger.error(f"Error in get-all-data-to-csv command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
 
 

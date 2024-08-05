@@ -463,7 +463,7 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 #### **`/leaderboard-closure-month`**
 
-**Description:** Opens a thread that includes the Leaderboard for the month. Gets the forum channel ID from the .env file.
+**Description:** Opens a thread that includes the Leaderboard for the month. Gets the forum channel ID from the .env file and exports the user data which contributed in the given month as csv.
 
 **Usage:**
 
@@ -513,6 +513,24 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 * **action:** `start` or `stop`
 * **interval:** Time interval to run scheduler.
 
+#### **`/get-ai-decisions-by-user`**
+
+**Description:** Exports AI decisions as csv file for specific user between given dates.
+
+**Usage:**
+`/get-ai-decisions-by-user: <username> <since> <until>`
+
+* **username:** User handle of requested user.
+* **since:** "YYYY-MM-DD" format since date.
+* **until:** "YYYY-MM-DD" format until date.
+
+
+#### **`/get-all-data-to-csv`**
+
+**Description:** Exports all database user data to csv file.
+
+**Usage:**
+`/get-all-data-to-csv`
 
 --------------
 
