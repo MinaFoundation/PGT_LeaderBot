@@ -60,7 +60,7 @@ orjson==3.10.6
 packaging==24.1
 pandas==2.2.2
 pathspec==0.12.1
--e git+https://github.com/MinaFoundation/PGT_LeaderBot.git@26c933a20e09b917ecbc68854b3109a0b86c7277#egg=pgt_leaderbot
+-e git+https://github.com/MinaFoundation/PGT_LeaderBot.git@25697c13ae0e0718be137188ed0d77a43dfeef58#egg=pgt_leaderbot
 platformdirs==4.2.2
 pluggy==1.5.0
 proto-plus==1.24.0
@@ -111,6 +111,7 @@ uritemplate==4.1.1
 urllib3==2.2.2
 uvicorn==0.30.3
 uvloop==0.19.0
+vulture==2.11
 watchfiles==0.22.0
 websockets==12.0
 wrapt==1.16.0
