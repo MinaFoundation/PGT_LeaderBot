@@ -22,6 +22,7 @@ from sheet_functions import (
     create_leaderboard_sheet,
     write_users_to_csv,
     write_ai_decisions_to_csv,
+    write_users_to_csv_monthly
 )
 from leaderboard_functions import (
     create_leaderboard_by_month,
@@ -359,9 +360,9 @@ async def on_command(
                 await thread.send(msg)
 
         file_path = "user_data.csv"
-        result = write_users_to_csv(file_path)
+        result = write_users_to_csv_monthly(file_path, date)
 
-        if "successfully" in result:
+        if "Successfully" in result:
             await thread.send(file=discord.File(file_path))
             os.remove(file_path)
         else:

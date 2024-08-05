@@ -2,6 +2,8 @@ import os
 import sys
 import csv
 from typing import List
+from datetime import datetime
+import pandas as pd
 
 from github_tracker_bot.mongo_data_handler import AIDecision
 
@@ -209,7 +211,34 @@ def write_users_to_csv(file_path):
     except Exception as e:
         logger.error(f"Failed to write to CSV: {e}")
         return f"Failed to write to CSV: {e}"
+    
+def write_users_to_csv_monthly(file_path, month):
+    try:
+        users = fetch_db_get_users()
+        filtered_users = []
 
+        for user in users:
+            if month in user.qualified_daily_contribution_number_by_month:
+                user_data = user.to_dict()
+                user_data['qualified_daily_contributions_in_month'] = user.qualified_daily_contribution_number_by_month[month]
+                filtered_users.append(user_data)
+
+        if not filtered_users:
+            logger.info("No users with contributions for the specified month")
+            return "No users with contributions for the specified month"
+
+        keys = filtered_users[0].keys()
+        with open(file_path, 'w', newline='') as output_file:
+            dict_writer = csv.DictWriter(output_file, fieldnames=keys)
+            dict_writer.writeheader()
+            dict_writer.writerows(filtered_users)
+
+        logger.info(f"Successfully wrote to {file_path}")
+        return f"Successfully wrote to {file_path}"
+
+    except Exception as e:
+        logger.error(f"Failed to write to CSV: {e}")
+        return f"Failed to write to CSV: {e}"
 
 def write_ai_decisions_to_csv(
     file_path: str, ai_decisions: List[List[AIDecision]]
