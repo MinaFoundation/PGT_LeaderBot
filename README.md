@@ -472,6 +472,15 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 * **date:** (Optional) Date in "YYYY-MM" format. Default is now.
 * **commit_filter:**(Optional) Commit filter number to show only contributions greater than or equal to the specified number. Default is 10.
 
+#### **`/get-monthly-streaks`**
+
+**Description:** Gets monthly streaks of users and creats thread to forum channel.
+
+**Usage:**
+`/get-monthly-streaks date: <YYYY-MM>`
+
+* **date:** (Optional) Date in "YYYY-MM" format. Default is now.
+
 #### **`/get-members-and-insert-to-db`**
 
 **Description:** Gets and inserts all members of the guild to the db in new collection with their username and discord id.
