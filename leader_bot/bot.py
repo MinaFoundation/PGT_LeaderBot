@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -581,6 +582,31 @@ async def on_command(interaction: discord.Interaction):
         await interaction.followup.send("All data is here: ", ephemeral=True)
     except Exception as e:
         logger.error(f"Error in get-all-data-to-csv command: {e}")
+        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
+
+
+@tree.command(
+    name="get-blockchain-summary",
+    description="Gets MINA Blockchain summary",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(interaction: discord.Interaction):
+    try:
+        await interaction.response.defer()
+
+        url = "https://api.minaexplorer.com/summary"
+        headers = {}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                response_data = await response.json()
+
+        res = json.dumps(response_data, indent=4)
+        discord_message = f"```\n{res}\n```"
+
+        await interaction.followup.send(discord_message)
+    except Exception as e:
+        logger.error(f"Error in get-blockchain-summary command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
 
 
