@@ -27,8 +27,13 @@ from sheet_functions import (
 from leaderboard_functions import (
     create_leaderboard_by_month,
     format_leaderboard_for_discord,
+    format_streaks_for_discord,
 )
-from db_functions import insert_discord_users, get_ai_decisions_by_user_and_timeframe
+from db_functions import (
+    insert_discord_users,
+    get_ai_decisions_by_user_and_timeframe,
+    calculate_monthly_streak,
+)
 from modals import UserModal
 import utils
 
@@ -374,6 +379,49 @@ async def on_command(
 
     except Exception as e:
         logger.error(f"Error in leaderboard-closure-month: {e}")
+        await interaction.followup.send(f"Please check your input: {e}", ephemeral=True)
+
+
+@tree.command(
+    name="get-monthly-streaks",
+    description="Gets monthly streaks of users and sends it to channel.",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(interaction: discord.Integration, date: str = None):
+    try:
+        await interaction.response.defer()
+
+        forum_channel_id = int(config.LEADERBOARD_FORUM_CHANNEL_ID)
+        forum_channel = interaction.guild.get_channel(forum_channel_id)
+        if date:
+            year, month = date.split("-")
+            date_obj = datetime.strptime(f"{year}-{month}", "%Y-%m")
+        else:
+            now = datetime.now()
+            date_obj = now
+            formatted_date = now.strftime("%Y-%m")
+            year, month = formatted_date.split("-")
+            date = f"{year}-{month}"
+
+        month_name = date_obj.strftime("%B")
+        streaks = calculate_monthly_streak(date)
+
+        messages = format_streaks_for_discord(streaks, month_name)
+        thread_title = f"Streaks | {year} {month_name}"
+        thread, _ = await forum_channel.create_thread(
+            name=thread_title, content=messages[0]
+        )
+
+        if len(messages) > 0:
+            for msg in messages[1:]:
+                await thread.send(msg)
+
+        await interaction.followup.send(
+            f"Streaks thread created: {thread.jump_url}", ephemeral=True
+        )
+
+    except Exception as e:
+        logger.error(f"Error in get monthly streaks command: {e}")
         await interaction.followup.send(f"Please check your input: {e}", ephemeral=True)
 
 

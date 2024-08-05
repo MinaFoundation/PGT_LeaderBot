@@ -1,5 +1,7 @@
 import os
 import sys
+from typing import Dict
+from datetime import datetime
 
 from datetime import datetime, timedelta
 
@@ -137,3 +139,31 @@ def format_leaderboard_for_discord(leaderboard, req_date=None, is_month_closure=
         leaderboard_message += f"{rank_str} **{user_mention}** **|** {contributions} contributions **|** 🗓️ in the last {days_since_first_contribution} days\n"
 
     return split_message(leaderboard_message)
+
+
+def format_streaks_for_discord(streaks: Dict[str, int], month: str) -> str:
+    trophy_emojis = ["🥇", "🥈", "🥉"]
+    current_date = datetime.now().strftime("%B %d, %Y")
+
+    streaks_message = f"🏆 **Monthly Streaks | {month}** 🏆\n\n"
+
+    sorted_streaks = sorted(streaks.items(), key=lambda item: item[1], reverse=True)
+
+    for i, (user_handle, streak) in enumerate(sorted_streaks):
+        rank = i + 1
+
+        if rank <= len(trophy_emojis):
+            rank_str = trophy_emojis[rank - 1]
+        else:
+            rank_str = f"{rank}. "
+
+        discord_user_id = get_discord_user_id(user_handle)
+
+        if discord_user_id:
+            user_mention = f"<@{discord_user_id}>"
+        else:
+            user_mention = user_handle
+
+        streaks_message += f"{rank_str} **{user_mention}** **|** {streak} day{'s' if streak > 1 else ''} streak\n"
+
+    return split_message(streaks_message)
