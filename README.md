@@ -479,6 +479,19 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 **Usage:**
 `/get-members-and-insert-to-db`
 
+
+#### **`/run-task`**
+
+**Description:** Uses the Github Tracker Bot API [`/run-task`](#1-run-task-manually-for-specific-timeframes) [endpoint](#1-run-task-manually-for-specific-timeframes).
+
+**Usage:**
+`/run-task: <since> <until>`
+
+* **since:** "YYYY-MM-DD" format since date.
+* **until:** "YYYY-MM-DD" format until date.
+
+**Note:** It is okay to get An Error Occured message after some time in the discord because the API request will take long time.
+
 #### **`/run-task-for-user`**
 
 **Description:** Uses the Github Tracker Bot API [`/run-task-for-user`](#2-run-task-for-specific-user) [endpoint](#2-run-task-for-specific-user).

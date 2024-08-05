@@ -409,6 +409,31 @@ async def fetch(session, url, method="GET", data=None, params=None):
 
 
 @tree.command(
+    name="run-task",
+    description="Run the task for a specific timeframe.",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def run_task_for_user(interaction: discord.Interaction, since: str, until: str):
+    try:
+        since = convert_to_iso8601(since)
+        until = convert_to_iso8601(until)
+
+        await interaction.response.defer()
+        url = f"{config.GTP_ENDPOINT}/run-task"
+        payload = {"since": since, "until": until}
+        headers = {"Authorization": AUTH_TOKEN}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=payload, headers=headers) as response:
+                response_data = await response.json()
+
+        await interaction.followup.send(response_data["message"])
+    except Exception as e:
+        logger.error(f"Error in run-task-for-user command: {e}")
+        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
+
+
+@tree.command(
     name="run-task-for-user",
     description="Run the task for a specific user with the specified time frame",
     guild=discord.Object(id=config.GUILD_ID),
