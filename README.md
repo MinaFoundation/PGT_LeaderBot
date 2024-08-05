@@ -467,7 +467,7 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 **Usage:**
 
-`/leaderboard-closure-month: <YYYY-MM> <commit_filter>`
+`/leaderboard-closure-month date: <YYYY-MM> commit_filter: <commit_filter>`
 
 * **date:** (Optional) Date in "YYYY-MM" format. Default is now.
 * **commit_filter:**(Optional) Commit filter number to show only contributions greater than or equal to the specified number. Default is 10.
@@ -485,7 +485,7 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 **Description:** Uses the Github Tracker Bot API [`/run-task`](#1-run-task-manually-for-specific-timeframes) [endpoint](#1-run-task-manually-for-specific-timeframes).
 
 **Usage:**
-`/run-task: <since> <until>`
+`/run-task since: <since> until: <until>`
 
 * **since:** "YYYY-MM-DD" format since date.
 * **until:** "YYYY-MM-DD" format until date.
@@ -497,7 +497,7 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 **Description:** Uses the Github Tracker Bot API [`/run-task-for-user`](#2-run-task-for-specific-user) [endpoint](#2-run-task-for-specific-user).
 
 **Usage:**
-`/run-task-for-user: <username> <since> <until>`
+`/run-task-for-user username: <username> since: <since> until: <until>`
 
 * **username:** Username for data to scraped.
 * **since:** "YYYY-MM-DD" format since date.
@@ -508,7 +508,7 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 **Description:** Uses the Github Tracker Bot API [`/control-scheduler`](#3-control-scheduler) [endpoint](#3-control-scheduler) to control the scheduler (start/stop) with an optional interval.
 
 **Usage:**
-`/control-scheduler: <action> <interval>`
+`/control-scheduler action: <action> interval: <interval>`
 
 * **action:** `start` or `stop`
 * **interval:** Time interval to run scheduler.
@@ -518,7 +518,7 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 **Description:** Exports AI decisions as csv file for specific user between given dates.
 
 **Usage:**
-`/get-ai-decisions-by-user: <username> <since> <until>`
+`/get-ai-decisions-by-user username: <username> since: <since> until: <until>`
 
 * **username:** User handle of requested user.
 * **since:** "YYYY-MM-DD" format since date.
