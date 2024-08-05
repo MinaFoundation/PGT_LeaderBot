@@ -1,11 +1,9 @@
 import os
 import sys
-import json
-from typing import List, Optional
+
 from datetime import datetime, timedelta
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import config
 from log_config import get_logger
 
 logger = get_logger(__name__)
