@@ -3,6 +3,8 @@ import sys
 import csv
 from typing import List
 
+from github_tracker_bot.mongo_data_handler import AIDecision
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import config
@@ -204,6 +206,39 @@ def write_users_to_csv(file_path):
             writer.writerows(data)
 
         return f"Data successfully written to {file_path}"
+    except Exception as e:
+        logger.error(f"Failed to write to CSV: {e}")
+        return f"Failed to write to CSV: {e}"
+
+
+def write_ai_decisions_to_csv(
+    file_path: str, ai_decisions: List[List[AIDecision]]
+) -> str:
+    try:
+        with open(file_path, mode="w", newline="", encoding="utf-8") as csvfile:
+            if not ai_decisions or not ai_decisions[0]:
+                raise ValueError("Empty ai_decisions list")
+
+            flat_decisions = [
+                decision for sublist in ai_decisions for decision in sublist
+            ]
+
+            fieldnames = list(flat_decisions[0].to_dict().keys()) + list(
+                flat_decisions[0].response.to_dict().keys()
+            )
+
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+
+            for decision in flat_decisions:
+                decision_dict = decision.to_dict()
+                row = {
+                    **{k: v for k, v in decision_dict.items() if k != "response"},
+                    **decision_dict["response"],
+                }
+                writer.writerow(row)
+
+        return "CSV writing successful"
     except Exception as e:
         logger.error(f"Failed to write to CSV: {e}")
         return f"Failed to write to CSV: {e}"

@@ -1,6 +1,5 @@
 import os
 import sys
-import json
 from typing import List, Optional
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -60,3 +59,11 @@ def get_discord_user_id(username):
     except Exception as e:
         logger.error(f"An error occured: {e}")
         return None
+
+
+def get_ai_decisions_by_user_and_timeframe(username, since, until):
+    ai_decisions = mongo_manager.get_ai_decisions_by_user_and_daterange(
+        username, since, until
+    )
+
+    return ai_decisions
