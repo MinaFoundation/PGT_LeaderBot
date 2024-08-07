@@ -582,6 +582,27 @@ async def on_command(interaction: discord.Interaction):
         logger.error(f"Error in get-all-data-to-csv command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
 
+@tree.command(
+    name="get-executive-summary-with-ai-assistant",
+    description="Exports db data csv, after that sends the data to OPENAI Assistant",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(interaction: discord.Interaction):
+    try:
+        await interaction.response.defer()
+
+        file_path = "all_data.csv"
+        result = write_users_to_csv(file_path)
+        if "successfully" in result:
+            # Send the data with proper prompt to OPENAI API
+            # Get text response and send it as interaction response with proper style
+            os.remove(file_path)
+
+        await interaction.followup.send("All data is here: ", ephemeral=True)
+    except Exception as e:
+        logger.error(f"Error in get-all-data-to-csv command: {e}")
+        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
+
 
 @tree.command(
     name="get-blockchain-summary",
