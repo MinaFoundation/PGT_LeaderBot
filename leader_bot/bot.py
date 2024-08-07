@@ -371,8 +371,6 @@ async def on_command(
         if "Successfully" in result:
             await thread.send(file=discord.File(file_path))
             os.remove(file_path)
-        else:
-            await interaction.response.send_message(result, ephemeral=True)
 
         await interaction.followup.send(
             f"Leaderboard thread created: {thread.jump_url}", ephemeral=True
