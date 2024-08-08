@@ -36,6 +36,7 @@ from db_functions import (
     calculate_monthly_streak,
 )
 from modals import UserModal
+from helpers import csv_to_structured_string
 import utils
 
 logger = get_logger(__name__)
@@ -594,6 +595,7 @@ async def on_command(interaction: discord.Interaction):
         file_path = "all_data.csv"
         result = write_users_to_csv(file_path)
         if "successfully" in result:
+            csv_to_text = csv_to_structured_string(file_path)
             # Send the data with proper prompt to OPENAI API
             # Get text response and send it as interaction response with proper style
             os.remove(file_path)
