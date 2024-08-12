@@ -42,7 +42,7 @@ scheduler_task = None
 
 class ScheduleControl(BaseModel):
     action: str
-    interval_days: int = 1
+    interval_minutes: int = 1
 
 
 class TaskTimeFrame(BaseModel):
@@ -150,7 +150,7 @@ async def control_scheduler(control: ScheduleControl):
     if control.action == "start":
         if scheduler_task is None or scheduler_task.cancelled():
             interval_days = (
-                control.interval_days or 1
+                control.interval_minutes or 1
             )  # Default to 1 day if not specified
             scheduler_task = asyncio.create_task(scheduler(interval_days))
             return {
