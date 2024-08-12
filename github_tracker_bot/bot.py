@@ -1,8 +1,9 @@
 import sys
 import os
-import utils
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import utils
 
 import asyncio
 from datetime import datetime, timedelta, timezone
