@@ -42,7 +42,7 @@ scheduler_task = None
 
 class ScheduleControl(BaseModel):
     action: str
-    interval_minutes: int = 1
+    interval_days: int = 1
 
 
 class TaskTimeFrame(BaseModel):
@@ -79,8 +79,8 @@ async def run_scheduled_task():
         raise
 
 
-async def scheduler(interval_minutes):
-    schedule.every(interval_minutes).minutes.do(run_scheduled_task)
+async def scheduler(interval_days):
+    schedule.every(interval_days).days.do(run_scheduled_task)
     while True:
         await schedule.run_pending()
         await asyncio.sleep(1)
@@ -149,13 +149,13 @@ async def control_scheduler(control: ScheduleControl):
 
     if control.action == "start":
         if scheduler_task is None or scheduler_task.cancelled():
-            interval_minutes = (
-                control.interval_minutes or 1
-            )  # Default to 1 minute if not specified
-            scheduler_task = asyncio.create_task(scheduler(interval_minutes))
+            interval_days = (
+                control.interval_days or 1
+            )  # Default to 1 day if not specified
+            scheduler_task = asyncio.create_task(scheduler(interval_days))
             return {
-                "message": "Scheduler started with interval of {} minutes".format(
-                    interval_minutes
+                "message": "Scheduler started with interval of {} days".format(
+                    interval_days
                 )
             }
         else:
