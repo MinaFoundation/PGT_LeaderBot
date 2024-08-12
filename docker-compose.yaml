@@ -6,13 +6,19 @@ services:
     environment:
       - GITHUB_TOKEN=your_github_token
       - DISCORD_TOKEN=your_discord_token
-      - GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
       - OPENAI_API_KEY=your_openai_api_key
+      - GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
+      - DISCORD_CLIENT_ID=discord_client_id
+      - DISCORD_CLIENT_SECRET=discord_client_secret
+      - ALLOWED_IPS=ip1,ip2
       - MONGO_HOST=mongodb://localhost:27017/
       - MONGO_DB=example_db
       - MONGO_COLLECTION=example_collection
       - SPREADSHEET_ID=spread_sheet_id
       - LOG_LEVEL=DEBUG
+      - GUILD_ID=guild_id
+      - GMAIL_ADDRESS=gmail_address
+      - LEADERBOARD_FORUM_CHANNEL_ID=leaderboard_forum_channel_id
     volumes:
       - .:/app
     command: ["python", "github_tracker_bot/bot.py"]
