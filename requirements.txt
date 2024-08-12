@@ -45,7 +45,6 @@ invoke==2.2.0
 isort==5.13.2
 Jinja2==3.1.4
 limits==3.13.0
-logging==0.4.9.6
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 mccabe==0.7.0
@@ -60,7 +59,6 @@ orjson==3.10.6
 packaging==24.1
 pandas==2.2.2
 pathspec==0.12.1
--e git+https://github.com/MinaFoundation/PGT_LeaderBot.git@25697c13ae0e0718be137188ed0d77a43dfeef58#egg=pgt_leaderbot
 platformdirs==4.2.2
 pluggy==1.5.0
 proto-plus==1.24.0

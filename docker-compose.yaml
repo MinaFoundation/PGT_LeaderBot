@@ -1,46 +1,41 @@
-version: '3.10'
+version: "3.10"
 
 services:
-  app:
+  api:
     build: .
+    command: [ "python", "github_tracker_bot/bot.py" ]
     environment:
-      GITHUB_TOKEN=your_github_token
-      DISCORD_TOKEN=your_discord_token
-      OPENAI_API_KEY=your_openai_api_key
-      GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
-      DISCORD_CLIENT_ID=discord_client_id
-      DISCORD_CLIENT_SECRET=discord_client_secret
-      ALLOWED_IPS=ip1,ip2
-      MONGO_HOST=mongodb://localhost:27017/
-      MONGO_DB=example_db
-      MONGO_COLLECTION=example_collection
-      SPREADSHEET_ID=spread_sheet_id
-      LOG_LEVEL=DEBUG
-    volumes:
-      - .:/app
-    command: ["python", "github_tracker_bot/bot.py"]
+      - ALLOWED_IPS=ip1,ip2,127.0.0.1
+      - DISCORD_CLIENT_ID=discord_client_id
+      - DISCORD_CLIENT_SECRET=discord_client_secret
+      - DISCORD_TOKEN=your_discord_token
+      - GITHUB_TOKEN=your_github_token
+      - GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
+      - LOG_LEVEL=DEBUG
+      - MONGO_COLLECTION=example_collection
+      - MONGO_DB=example_db
+      - MONGO_HOST=mongodb://mongodb:27017/
+      - OPENAI_API_KEY=your_openai_api_key
+      - SPREADSHEET_ID=spread_sheet_id
 
-  leaderbot:
+  bot:
     build: .
+    command: [ "python", "leader_bot/bot.py" ]
     environment:
-      DISCORD_TOKEN=your_discord_token
-      OPENAI_API_KEY=your_openai_api_key
-      GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
-      DISCORD_CLIENT_ID=discord_client_id
-      DISCORD_CLIENT_SECRET=discord_client_secret
-      MONGO_HOST=mongodb://localhost:27017/
-      MONGO_DB=example_db
-      MONGO_COLLECTION=example_collection
-      SPREADSHEET_ID=spread_sheet_id
-      GUILD_ID=guild_id
-      GMAIL_ADDRESS=gmail_address
-      GTP_ENDPOINT=gtp_endpoint
-      LEADERBOARD_FORUM_CHANNEL_ID=leaderboard_forum_channel_id
-      LOG_LEVEL=DEBUG
-
-    volumes:
-      - .:/app
-    command: ["python", "leader_bot/bot.py"]
+      - DISCORD_CLIENT_ID=discord_client_id
+      - DISCORD_CLIENT_SECRET=discord_client_secret
+      - DISCORD_TOKEN=your_discord_token
+      - GMAIL_ADDRESS=gmail_address
+      - GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
+      - GTP_ENDPOINT=gtp_endpoint
+      - GUILD_ID=guild_id
+      - LEADERBOARD_FORUM_CHANNEL_ID=leaderboard_forum_channel_id
+      - LOG_LEVEL=DEBUG
+      - MONGO_COLLECTION=example_collection
+      - MONGO_DB=example_db
+      - MONGO_HOST=mongodb://mongodb:27017/
+      - OPENAI_API_KEY=your_openai_api_key
+      - SPREADSHEET_ID=spread_sheet_id
 
   mongodb:
     image: mongo:latest
