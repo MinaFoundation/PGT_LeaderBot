@@ -105,18 +105,6 @@ async def check_auth_token(request: Request, call_next):
     return response
 
 
-@app.middleware("http")
-async def ip_whitelist(request: Request, call_next):
-    client_ip = request.client.host
-    if client_ip not in config.ALLOWED_IPS:
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={"message": "Forbidden: IP address not allowed"},
-        )
-    response = await call_next(request)
-    return response
-
-
 @app.post("/run-task")
 async def run_task(time_frame: TaskTimeFrame):
     try:

@@ -49,8 +49,6 @@ Tool that will track and rank contributions across the different Mina developer 
     DISCORD_CLIENT_ID=XXXXXXXXXXXXX
     DISCORD_CLIENT_SECRET=XXXXXXXXXXXXXX
 
-    ALLOWED_IPS=127.0.0.1,127.0.0.2
-
     GOOGLE_SHEETS_CREDENTIALS='path_to_your_google_sheets_credentials.json'
 
     MONGO_HOST='mongodb://localhost:27017/'
