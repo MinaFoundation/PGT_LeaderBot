@@ -6,8 +6,6 @@ services:
     command: [ "python", "github_tracker_bot/bot.py" ]
     environment:
       - ALLOWED_IPS=ip1,ip2,127.0.0.1
-      - DISCORD_CLIENT_ID=discord_client_id
-      - DISCORD_CLIENT_SECRET=discord_client_secret
       - DISCORD_TOKEN=your_discord_token
       - GITHUB_TOKEN=your_github_token
       - GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
@@ -16,14 +14,13 @@ services:
       - MONGO_DB=example_db
       - MONGO_HOST=mongodb://mongodb:27017/
       - OPENAI_API_KEY=your_openai_api_key
+      - SHARED_SECRET=shared_secret  
       - SPREADSHEET_ID=spread_sheet_id
 
   bot:
     build: .
     command: [ "python", "leader_bot/bot.py" ]
     environment:
-      - DISCORD_CLIENT_ID=discord_client_id
-      - DISCORD_CLIENT_SECRET=discord_client_secret
       - DISCORD_TOKEN=your_discord_token
       - GMAIL_ADDRESS=gmail_address
       - GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
@@ -35,6 +32,7 @@ services:
       - MONGO_DB=example_db
       - MONGO_HOST=mongodb://mongodb:27017/
       - OPENAI_API_KEY=your_openai_api_key
+      - SHARED_SECRET=shared_secret  
       - SPREADSHEET_ID=spread_sheet_id
 
   mongodb:
