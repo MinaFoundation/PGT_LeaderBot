@@ -55,9 +55,7 @@ auto_post_task = None
 auto_post_tasks = {}
 task_details = {}
 
-AUTH_TOKEN = utils.hasher(
-    config.DISCORD_TOKEN, config.DISCORD_CLIENT_ID, config.DISCORD_CLIENT_SECRET
-)
+AUTH_TOKEN = config.SHARED_SECRET
 
 
 @client.event

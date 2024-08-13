@@ -89,11 +89,7 @@ async def scheduler(interval_minutes):
 
 @app.middleware("http")
 async def check_auth_token(request: Request, call_next):
-    discord_token = config.DISCORD_TOKEN
-    client_id = config.DISCORD_CLIENT_ID
-    client_secret = config.DISCORD_CLIENT_SECRET
-
-    auth_token = utils.hasher(discord_token, client_id, client_secret)
+    auth_token = config.SHARED_SECRET
 
     request_token = request.headers.get("Authorization")
     if request_token != auth_token:
