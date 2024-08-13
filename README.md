@@ -101,6 +101,8 @@ Date formats are ISO 8601 with Z suffix which is UTC. For example:
 
 ### API Endpoints
 
+All of them uses headers ```headers = {"Authorization": AUTH_TOKEN}``` gotten from .env `SHARED_SECRET`
+
 #### 1. Run task manually for specific timeframes:
 **Endpoint:** `/run-task`  
 **Method:** `POST`
