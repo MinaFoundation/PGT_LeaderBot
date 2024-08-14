@@ -5,7 +5,6 @@ services:
     build: .
     command: [ "python", "github_tracker_bot/bot.py" ]
     environment:
-      - ALLOWED_IPS=ip1,ip2,127.0.0.1
       - DISCORD_TOKEN=your_discord_token
       - GITHUB_TOKEN=your_github_token
       - GOOGLE_SHEETS_CREDENTIALS=path_to_your_google_sheets_credentials.json
