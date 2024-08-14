@@ -68,7 +68,7 @@ def create_leaderboard_by_month(year: str, month: str, commit_filter: int = 0):
             if first_date_str:
                 first_date = datetime.strptime(first_date_str, "%Y-%m-%d")
                 last_date = datetime(int(year), int(month), last_day_of_month)
-                days_since_first_contribution = (last_date - first_date).days
+                days_since_first_contribution = (last_date - first_date).days + 1
 
                 if contributions[target_date] >= commit_filter:
                     leaderboard.append(
