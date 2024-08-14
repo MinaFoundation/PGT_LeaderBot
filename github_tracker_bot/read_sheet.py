@@ -39,11 +39,11 @@ def read_sheet(spreadsheet_id):
             logger.debug("No data found.")
             return []
 
-        headers = data[0]
+        headers = [header.strip() for header in data[0]]
         formatted_data = []
 
         for row in data[1:]:
-            row_data = [row[i] if i < len(row) else "" for i in range(len(headers))]
+            row_data = [row[i].strip() if i < len(row) else "" for i in range(len(headers))]
             user_data = {headers[i]: row_data[i] for i in range(len(headers))}
 
             for i in range(len(headers)):
