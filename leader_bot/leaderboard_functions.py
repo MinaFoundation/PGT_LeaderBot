@@ -136,7 +136,7 @@ def format_leaderboard_for_discord(leaderboard, req_date=None, is_month_closure=
         else:
             user_mention = user_handle
 
-        leaderboard_message += f"{rank_str} **{user_mention}** **|** {contributions} contributions **|** 🗓️ in the last {days_since_first_contribution} days\n"
+        leaderboard_message += f"{rank_str} **{user_mention}** **|** {contributions} days of contributions **|** 🗓️ in the last {days_since_first_contribution} days\n"
 
     return split_message(leaderboard_message)
 
