@@ -50,13 +50,21 @@ def create_leaderboard_by_month(year: str, month: str, commit_filter: int = 0):
     target_date = f"{year}-{month.zfill(2)}"
     leaderboard = []
 
-    last_day_of_month = (datetime(int(year), int(month) + 1, 1) - timedelta(days=1)).day
+    if int(month) == 12:
+        next_year = int(year) + 1
+        next_month = 1
+    else:
+        next_year = int(year)
+        next_month = int(month) + 1
+
+    last_day_of_month = (datetime(next_year, next_month, 1) - timedelta(days=1)).day
 
     current_date = datetime.now()
 
-    # Check this later is it working well
     for user_handle, contributions in data.items():
         if target_date in contributions:
+            if user_handle not in qualified_dates:
+                continue
             first_date_str = min(
                 [
                     date
@@ -68,7 +76,10 @@ def create_leaderboard_by_month(year: str, month: str, commit_filter: int = 0):
             if first_date_str:
                 first_date = datetime.strptime(first_date_str, "%Y-%m-%d")
                 last_date = datetime(int(year), int(month), last_day_of_month)
-                days_since_first_contribution = (last_date - first_date).days + 1
+                if current_date >= last_date:
+                    days_since_first_contribution = (last_date - first_date).days + 1
+                else:
+                    days_since_first_contribution = (current_date - first_date).days + 1
 
                 if contributions[target_date] >= commit_filter:
                     leaderboard.append(
