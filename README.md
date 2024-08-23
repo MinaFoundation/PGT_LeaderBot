@@ -447,7 +447,7 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 * **date:** Date in "YYYY-MM" format.
 * **time:** Time in "HH-MM" format.
-* **spreadsheet_id:** (Optional) ID of the Google Sheet. If not provided, the last created or updated sheet will be used. If not created or updated before, it will post leader bot but will not update any sheet.
+* **spreadsheet_id:** (Optional) ID of the Google Sheet. If not provided, the last created or updated sheet will be used. If not created or updated before, it will post leaderboard but will not update any sheet.
 
 #### **`/leaderboard-stop-auto-post`**
 
