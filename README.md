@@ -379,7 +379,7 @@ Discord Bot for interacting with Google Sheets and data received from Github Scr
 ### Usage
 Explained [here](#installation--setup).
 
-Additionally, need to enable google drive api to use sheet sharing functionality.
+Additionally, need to enable google drive api to use sheet sharing functionality. `username` variables are discord handles.
 
 ### Commands
 
