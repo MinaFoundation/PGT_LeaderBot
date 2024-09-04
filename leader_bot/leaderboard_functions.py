@@ -63,8 +63,6 @@ def create_leaderboard_by_month(year: str, month: str, commit_filter: int = 0):
 
     for user_handle, contributions in data.items():
         if target_date in contributions:
-            if user_handle not in qualified_dates:
-                continue
             first_date_str = min(
                 [
                     date
