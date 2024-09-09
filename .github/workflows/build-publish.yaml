@@ -1,0 +1,65 @@
+name: Build - publish
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      docker_tag_suffix:
+        description: "Enter a Docker Tag suffix (e.g dev)\nSuffixed images will not be auto-deployed"
+        required: false
+        type: string
+
+env:
+  ECR_REPOSITORY_URL: 673156464838.dkr.ecr.us-west-2.amazonaws.com
+  ECR_REPOSITORY_NAME: pgt-leader-bot
+
+jobs:
+  build-publish:
+    name: Build and Publish Docker Image
+    runs-on: minafoundation-default-runners
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🦀 Get application version from setup.py
+        id: application-version
+        run: |
+          version=$(grep "version" setup.py | head -1 | cut -d'"' -f2)
+          echo "current-version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: 🏷️ Generate Tag
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            if [ "${{ github.event.inputs.docker_tag_suffix }}" != "" ]; then
+              echo "TAG=${{ steps.application-version.outputs.current-version }}-${{ github.event.inputs.docker_tag_suffix }}" >> $GITHUB_ENV
+            else
+              echo "TAG=${{ steps.application-version.outputs.current-version }}" >> $GITHUB_ENV
+            fi
+          elif [ "${{ github.event_name }}" == "push" ] && [ -n "${{ github.event.ref }}" ]; then
+            echo "TAG=${{ steps.application-version.outputs.current-version }}" >> $GITHUB_ENV
+          else
+            echo "Invalid event. Exiting..."
+            exit 1
+          fi
+
+      - name: 🔑 ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🔍 Check if Tag already exists
+        id: checktag
+        uses: tyriis/docker-image-tag-exists@main
+        with:
+          registry: ${{ env.ECR_REPOSITORY_URL}}
+          repository: ${{ env.ECR_REPOSITORY_NAME }}
+          tag: ${{ env.TAG }}
+
+      - name: 🛠️ Build and Push Docker
+        uses: mr-smithers-excellent/docker-build-push@v6
+        if: steps.checktag.outputs.tag == 'not found'
+        with:
+          image: ${{ env.ECR_REPOSITORY_NAME }}
+          registry: ${{ env.ECR_REPOSITORY_URL }}
+          tags: ${{ env.TAG }}
