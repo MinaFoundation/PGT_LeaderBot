@@ -79,12 +79,7 @@ def concatenate_diff_to_commit_info(
     }
 
     if diff is not None:
-        is_diff_necessary = not lib.process_diff(diff)
-
-        if is_diff_necessary:
-            result["diff"] = lib.filter_diffs(diff)
-        else:
-            result["diff"] = ""
+        result["diff"] = lib.filter_diffs(diff)
     else:
         result["diff"] = ""
 
