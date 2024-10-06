@@ -103,7 +103,12 @@ async def scheduler(scheduled_time="00:02"):
     async def job():
         await run_scheduled_task()
 
+    logger.info(f"Scheduler is set to run the task daily at {scheduled_time} UTC.")
+
     schedule.every().day.at(scheduled_time).do(lambda: asyncio.create_task(job()))
+    next_run_time = schedule.next_run()
+    logger.info(f"The next job is scheduled to run at {next_run_time}")
+    
     while True:
         await schedule.run_pending()
         await asyncio.sleep(1)
