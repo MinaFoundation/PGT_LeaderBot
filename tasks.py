@@ -30,9 +30,11 @@ def testmongo(ctx):
 def testmongoint(ctx):
     ctx.run(f"python -m unittest tests/test_mongo_integration.py")
 
+
 @task
 def testextract(ctx):
     ctx.run(f"python -m unittest tests/test_extract_unnecessary_diff.py")
+
 
 @task
 def testss(ctx):

@@ -1,9 +1,8 @@
+from contextlib import asynccontextmanager
 import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-import utils
 
 import asyncio
 from datetime import datetime, timedelta, timezone
@@ -30,7 +29,26 @@ from slowapi.util import get_remote_address
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.errors import RateLimitExceeded
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.scheduler_task = asyncio.create_task(scheduler())
+    logger.info("Scheduler started on application startup")
+
+    try:
+        yield
+    finally:
+        if app.state.scheduler_task:
+            app.state.scheduler_task.cancel()
+            try:
+                await app.state.scheduler_task
+            except asyncio.CancelledError:
+                pass
+            app.state.scheduler_task = None
+            logger.info("Scheduler stopped on application shutdown")
+
+
+app = FastAPI(lifespan=lifespan)
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["5/minute"])
 
@@ -38,12 +56,11 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
-scheduler_task = None
+app.state.scheduler_task = None
 
 
 class ScheduleControl(BaseModel):
     action: str
-    interval_minutes: int = 1
 
 
 class TaskTimeFrame(BaseModel):
@@ -80,8 +97,11 @@ async def run_scheduled_task():
         raise
 
 
-async def scheduler(interval_minutes):
-    schedule.every(interval_minutes).minutes.do(run_scheduled_task)
+async def scheduler():
+    async def job():
+        await run_scheduled_task()
+
+    schedule.every().day.at("00:02").do(lambda: asyncio.create_task(job()))
     while True:
         await schedule.run_pending()
         await asyncio.sleep(1)
@@ -130,29 +150,22 @@ async def run_task_for_user(
 
 @app.post("/control-scheduler")
 async def control_scheduler(control: ScheduleControl):
-    global scheduler_task
-
     if control.action == "start":
-        if scheduler_task is None or scheduler_task.cancelled():
-            interval_minutes = (
-                control.interval_minutes or 1
-            )  # Default to 1 minute if not specified
-            scheduler_task = asyncio.create_task(scheduler(interval_minutes))
-            return {
-                "message": "Scheduler started with interval of {} minutes".format(
-                    interval_minutes
-                )
-            }
+        if (
+            app.state.scheduler_task is None
+            or app.state.scheduler_task.cancelled()
+            or app.state.scheduler_task.done()
+        ):
+            app.state.scheduler_task = asyncio.create_task(scheduler())
+            return {"message": "Scheduler started"}
         else:
             return {"message": "Scheduler is already running"}
-
     elif control.action == "stop":
-        if scheduler_task and not scheduler_task.cancelled():
-            scheduler_task.cancel()
-            scheduler_task = None
+        if app.state.scheduler_task and not app.state.scheduler_task.cancelled():
+            app.state.scheduler_task.cancel()
+            app.state.scheduler_task = None
             return {"message": "Scheduler stopped"}
         return {"message": "Scheduler is not running"}
-
     else:
         raise HTTPException(status_code=400, detail="Invalid action specified")
 
