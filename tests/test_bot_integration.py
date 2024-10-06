@@ -15,38 +15,43 @@ import github_tracker_bot.bot as bot
 
 client = TestClient(bot.app)
 
+
 class TestIntegration(unittest.TestCase):
 
     @pytest.mark.asyncio
-    @patch("github_tracker_bot.bot_functions.get_all_results_from_sheet_by_date", new_callable=AsyncMock)
+    @patch(
+        "github_tracker_bot.bot_functions.get_all_results_from_sheet_by_date",
+        new_callable=AsyncMock,
+    )
     async def test_run_task(mock_get_all_results):
         async with AsyncClient(app=bot.app, base_url="http://test") as client:
             response = await client.post(
                 "/run-task",
-                json={
-                    "since": "2023-10-01T00:00:00Z",
-                    "until": "2023-10-02T00:00:00Z"
-                },
-                headers={"Authorization": "your_auth_token"}
+                json={"since": "2023-10-01T00:00:00Z", "until": "2023-10-02T00:00:00Z"},
+                headers={"Authorization": "your_auth_token"},
             )
         assert response.status_code == 200
-        assert response.json() == {"message": "Task run successfully with provided times"}
+        assert response.json() == {
+            "message": "Task run successfully with provided times"
+        }
         mock_get_all_results.assert_awaited_once()
 
     @pytest.mark.asyncio
-    @patch("github_tracker_bot.bot_functions.get_user_results_from_sheet_by_date", new_callable=AsyncMock)
+    @patch(
+        "github_tracker_bot.bot_functions.get_user_results_from_sheet_by_date",
+        new_callable=AsyncMock,
+    )
     async def test_run_task_for_user(mock_get_user_results):
         async with AsyncClient(app=bot.app, base_url="http://test") as client:
             response = await client.post(
                 "/run-task-for-user?username=testuser",
-                json={
-                    "since": "2023-10-01T00:00:00Z",
-                    "until": "2023-10-02T00:00:00Z"
-                },
-                headers={"Authorization": "your_auth_token"}
+                json={"since": "2023-10-01T00:00:00Z", "until": "2023-10-02T00:00:00Z"},
+                headers={"Authorization": "your_auth_token"},
             )
         assert response.status_code == 200
-        assert response.json() == {"message": "Task run successfully with provided times"}
+        assert response.json() == {
+            "message": "Task run successfully with provided times"
+        }
         mock_get_user_results.assert_awaited_once()
 
     @pytest.mark.asyncio
@@ -54,10 +59,7 @@ class TestIntegration(unittest.TestCase):
         async with AsyncClient(app=bot.app, base_url="http://test") as client:
             response = await client.post(
                 "/run-task",
-                json={
-                    "since": "2023-10-01T00:00:00Z",
-                    "until": "2023-10-02T00:00:00Z"
-                }
+                json={"since": "2023-10-01T00:00:00Z", "until": "2023-10-02T00:00:00Z"},
                 # No Authorization header
             )
         assert response.status_code == 401
@@ -72,20 +74,17 @@ class TestIntegration(unittest.TestCase):
                     "/run-task",
                     json={
                         "since": "2023-10-01T00:00:00Z",
-                        "until": "2023-10-02T00:00:00Z"
+                        "until": "2023-10-02T00:00:00Z",
                     },
-                    headers=headers
+                    headers=headers,
                 )
                 assert response.status_code == 200
 
             # 11th request should be rate limited
             response = await client.post(
                 "/run-task",
-                json={
-                    "since": "2023-10-01T00:00:00Z",
-                    "until": "2023-10-02T00:00:00Z"
-                },
-                headers=headers
+                json={"since": "2023-10-01T00:00:00Z", "until": "2023-10-02T00:00:00Z"},
+                headers=headers,
             )
             assert response.status_code == 429
 

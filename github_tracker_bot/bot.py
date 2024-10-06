@@ -80,8 +80,8 @@ class TaskTimeFrame(BaseModel):
 
 def get_dates_for_today():
     today = datetime.now(timezone.utc)
-    since_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
-    until_date = since_date + timedelta(days=1)
+    until_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    since_date = until_date - timedelta(days=1)
     return since_date.isoformat(), until_date.isoformat()
 
 
