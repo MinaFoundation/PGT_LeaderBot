@@ -15,13 +15,7 @@ import github_tracker_bot.bot as bot
 
 client = TestClient(bot.app)
 
-@pytest.mark.asyncio
 class TestIntegration(unittest.TestCase):
-
-    @pytest.fixture
-    async def client(self):
-        async with AsyncClient(app=bot.app, base_url="http://test") as ac:
-            yield ac
 
     @pytest.mark.asyncio
     @patch("github_tracker_bot.bot_functions.get_all_results_from_sheet_by_date", new_callable=AsyncMock)
@@ -56,7 +50,7 @@ class TestIntegration(unittest.TestCase):
         mock_get_user_results.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_unauthorized_access(self, client):
+    async def test_unauthorized_access(self):
         async with AsyncClient(app=bot.app, base_url="http://test") as client:
             response = await client.post(
                 "/run-task",
@@ -70,7 +64,7 @@ class TestIntegration(unittest.TestCase):
         assert response.json() == {"message": "Unauthorized"}
 
     @pytest.mark.asyncio
-    async def test_rate_limiting():
+    async def test_rate_limiting(self):
         async with AsyncClient(app=bot.app, base_url="http://test") as client:
             headers = {"Authorization": "your_auth_token"}
             for _ in range(10):
@@ -94,9 +88,6 @@ class TestIntegration(unittest.TestCase):
                 headers=headers
             )
             assert response.status_code == 429
-
-
-
 
 
 if __name__ == "__main__":
