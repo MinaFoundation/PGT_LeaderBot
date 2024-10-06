@@ -1,4 +1,3 @@
-from contextlib import asynccontextmanager
 import sys
 import os
 
@@ -13,6 +12,7 @@ from fastapi import FastAPI, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field, field_validator
 
 import aioschedule as schedule
+from contextlib import asynccontextmanager
 
 from github_tracker_bot.bot_functions import (
     get_all_results_from_sheet_by_date,
@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-limiter = Limiter(key_func=get_remote_address, default_limits=["5/minute"])
+limiter = Limiter(key_func=get_remote_address, default_limits=["10/minute"])
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
