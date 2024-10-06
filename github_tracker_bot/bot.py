@@ -97,11 +97,11 @@ async def run_scheduled_task():
         raise
 
 
-async def scheduler():
+async def scheduler(scheduled_time="00:02"):
     async def job():
         await run_scheduled_task()
 
-    schedule.every().day.at("00:02").do(lambda: asyncio.create_task(job()))
+    schedule.every().day.at(scheduled_time).do(lambda: asyncio.create_task(job()))
     while True:
         await schedule.run_pending()
         await asyncio.sleep(1)
