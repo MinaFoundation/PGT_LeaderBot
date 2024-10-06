@@ -157,6 +157,7 @@ async def control_scheduler(control: ScheduleControl):
             or app.state.scheduler_task.done()
         ):
             app.state.scheduler_task = asyncio.create_task(scheduler())
+            logger.info(f"Scheduler started!")
             return {"message": "Scheduler started"}
         else:
             return {"message": "Scheduler is already running"}
@@ -164,6 +165,7 @@ async def control_scheduler(control: ScheduleControl):
         if app.state.scheduler_task and not app.state.scheduler_task.cancelled():
             app.state.scheduler_task.cancel()
             app.state.scheduler_task = None
+            logger.info(f"Scheduler stopped!")
             return {"message": "Scheduler stopped"}
         return {"message": "Scheduler is not running"}
     else:

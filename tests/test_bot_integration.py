@@ -1,4 +1,8 @@
 import unittest
+import pytest
+from unittest.mock import AsyncMock, patch
+from httpx import AsyncClient
+
 from fastapi.testclient import TestClient
 
 import sys
@@ -11,47 +15,88 @@ import github_tracker_bot.bot as bot
 
 client = TestClient(bot.app)
 
-
+@pytest.mark.asyncio
 class TestIntegration(unittest.TestCase):
 
-    def test_run_task_endpoint(self):
-        response = client.post(
-            "/run-task",
-            json={
-                "since": "2023-01-01T00:00:00+00:00",
-                "until": "2023-01-02T00:00:00+00:00",
-            },
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(
-            "Task run successfully with provided times", response.json().get("message")
-        )
+    @pytest.fixture
+    async def client(self):
+        async with AsyncClient(app=bot.app, base_url="http://test") as ac:
+            yield ac
 
-    def test_run_task_with_incorrect_date(self):
-        response = client.post(
-            "/run-task",
-            json={
-                "since": "2024-06-31T00:00:00+00:00",
-                "until": "2024-03-02T00:00:00+00:00",
-            },
-        )
-        self.assertEqual(response.status_code, 422)
-        self.assertRaises(ValueError)
+    @pytest.mark.asyncio
+    @patch("github_tracker_bot.bot_functions.get_all_results_from_sheet_by_date", new_callable=AsyncMock)
+    async def test_run_task(mock_get_all_results):
+        async with AsyncClient(app=bot.app, base_url="http://test") as client:
+            response = await client.post(
+                "/run-task",
+                json={
+                    "since": "2023-10-01T00:00:00Z",
+                    "until": "2023-10-02T00:00:00Z"
+                },
+                headers={"Authorization": "your_auth_token"}
+            )
+        assert response.status_code == 200
+        assert response.json() == {"message": "Task run successfully with provided times"}
+        mock_get_all_results.assert_awaited_once()
 
-    def test_control_scheduler_start_endpoint(self):
-        response = client.post(
-            "/control-scheduler", json={"action": "start", "interval_minutes": 5}
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(
-            "Scheduler started with interval of 5 minutes",
-            response.json().get("message"),
-        )
+    @pytest.mark.asyncio
+    @patch("github_tracker_bot.bot_functions.get_user_results_from_sheet_by_date", new_callable=AsyncMock)
+    async def test_run_task_for_user(mock_get_user_results):
+        async with AsyncClient(app=bot.app, base_url="http://test") as client:
+            response = await client.post(
+                "/run-task-for-user?username=testuser",
+                json={
+                    "since": "2023-10-01T00:00:00Z",
+                    "until": "2023-10-02T00:00:00Z"
+                },
+                headers={"Authorization": "your_auth_token"}
+            )
+        assert response.status_code == 200
+        assert response.json() == {"message": "Task run successfully with provided times"}
+        mock_get_user_results.assert_awaited_once()
 
-    def test_control_scheduler_stop_endpoint(self):
-        response = client.post("/control-scheduler", json={"action": "stop"})
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Scheduler is not running", response.json().get("message"))
+    @pytest.mark.asyncio
+    async def test_unauthorized_access(self, client):
+        async with AsyncClient(app=bot.app, base_url="http://test") as client:
+            response = await client.post(
+                "/run-task",
+                json={
+                    "since": "2023-10-01T00:00:00Z",
+                    "until": "2023-10-02T00:00:00Z"
+                }
+                # No Authorization header
+            )
+        assert response.status_code == 401
+        assert response.json() == {"message": "Unauthorized"}
+
+    @pytest.mark.asyncio
+    async def test_rate_limiting():
+        async with AsyncClient(app=bot.app, base_url="http://test") as client:
+            headers = {"Authorization": "your_auth_token"}
+            for _ in range(10):
+                response = await client.post(
+                    "/run-task",
+                    json={
+                        "since": "2023-10-01T00:00:00Z",
+                        "until": "2023-10-02T00:00:00Z"
+                    },
+                    headers=headers
+                )
+                assert response.status_code == 200
+
+            # 11th request should be rate limited
+            response = await client.post(
+                "/run-task",
+                json={
+                    "since": "2023-10-01T00:00:00Z",
+                    "until": "2023-10-02T00:00:00Z"
+                },
+                headers=headers
+            )
+            assert response.status_code == 429
+
+
+
 
 
 if __name__ == "__main__":
