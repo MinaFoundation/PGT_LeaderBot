@@ -3,8 +3,6 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import utils
-
 import asyncio
 from datetime import datetime, timedelta, timezone
 
@@ -14,6 +12,7 @@ from fastapi import FastAPI, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field, field_validator
 
 import aioschedule as schedule
+from contextlib import asynccontextmanager
 
 from github_tracker_bot.bot_functions import (
     get_all_results_from_sheet_by_date,
@@ -30,20 +29,38 @@ from slowapi.util import get_remote_address
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.errors import RateLimitExceeded
 
-app = FastAPI()
 
-limiter = Limiter(key_func=get_remote_address, default_limits=["5/minute"])
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.scheduler_task = asyncio.create_task(scheduler())
+    logger.info("Scheduler started on application startup")
+
+    try:
+        yield
+    finally:
+        if app.state.scheduler_task:
+            app.state.scheduler_task.cancel()
+            try:
+                await app.state.scheduler_task
+            except asyncio.CancelledError:
+                pass
+            app.state.scheduler_task = None
+            logger.info("Scheduler stopped on application shutdown")
+
+
+app = FastAPI(lifespan=lifespan)
+
+limiter = Limiter(key_func=get_remote_address, default_limits=["10/minute"])
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
-scheduler_task = None
+app.state.scheduler_task = None
 
 
 class ScheduleControl(BaseModel):
     action: str
-    interval_minutes: int = 1
 
 
 class TaskTimeFrame(BaseModel):
@@ -63,8 +80,8 @@ class TaskTimeFrame(BaseModel):
 
 def get_dates_for_today():
     today = datetime.now(timezone.utc)
-    since_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
-    until_date = since_date + timedelta(days=1)
+    until_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    since_date = until_date - timedelta(days=1)
     return since_date.isoformat(), until_date.isoformat()
 
 
@@ -75,13 +92,23 @@ async def run_scheduled_task():
         await get_all_results_from_sheet_by_date(
             config.SPREADSHEET_ID, since_date, until_date
         )
+        logger.info(f"Gotten results between {since_date} and {until_date}")
+
     except Exception as e:
         logger.error(f"An error occurred while running the scheduled task: {e}")
         raise
 
 
-async def scheduler(interval_minutes):
-    schedule.every(interval_minutes).minutes.do(run_scheduled_task)
+async def scheduler(scheduled_time="00:02"):
+    async def job():
+        await run_scheduled_task()
+
+    logger.info(f"Scheduler is set to run the task daily at {scheduled_time} UTC.")
+
+    schedule.every().day.at(scheduled_time).do(lambda: asyncio.create_task(job()))
+    next_run_time = schedule.next_run()
+    logger.info(f"The next job is scheduled to run at {next_run_time}")
+
     while True:
         await schedule.run_pending()
         await asyncio.sleep(1)
@@ -130,29 +157,24 @@ async def run_task_for_user(
 
 @app.post("/control-scheduler")
 async def control_scheduler(control: ScheduleControl):
-    global scheduler_task
-
     if control.action == "start":
-        if scheduler_task is None or scheduler_task.cancelled():
-            interval_minutes = (
-                control.interval_minutes or 1
-            )  # Default to 1 minute if not specified
-            scheduler_task = asyncio.create_task(scheduler(interval_minutes))
-            return {
-                "message": "Scheduler started with interval of {} minutes".format(
-                    interval_minutes
-                )
-            }
+        if (
+            app.state.scheduler_task is None
+            or app.state.scheduler_task.cancelled()
+            or app.state.scheduler_task.done()
+        ):
+            app.state.scheduler_task = asyncio.create_task(scheduler())
+            logger.info(f"Scheduler started!")
+            return {"message": "Scheduler started"}
         else:
             return {"message": "Scheduler is already running"}
-
     elif control.action == "stop":
-        if scheduler_task and not scheduler_task.cancelled():
-            scheduler_task.cancel()
-            scheduler_task = None
+        if app.state.scheduler_task and not app.state.scheduler_task.cancelled():
+            app.state.scheduler_task.cancel()
+            app.state.scheduler_task = None
+            logger.info(f"Scheduler stopped!")
             return {"message": "Scheduler stopped"}
         return {"message": "Scheduler is not running"}
-
     else:
         raise HTTPException(status_code=400, detail="Invalid action specified")
 
