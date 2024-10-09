@@ -3,14 +3,12 @@ from unittest.mock import patch, AsyncMock
 import asyncio
 import aiohttp
 from github.GithubException import GithubException
-import sys
-import os
 import time
+import os
+import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from github_tracker_bot.process_commits import fetch_diff
-
 
 class TestGithubAPI(unittest.IsolatedAsyncioTestCase):
 
@@ -18,59 +16,63 @@ class TestGithubAPI(unittest.IsolatedAsyncioTestCase):
     async def test_fetch_diff_success(self, mock_client_session):
         repo = "test/repo"
         sha = "testsha"
-        url = f"https://api.github.com/repos/{repo}/commits/{sha}"
-        diff_url = f"https://github.com/{repo}/commit/{sha}.diff"
-        commit_data = {"html_url": f"https://github.com/{repo}/commit/{sha}"}
         diff_content = "diff --git a/file.txt b/file.txt\n..."
 
-        # Mock session.get to return successful commit data response
+        # Mock the commit data response
         mock_response_commit = AsyncMock()
         mock_response_commit.status = 200
-        mock_response_commit.json.return_value = commit_data
+        mock_response_commit.json.return_value = {"html_url": f"https://github.com/{repo}/commit/{sha}"}
 
-        # Mock session.get for diff request
+        # Mock the diff data response
         mock_response_diff = AsyncMock()
         mock_response_diff.status = 200
         mock_response_diff.text.return_value = diff_content
 
-        # Set up mock session
-        mock_client_session.return_value.__aenter__.return_value.get.side_effect = [
-            mock_response_commit,
-            mock_response_diff,
-        ]
+        # Set up the mock session to handle both the commit and diff requests
+        mock_session = AsyncMock()
+        mock_session.get.side_effect = [mock_response_commit, mock_response_diff]
 
-        # Call the function
+        # Ensure session behaves as an async context manager
+        mock_client_session.return_value.__aenter__.return_value = mock_session
+        mock_client_session.return_value.__aexit__.return_value = AsyncMock()
+
+        # Call the fetch_diff function
         result = await fetch_diff(repo, sha)
 
-        # Assert the diff content is returned correctly
+        # Assert that the diff content is returned correctly
         self.assertEqual(result, diff_content)
+
+
 
     @patch("aiohttp.ClientSession")
     @patch("asyncio.sleep", return_value=None)  # Mock sleep to avoid actual waiting
     async def test_fetch_diff_rate_limit(self, mock_sleep, mock_client_session):
         repo = 'test/repo'
         sha = 'testsha'
-        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
-
-        # Set rate limit reset time to 60 seconds in the future
-        reset_time = int(time.time()) + 60
 
         # Mock the 403 response with rate limit headers
+        reset_time = int(time.sleep()) + 60  # 60 seconds in the future
         mock_response = AsyncMock()
         mock_response.status = 403
         mock_response.headers = {'X-RateLimit-Reset': str(reset_time)}
         mock_response.text.return_value = "Rate limit exceeded"
 
-        # Mock session.get to return the rate limited response
-        mock_client_session.return_value.__aenter__.return_value.get.return_value = mock_response
+        # Mock session.get to return the rate-limited response
+        mock_session = AsyncMock()
+        mock_session.get.return_value = mock_response
+        mock_client_session.return_value.__aenter__.return_value = mock_session
+        mock_client_session.return_value.__aexit__.return_value = AsyncMock()
 
         # Call the function
         result = await fetch_diff(repo, sha)
 
-        # Assert that asyncio.sleep was called with the correct duration
-        mock_sleep.assert_called_once_with(60)
+        # Calculate the expected sleep time
+        expected_sleep_time = reset_time - int(time.sleep())
 
-        # No result is expected after handling the rate limit, but no exception should be raised either
+        # Assert that asyncio.sleep was called with the correct duration
+        mock_sleep.assert_called_once_with(expected_sleep_time)
+
+        # Assert that the result is None (since rate limit was hit)
         self.assertIsNone(result)
 
 
@@ -86,9 +88,10 @@ class TestGithubAPI(unittest.IsolatedAsyncioTestCase):
         mock_response.text.return_value = "Not Found"
 
         # Set up mock session
-        mock_client_session.return_value.__aenter__.return_value.get.return_value = (
-            mock_response
-        )
+        mock_session = AsyncMock()
+        mock_session.get.return_value = mock_response
+        mock_client_session.return_value.__aenter__.return_value = mock_session
+        mock_client_session.return_value.__aexit__.return_value = AsyncMock()
 
         # Call the function
         result = await fetch_diff(repo, sha)
@@ -114,10 +117,10 @@ class TestGithubAPI(unittest.IsolatedAsyncioTestCase):
         mock_response_diff.text.return_value = "Diff Not Found"
 
         # Set up mock session
-        mock_client_session.return_value.__aenter__.return_value.get.side_effect = [
-            mock_response_commit,
-            mock_response_diff,
-        ]
+        mock_session = AsyncMock()
+        mock_session.get.side_effect = [mock_response_commit, mock_response_diff]
+        mock_client_session.return_value.__aenter__.return_value = mock_session
+        mock_client_session.return_value.__aexit__.return_value = AsyncMock()
 
         # Call the function
         result = await fetch_diff(repo, sha)
@@ -131,9 +134,10 @@ class TestGithubAPI(unittest.IsolatedAsyncioTestCase):
         sha = "testsha"
 
         # Mock session.get to raise aiohttp.ClientError
-        mock_client_session.return_value.__aenter__.return_value.get.side_effect = (
-            aiohttp.ClientError
-        )
+        mock_session = AsyncMock()
+        mock_session.get.side_effect = aiohttp.ClientError
+        mock_client_session.return_value.__aenter__.return_value = mock_session
+        mock_client_session.return_value.__aexit__.return_value = AsyncMock()
 
         # Call the function and assert that it raises the error
         with self.assertRaises(aiohttp.ClientError):
@@ -145,13 +149,20 @@ class TestGithubAPI(unittest.IsolatedAsyncioTestCase):
         sha = "testsha"
 
         # Mock session.get to raise asyncio.TimeoutError
-        mock_client_session.return_value.__aenter__.return_value.get.side_effect = (
-            asyncio.TimeoutError
-        )
+        mock_session = AsyncMock()
+        mock_session.get.side_effect = asyncio.TimeoutError
+        mock_client_session.return_value.__aenter__.return_value = mock_session
+        mock_client_session.return_value.__aexit__.return_value = AsyncMock()
 
-        # Call the function and assert that it raises the timeout error
+        # Mock the context manager for session.get() so that it correctly handles 'async with'
+        mock_response = AsyncMock()
+        mock_response.__aenter__.side_effect = asyncio.TimeoutError  # Simulate the timeout when entering the context
+        mock_session.get.return_value = mock_response
+
+        # Call the function and assert that it raises asyncio.TimeoutError
         with self.assertRaises(asyncio.TimeoutError):
             await fetch_diff(repo, sha)
+
 
 
 def run_async_tests():
