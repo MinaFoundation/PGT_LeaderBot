@@ -23,15 +23,11 @@ GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
 
-
 retry_conditions = (
     retry_if_exception_type(aiohttp.ClientError)
     | retry_if_exception_type(asyncio.TimeoutError)
     | retry_if_exception_type(Exception)
-         
-                                                
 )
-
 
 
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(5), retry=retry_conditions)
@@ -49,15 +45,13 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
                     async with session.get(diff_url, headers=headers) as diff_response:
                         if diff_response.status == 200:
                             return await diff_response.text()
-                        
 
                         else:
                             logger.error(
                                 f"Failed to fetch diff: {await diff_response.text()}"
                             )
                             return None
-                
-                     
+
                 else:
                     logger.error(
                         f"Failed to fetch commit data: {await response.text()}"

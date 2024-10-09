@@ -5,141 +5,154 @@ import aiohttp
 from github.GithubException import GithubException
 import sys
 import os
+import time
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from github_tracker_bot.process_commits import fetch_diff
 
-class TestGithubAPI(unittest.TestCase):
 
-    @patch("github_tracker_bot.process_commits.fetch_diff", new_callable=AsyncMock)
-    async def test_fetch_diff_success():
-        repo = 'test/repo'
-        sha = 'testsha'
-        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
-        diff_content = 'diff --git a/file.txt b/file.txt\n...'
+class TestGithubAPI(unittest.IsolatedAsyncioTestCase):
 
-        with aioresponses() as m:
-            m.get(
-                url,
-                status=200,
-                body=diff_content,
-                headers={'Content-Type': 'application/vnd.github.v3.diff'}
-            )
+    @patch("aiohttp.ClientSession")
+    async def test_fetch_diff_success(self, mock_client_session):
+        repo = "test/repo"
+        sha = "testsha"
+        url = f"https://api.github.com/repos/{repo}/commits/{sha}"
+        diff_url = f"https://github.com/{repo}/commit/{sha}.diff"
+        commit_data = {"html_url": f"https://github.com/{repo}/commit/{sha}"}
+        diff_content = "diff --git a/file.txt b/file.txt\n..."
 
-            result = await fetch_diff(repo, sha)
-            assert result == diff_content
+        # Mock session.get to return successful commit data response
+        mock_response_commit = AsyncMock()
+        mock_response_commit.status = 200
+        mock_response_commit.json.return_value = commit_data
 
+        # Mock session.get for diff request
+        mock_response_diff = AsyncMock()
+        mock_response_diff.status = 200
+        mock_response_diff.text.return_value = diff_content
 
-""" 
-    @pytest.mark.asyncio
-    async def test_fetch_diff_404_error():
-        repo = 'invalid/repo'
-        sha = 'invalidsha'
-        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
+        # Set up mock session
+        mock_client_session.return_value.__aenter__.return_value.get.side_effect = [
+            mock_response_commit,
+            mock_response_diff,
+        ]
 
-        with aioresponses() as m:
-            m.get(
-                url,
-                status=404,
-                body='Not Found'
-            )
+        # Call the function
+        result = await fetch_diff(repo, sha)
 
-            result = await fetch_diff(repo, sha)
-            assert result is None
-        pass
+        # Assert the diff content is returned correctly
+        self.assertEqual(result, diff_content)
 
-    @pytest.mark.asyncio
-    async def test_fetch_diff_rate_limit():
+    @patch("aiohttp.ClientSession")
+    @patch("asyncio.sleep", return_value=None)  # Mock sleep to avoid actual waiting
+    async def test_fetch_diff_rate_limit(self, mock_sleep, mock_client_session):
         repo = 'test/repo'
         sha = 'testsha'
         url = f'https://api.github.com/repos/{repo}/commits/{sha}'
 
-        with aioresponses() as m:
-            m.get(
-                url,
-                status=403,
-                body='Rate limit exceeded',
-                headers={
-                    'X-RateLimit-Remaining': '0',
-                    'X-RateLimit-Reset': '9999999999'
-                }
-            )
+        # Set rate limit reset time to 60 seconds in the future
+        reset_time = int(time.time()) + 60
 
-            result = await fetch_diff(repo, sha)
-            assert result is None
-        pass
+        # Mock the 403 response with rate limit headers
+        mock_response = AsyncMock()
+        mock_response.status = 403
+        mock_response.headers = {'X-RateLimit-Reset': str(reset_time)}
+        mock_response.text.return_value = "Rate limit exceeded"
 
-    @pytest.mark.asyncio
-    async def test_fetch_diff_server_error():
-        repo = 'test/repo'
-        sha = 'testsha'
-        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
+        # Mock session.get to return the rate limited response
+        mock_client_session.return_value.__aenter__.return_value.get.return_value = mock_response
 
-        with aioresponses() as m:
-            m.get(
-                url,
-                status=500,
-                body='Internal Server Error'
-            )
+        # Call the function
+        result = await fetch_diff(repo, sha)
 
-            result = await fetch_diff(repo, sha)
-            assert result is None
-        pass
+        # Assert that asyncio.sleep was called with the correct duration
+        mock_sleep.assert_called_once_with(60)
 
-    @pytest.mark.asyncio
-    async def test_fetch_diff_client_error():
-        repo = 'test/repo'
-        sha = 'testsha'
+        # No result is expected after handling the rate limit, but no exception should be raised either
+        self.assertIsNone(result)
 
-        with patch('aiohttp.ClientSession.get', side_effect=aiohttp.ClientError):
-            with pytest.raises(aiohttp.ClientError):
-                await fetch_diff(repo, sha)
-        pass
-    @pytest.mark.asyncio
-    async def test_fetch_diff_timeout_error():
-        repo = 'test/repo'
-        sha = 'testsha'
 
-        with patch('aiohttp.ClientSession.get', side_effect=asyncio.TimeoutError):
-            with pytest.raises(asyncio.TimeoutError):
-                await fetch_diff(repo, sha)
-        pass
+    @patch("aiohttp.ClientSession")
+    async def test_fetch_diff_commit_not_found(self, mock_client_session):
+        repo = "test/repo"
+        sha = "invalidsha"
+        url = f"https://api.github.com/repos/{repo}/commits/{sha}"
 
-    @pytest.mark.asyncio
-    async def test_fetch_diff_unauthorized():
-        repo = 'test/repo'
-        sha = 'testsha'
-        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
+        # Mock session.get to return a 404 response
+        mock_response = AsyncMock()
+        mock_response.status = 404
+        mock_response.text.return_value = "Not Found"
 
-        with aioresponses() as m:
-            m.get(
-                url,
-                status=401,
-                body='Unauthorized'
-            )
+        # Set up mock session
+        mock_client_session.return_value.__aenter__.return_value.get.return_value = (
+            mock_response
+        )
 
-            result = await fetch_diff(repo, sha)
-            assert result is None
-        pass
+        # Call the function
+        result = await fetch_diff(repo, sha)
 
-    @pytest.mark.asyncio
-    async def test_fetch_diff_malformed_content():
-        repo = 'test/repo'
-        sha = 'testsha'
-        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
-        diff_content = 'MALFORMED DIFF CONTENT'
+        # Assert that None is returned when commit data is not found
+        self.assertIsNone(result)
 
-        with aioresponses() as m:
-            m.get(
-                url,
-                status=200,
-                body=diff_content,
-                headers={'Content-Type': 'application/vnd.github.v3.diff'}
-            )
+    @patch("aiohttp.ClientSession")
+    async def test_fetch_diff_diff_not_found(self, mock_client_session):
+        repo = "test/repo"
+        sha = "testsha"
+        url = f"https://api.github.com/repos/{repo}/commits/{sha}"
+        commit_data = {"html_url": f"https://github.com/{repo}/commit/{sha}"}
 
-            result = await fetch_diff(repo, sha)
-            assert result == diff_content
-        pass """
+        # Mock session.get to return successful commit data response
+        mock_response_commit = AsyncMock()
+        mock_response_commit.status = 200
+        mock_response_commit.json.return_value = commit_data
+
+        # Mock session.get for diff request, returning 404 for diff
+        mock_response_diff = AsyncMock()
+        mock_response_diff.status = 404
+        mock_response_diff.text.return_value = "Diff Not Found"
+
+        # Set up mock session
+        mock_client_session.return_value.__aenter__.return_value.get.side_effect = [
+            mock_response_commit,
+            mock_response_diff,
+        ]
+
+        # Call the function
+        result = await fetch_diff(repo, sha)
+
+        # Assert that None is returned when the diff is not found
+        self.assertIsNone(result)
+
+    @patch("aiohttp.ClientSession")
+    async def test_fetch_diff_client_error(self, mock_client_session):
+        repo = "test/repo"
+        sha = "testsha"
+
+        # Mock session.get to raise aiohttp.ClientError
+        mock_client_session.return_value.__aenter__.return_value.get.side_effect = (
+            aiohttp.ClientError
+        )
+
+        # Call the function and assert that it raises the error
+        with self.assertRaises(aiohttp.ClientError):
+            await fetch_diff(repo, sha)
+
+    @patch("aiohttp.ClientSession")
+    async def test_fetch_diff_timeout_error(self, mock_client_session):
+        repo = "test/repo"
+        sha = "testsha"
+
+        # Mock session.get to raise asyncio.TimeoutError
+        mock_client_session.return_value.__aenter__.return_value.get.side_effect = (
+            asyncio.TimeoutError
+        )
+
+        # Call the function and assert that it raises the timeout error
+        with self.assertRaises(asyncio.TimeoutError):
+            await fetch_diff(repo, sha)
+
 
 def run_async_tests():
     loop = asyncio.get_event_loop()
