@@ -7,7 +7,7 @@ from dateutil import parser
 from github import Github
 from typing import List, Optional, Dict, Any
 
-from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type, retry_if_result
+from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -22,15 +22,13 @@ logger = get_logger(__name__)
 GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
-def is_403_error(result):
-    return isinstance(result, aiohttp.ClientResponse) and result.status == 403
 
 
 retry_conditions = (
     retry_if_exception_type(aiohttp.ClientError)
     | retry_if_exception_type(asyncio.TimeoutError)
     | retry_if_exception_type(Exception)
-    | retry_if_result(is_403_error)     
+         
                                                 
 )
 
@@ -52,20 +50,13 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
                         if diff_response.status == 200:
                             return await diff_response.text()
                         
-                        elif diff_response.status == 403:
-                            logger.error(f"403 Forbidden: {await diff_response.text()}")      
-                            await asyncio.sleep(120) 
-                            return None
 
                         else:
                             logger.error(
                                 f"Failed to fetch diff: {await diff_response.text()}"
                             )
                             return None
-                elif response.status == 403:
-                    logger.error(f"403 Forbidden: {await diff_response.text()}")      
-                    await asyncio.sleep(120)        
-                    return None
+                
                      
                 else:
                     logger.error(

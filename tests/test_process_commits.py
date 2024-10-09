@@ -1,45 +1,150 @@
 import unittest
 from unittest.mock import patch, AsyncMock
-
-import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import aiohttp
 import asyncio
+import aiohttp
+from github.GithubException import GithubException
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from github_tracker_bot.process_commits import fetch_diff
-import config
-from  github import Github
 
-GITHUB_TOKEN = config.GITHUB_TOKEN
-g = Github(GITHUB_TOKEN)
+class TestGithubAPI(unittest.TestCase):
+
+    @patch("github_tracker_bot.process_commits.fetch_diff", new_callable=AsyncMock)
+    async def test_fetch_diff_success():
+        repo = 'test/repo'
+        sha = 'testsha'
+        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
+        diff_content = 'diff --git a/file.txt b/file.txt\n...'
+
+        with aioresponses() as m:
+            m.get(
+                url,
+                status=200,
+                body=diff_content,
+                headers={'Content-Type': 'application/vnd.github.v3.diff'}
+            )
+
+            result = await fetch_diff(repo, sha)
+            assert result == diff_content
 
 
+""" 
+    @pytest.mark.asyncio
+    async def test_fetch_diff_404_error():
+        repo = 'invalid/repo'
+        sha = 'invalidsha'
+        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
 
+        with aioresponses() as m:
+            m.get(
+                url,
+                status=404,
+                body='Not Found'
+            )
 
-class TestFetchDiff(unittest.IsolatedAsyncioTestCase):
-    @patch("aiohttp.ClientSession.get")
+            result = await fetch_diff(repo, sha)
+            assert result is None
+        pass
 
+    @pytest.mark.asyncio
+    async def test_fetch_diff_rate_limit():
+        repo = 'test/repo'
+        sha = 'testsha'
+        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
 
-    
-    async def test_fetch_diff_403_error(self, mock_get):
-        # Mock the response to simulate a 403 Forbidden error
-        mock_response = AsyncMock()
-        mock_response.status = 403
-        mock_response.text = AsyncMock(return_value="Forbidden")
-        mock_get.return_value.__aenter__.return_value = mock_response
+        with aioresponses() as m:
+            m.get(
+                url,
+                status=403,
+                body='Rate limit exceeded',
+                headers={
+                    'X-RateLimit-Remaining': '0',
+                    'X-RateLimit-Reset': '9999999999'
+                }
+            )
 
-        
+            result = await fetch_diff(repo, sha)
+            assert result is None
+        pass
 
-        repo_name = "MinaFoundation/PGT_LeaderBot"
-        sha = "16e7227acb63c112ec32fd757d7afd46f26e6b3c"
+    @pytest.mark.asyncio
+    async def test_fetch_diff_server_error():
+        repo = 'test/repo'
+        sha = 'testsha'
+        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
 
-        # Run the fetch_diff function
-        diff = await fetch_diff(repo_name, sha)
-        
+        with aioresponses() as m:
+            m.get(
+                url,
+                status=500,
+                body='Internal Server Error'
+            )
 
-        # Assertions to check if the function behaves as expected
-        self.assertIsNotNone(diff)  # Diff should be None due to 403 error
-        mock_get.assert_called()  # Ensure that the get method was called
+            result = await fetch_diff(repo, sha)
+            assert result is None
+        pass
+
+    @pytest.mark.asyncio
+    async def test_fetch_diff_client_error():
+        repo = 'test/repo'
+        sha = 'testsha'
+
+        with patch('aiohttp.ClientSession.get', side_effect=aiohttp.ClientError):
+            with pytest.raises(aiohttp.ClientError):
+                await fetch_diff(repo, sha)
+        pass
+    @pytest.mark.asyncio
+    async def test_fetch_diff_timeout_error():
+        repo = 'test/repo'
+        sha = 'testsha'
+
+        with patch('aiohttp.ClientSession.get', side_effect=asyncio.TimeoutError):
+            with pytest.raises(asyncio.TimeoutError):
+                await fetch_diff(repo, sha)
+        pass
+
+    @pytest.mark.asyncio
+    async def test_fetch_diff_unauthorized():
+        repo = 'test/repo'
+        sha = 'testsha'
+        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
+
+        with aioresponses() as m:
+            m.get(
+                url,
+                status=401,
+                body='Unauthorized'
+            )
+
+            result = await fetch_diff(repo, sha)
+            assert result is None
+        pass
+
+    @pytest.mark.asyncio
+    async def test_fetch_diff_malformed_content():
+        repo = 'test/repo'
+        sha = 'testsha'
+        url = f'https://api.github.com/repos/{repo}/commits/{sha}'
+        diff_content = 'MALFORMED DIFF CONTENT'
+
+        with aioresponses() as m:
+            m.get(
+                url,
+                status=200,
+                body=diff_content,
+                headers={'Content-Type': 'application/vnd.github.v3.diff'}
+            )
+
+            result = await fetch_diff(repo, sha)
+            assert result == diff_content
+        pass """
+
+def run_async_tests():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(unittest.main())
+
 
 if __name__ == "__main__":
-    unittest.main()
+    run_async_tests()

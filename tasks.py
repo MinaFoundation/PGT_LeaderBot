@@ -25,6 +25,10 @@ def testbotint(ctx):
 def testmongo(ctx):
     ctx.run(f"python -m unittest tests/test_mongo_data_handler.py")
 
+@task
+def testfc(ctx):
+    ctx.run(f"python -m unittest tests/test_process_commits.py")
+    
 
 @task
 def testmongoint(ctx):
