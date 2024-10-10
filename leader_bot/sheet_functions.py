@@ -480,13 +480,14 @@ def delete_user(discord_handle: str):
 
     update_data(config.SPREADSHEET_ID, RANGE_NAME, updated_data)
 
-def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, month:str):
+
+def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, month: str):
     try:
         user_data = get_user_data_for_a_month_from_db(username, month)
         if not user_data:
             logger.info(f"No data found for {username} in {month}")
             return f"No data found for {username} in {month}"
-        
+
         keys = user_data.keys()
         with open(file_path, "w", newline="") as output_file:
             dict_writer = csv.DictWriter(output_file, fieldnames=keys)
@@ -495,13 +496,7 @@ def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, month:
 
         logger.info(f"Successfully wrote to {file_path}")
         return f"Successfully wrote to {file_path}"
-    
+
     except Exception as e:
         logger.error(f"Failed to write to CSV: {e}")
         return f"Failed to write to CSV: {e}"
-        
-
-
-        
-
-

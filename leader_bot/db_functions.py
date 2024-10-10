@@ -104,12 +104,13 @@ def calculate_monthly_streak(month: str) -> Dict[str, int]:
     except Exception as e:
         logger.error(f"Failed to calculate monthly streaks: {e}")
         return {}
-    
-def get_user_data_for_a_month_from_db(username: str, month:str):
+
+
+def get_user_data_for_a_month_from_db(username: str, month: str):
     try:
         users = fetch_db_get_users()
         return get_user_data_for_a_month(users, username, month)
-        
+
     except Exception as e:
         logger.error(f"Failed to get user data for a month: {e}")
         return {}

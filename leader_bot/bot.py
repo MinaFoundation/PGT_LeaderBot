@@ -24,8 +24,7 @@ from sheet_functions import (
     write_users_to_csv,
     write_ai_decisions_to_csv,
     write_users_to_csv_monthly,
-    write_all_data_of_user_to_csv_by_month
-
+    write_all_data_of_user_to_csv_by_month,
 )
 from leaderboard_functions import (
     create_leaderboard_by_month,
@@ -617,7 +616,7 @@ async def on_command(interaction: discord.Interaction):
 async def on_command(interaction: discord.Interaction, username: str, date: str):
     try:
         await interaction.response.defer()
-        
+
         file_path = "user_monthly_data.csv"
         year, month = date.split("-")
         result = write_all_data_of_user_to_csv_by_month(file_path, username, month)
