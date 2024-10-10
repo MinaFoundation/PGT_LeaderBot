@@ -24,6 +24,8 @@ from sheet_functions import (
     write_users_to_csv,
     write_ai_decisions_to_csv,
     write_users_to_csv_monthly,
+    write_single_userwrite_all_data_of_user_to_csv_by_month
+
 )
 from leaderboard_functions import (
     create_leaderboard_by_month,
@@ -607,4 +609,23 @@ async def on_command(interaction: discord.Interaction):
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
 
 
-client.run(config.DISCORD_TOKEN)
+@tree.command(
+    name="get-user-mohthly-data-to-csv",
+    description="Gets all db data for specific user for a month and export it to csv.",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(interaction: discord.Interaction, username: str, date: str):
+    try:
+        await interaction.response.defer()
+        
+        file_path = "user_monthly_data.csv"
+        year, month = date.split("-")
+        result = write_all_data_of_user_to_csv_by_month(file_path, username, month)
+        if "successfully" in result:
+            await interaction.channel.send(file=discord.File(file_path))
+            os.remove(file_path)
+
+        await interaction.followup.send("User monthly data is here: ", ephemeral=True)
+    except Exception as e:
+        logger.error(f"Error in get-user-mohthly-data-to-csv command: {e}")
+        await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)

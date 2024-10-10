@@ -13,6 +13,7 @@ from log_config import get_logger
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from config import GOOGLE_CREDENTIALS
+from db_functions import get_user_data_for_a_month_from_db
 
 from db_functions import fetch_db_get_users
 
@@ -478,3 +479,29 @@ def delete_user(discord_handle: str):
         logger.error(f"Failed to clear Google Sheets data: {e}")
 
     update_data(config.SPREADSHEET_ID, RANGE_NAME, updated_data)
+
+def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, month:str):
+    try:
+        user_data = get_user_data_for_a_month_from_db(username, month)
+        if not user_data:
+            logger.info(f"No data found for {username} in {month}")
+            return f"No data found for {username} in {month}"
+        
+        keys = user_data.keys()
+        with open(file_path, "w", newline="") as output_file:
+            dict_writer = csv.DictWriter(output_file, fieldnames=keys)
+            dict_writer.writeheader()
+            dict_writer.writerow(user_data)
+
+        logger.info(f"Successfully wrote to {file_path}")
+        return f"Successfully wrote to {file_path}"
+    
+    except Exception as e:
+        logger.error(f"Failed to write to CSV: {e}")
+        return f"Failed to write to CSV: {e}"
+        
+
+
+        
+
+
