@@ -26,7 +26,6 @@ g = Github(GITHUB_TOKEN)
 retry_conditions = (
     retry_if_exception_type(aiohttp.ClientError)
     | retry_if_exception_type(asyncio.TimeoutError)
-    | retry_if_exception_type(Exception)
 )
 
 

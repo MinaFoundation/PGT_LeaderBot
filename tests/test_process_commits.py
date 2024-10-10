@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch, AsyncMock
-import asyncio
 import aiohttp
 from github.GithubException import GithubException
 import time
@@ -54,7 +53,7 @@ class TestGithubAPI(unittest.IsolatedAsyncioTestCase):
         reset_time = int(time.sleep()) + 60  # 60 seconds in the future
         mock_response = AsyncMock()
         mock_response.status = 403
-        mock_response.headers = {'X-RateLimit-Reset': str(reset_time)}
+        mock_response.headers = {"X-RateLimit-Reset": str(reset_time)}
         mock_response.text.return_value = "Rate limit exceeded"
 
         # Mock session.get to return the rate-limited response
@@ -74,7 +73,6 @@ class TestGithubAPI(unittest.IsolatedAsyncioTestCase):
 
         # Assert that the result is None (since rate limit was hit)
         self.assertIsNone(result)
-
 
     @patch("aiohttp.ClientSession")
     async def test_fetch_diff_commit_not_found(self, mock_client_session):
@@ -171,4 +169,4 @@ def run_async_tests():
 
 
 if __name__ == "__main__":
-    run_async_tests()
+    unittest.main()
