@@ -23,10 +23,9 @@ GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
 
-retry_conditions = (
-    retry_if_exception_type(aiohttp.ClientError)
-    | retry_if_exception_type(asyncio.TimeoutError)
-)
+retry_conditions = retry_if_exception_type(
+    aiohttp.ClientError
+) | retry_if_exception_type(asyncio.TimeoutError)
 
 
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(5), retry=retry_conditions)
