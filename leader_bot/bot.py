@@ -24,7 +24,7 @@ from sheet_functions import (
     write_users_to_csv,
     write_ai_decisions_to_csv,
     write_users_to_csv_monthly,
-    write_single_userwrite_all_data_of_user_to_csv_by_month
+    write_all_data_of_user_to_csv_by_month
 
 )
 from leaderboard_functions import (
