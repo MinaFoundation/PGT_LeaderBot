@@ -498,7 +498,8 @@ def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: 
             writer.writerow(
                 [username, qualified + nonqualified, qualified, nonqualified]
             )
-        return f"Data successfully written to {file_path}"
+
+        return "successfully"
 
     except Exception as e:
         logger.error(f"Failed to write to CSV: {e}")
