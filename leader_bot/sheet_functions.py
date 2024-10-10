@@ -494,8 +494,10 @@ def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: 
 
         with open(file_path, mode="w", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(["Username", "Qualified", "Nonqualified"])
-            writer.writerow([username, qualified, nonqualified])
+            writer.writerow(["Username", "Total Commits", "Qualified", "Nonqualified"])
+            writer.writerow(
+                [username, qualified + nonqualified, qualified, nonqualified]
+            )
         return f"Data successfully written to {file_path}"
 
     except Exception as e:
