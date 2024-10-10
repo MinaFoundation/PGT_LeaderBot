@@ -109,7 +109,7 @@ def calculate_monthly_streak(month: str) -> Dict[str, int]:
 def get_user_data_for_a_month_from_db(username: str, month: str):
     try:
         users = fetch_db_get_users()
-        return get_user_data_for_a_month(users, username, month)
+        return get_monthly_data_from_ai_decisions(users, username, month)
 
     except Exception as e:
         logger.error(f"Failed to get user data for a month: {e}")

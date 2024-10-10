@@ -618,8 +618,7 @@ async def on_command(interaction: discord.Interaction, username: str, date: str)
         await interaction.response.defer()
 
         file_path = "user_monthly_data.csv"
-        year, month = date.split("-")
-        result = write_all_data_of_user_to_csv_by_month(file_path, username, month)
+        result = write_all_data_of_user_to_csv_by_month(file_path, username, date)
         if "successfully" in result:
             await interaction.channel.send(file=discord.File(file_path))
             os.remove(file_path)

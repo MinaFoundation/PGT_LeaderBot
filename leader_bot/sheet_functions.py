@@ -2,7 +2,8 @@ import os
 import sys
 import csv
 from typing import List
-
+import calendar
+import datetime
 from github_tracker_bot.mongo_data_handler import AIDecision
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -12,10 +13,9 @@ import config
 from log_config import get_logger
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
+from db_functions import fetch_db_get_users, get_ai_decisions_by_user_and_timeframe
 from config import GOOGLE_CREDENTIALS
-from db_functions import get_user_data_for_a_month_from_db
-
-from db_functions import fetch_db_get_users
+from helpers import get_monthly_user_data_from_ai_decisions
 
 logger = get_logger(__name__)
 
@@ -481,21 +481,22 @@ def delete_user(discord_handle: str):
     update_data(config.SPREADSHEET_ID, RANGE_NAME, updated_data)
 
 
-def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, month: str):
+def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: str):
     try:
-        user_data = get_user_data_for_a_month_from_db(username, month)
-        if not user_data:
-            logger.info(f"No data found for {username} in {month}")
-            return f"No data found for {username} in {month}"
+        year, month = map(int, date.split("-"))
+        last_day = calendar.monthrange(year, month)[1]
+        since = f"{date}-01"
+        until = f"{date}-{last_day}"
+        ai_decisions = get_ai_decisions_by_user_and_timeframe(username, since, until)
+        qualified, nonqualified = get_monthly_user_data_from_ai_decisions(ai_decisions)
+        if qualified == 0 and nonqualified == 0:
+            return "No data found for the specified month."
 
-        keys = user_data.keys()
-        with open(file_path, "w", newline="") as output_file:
-            dict_writer = csv.DictWriter(output_file, fieldnames=keys)
-            dict_writer.writeheader()
-            dict_writer.writerow(user_data)
-
-        logger.info(f"Successfully wrote to {file_path}")
-        return f"Successfully wrote to {file_path}"
+        with open(file_path, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Username", "Qualified", "Nonqualified"])
+            writer.writerow([username, qualified, nonqualified])
+        return f"Data successfully written to {file_path}"
 
     except Exception as e:
         logger.error(f"Failed to write to CSV: {e}")
