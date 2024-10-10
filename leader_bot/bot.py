@@ -622,8 +622,16 @@ async def on_command(interaction: discord.Interaction, username: str, date: str)
         if "successfully" in result:
             await interaction.channel.send(file=discord.File(file_path))
             os.remove(file_path)
-
-        await interaction.followup.send("User monthly data is here: ", ephemeral=True)
+            await interaction.followup.send(
+                "User monthly data is here: ", ephemeral=True
+            )
+        else:
+            await interaction.followup.send(
+                "User monthly data is not found", ephemeral=True
+            )
     except Exception as e:
         logger.error(f"Error in get-user-mohthly-data-to-csv command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
+
+
+client.run(config.DISCORD_TOKEN)

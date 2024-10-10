@@ -31,7 +31,6 @@ def get_user_data_for_a_month(users: List[rd.User], username: str, month: str):
 
 
 def get_monthly_user_data_from_ai_decisions(ai_decisions):
-
     if not ai_decisions or not ai_decisions[0]:
         raise ValueError("Empty ai_decisions list")
 
@@ -39,7 +38,7 @@ def get_monthly_user_data_from_ai_decisions(ai_decisions):
 
     for decision_list in ai_decisions:
         for decision in decision_list:
-            if decision["is_qualified"] == "TRUE":
+            if decision.response.is_qualified:
                 qualified += 1
             else:
                 nonqualified += 1
