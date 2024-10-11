@@ -106,9 +106,7 @@ class User:
                         is_qualified=decision["response"]["is_qualified"],
                         explanation=decision["response"]["explanation"],
                     ),
-                    commit_hashes=decision.get(
-                        "commit_hashes", []
-                    ),  # Include commit_hashes
+                    commit_hashes=decision.get("commit_hashes", []),
                 )
                 for decision in decisions
             ]
