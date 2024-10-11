@@ -609,7 +609,7 @@ async def on_command(interaction: discord.Interaction):
 
 
 @tree.command(
-    name="get-user-mohthly-data-to-csv",
+    name="get-user-monthly-data-to-csv",
     description="Gets all db data for specific user for a month and export it to csv.",
     guild=discord.Object(id=config.GUILD_ID),
 )
@@ -630,7 +630,7 @@ async def on_command(interaction: discord.Interaction, username: str, date: str)
                 "User monthly data is not found", ephemeral=True
             )
     except Exception as e:
-        logger.error(f"Error in get-user-mohthly-data-to-csv command: {e}")
+        logger.error(f"Error in get-user-monthly-data-to-csv command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
 
 
