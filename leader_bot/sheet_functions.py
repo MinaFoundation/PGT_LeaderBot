@@ -495,17 +495,19 @@ def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: 
         with open(file_path, mode="w", newline="") as file:
             writer = csv.writer(file)
             writer.writerow(
-                [
-                    "Username",
-                    "Date",
-                    "Non qualified Contribution",
-                    "Qualified Contribution",
-                    "Total Contribution",
-                ]
+                ["username", "date", "is_qualified", "total_qualified_so_far"]
             )
+            total_qualified = 0
             for date, [nonqualified, qualified] in date_dict.items():
+                qualified = True if qualified != 0 else False
+                total_qualified += qualified
                 writer.writerow(
-                    [username, date, nonqualified, qualified, qualified + nonqualified]
+                    [
+                        username,
+                        date,
+                        qualified,
+                        total_qualified,
+                    ]
                 )
 
         return "successfully"
