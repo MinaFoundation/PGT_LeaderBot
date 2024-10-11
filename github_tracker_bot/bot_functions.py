@@ -143,7 +143,6 @@ async def get_user_results_from_sheet_by_date(
 
         results = await asyncio.gather(*tasks)
         results = [result for result in results if result is not None and result != []]
-
         for ai_decisions in results:
             if ai_decisions:
                 ai_decisions_class = create_ai_decisions_class(ai_decisions)
@@ -284,7 +283,6 @@ def convert_to_dict(data):
         return data
 
 
-##TODO HERE
 def create_ai_decisions_class(data):
     """Creates a list of AIDecisions instances from a list of dictionaries."""
     decisions = []

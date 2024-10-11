@@ -1,5 +1,6 @@
 import sys
 import os
+import copy
 import config
 
 from datetime import datetime
@@ -33,7 +34,6 @@ class DailyContributionResponse:
         return asdict(self)
 
 
-##TODO here
 @dataclass
 class AIDecision:
     username: str
@@ -49,7 +49,6 @@ class AIDecision:
         return data
 
 
-##TODO HERE MAYBE
 @dataclass
 class User:
     user_handle: str
@@ -96,7 +95,7 @@ class User:
     def from_dict(data: Dict[str, Any]) -> "User":
         """Creates a User instance from a dictionary."""
         ai_decisions = [
-            [  ##TODO HERE
+            [
                 AIDecision(
                     username=decision["username"],
                     repository=decision["repository"],
@@ -107,6 +106,9 @@ class User:
                         is_qualified=decision["response"]["is_qualified"],
                         explanation=decision["response"]["explanation"],
                     ),
+                    commit_hashes=decision.get(
+                        "commit_hashes", []
+                    ),  # Include commit_hashes
                 )
                 for decision in decisions
             ]
@@ -252,15 +254,17 @@ class MongoDBManagement:
 
     def add_ai_decisions_by_user(
         self, user_handle: str, ai_decisions: List[AIDecision]
-    ):
+    ) -> Optional[User]:
         """Adds AI decisions to a specific user."""
         try:
             user = self.get_user(user_handle)
             if not user:
                 raise ValueError(f"User with handle '{user_handle}' does not exist")
 
-            user.ai_decisions.append(ai_decisions)
-            result = self.update_user(user_handle, user)
+            updated_user = copy.deepcopy(user)
+            self.update_ai_decisions(updated_user, ai_decisions)
+            result = self.update_user(user_handle, updated_user)
+
             return result
         except Exception as e:
             logger.error(f"Failed to add AI decisions for user {user_handle}: {e}")
@@ -546,3 +550,27 @@ class MongoDBManagement:
                 f"Failed to set total daily contribution number for user {user_handle}: {e}"
             )
             raise
+
+    def update_ai_decisions(self, user: User, new_decisions: List[AIDecision]) -> None:
+        for new_decision in new_decisions:
+            repo_found = False
+            for repo_decisions in user.ai_decisions:
+                if (
+                    repo_decisions
+                    and repo_decisions[0].repository == new_decision.repository
+                ):
+                    repo_found = True
+                    date_found = False
+                    for existing_decision in repo_decisions:
+                        if existing_decision.date == new_decision.date:
+                            date_found = True
+                            for commit in new_decision.commit_hashes:
+                                if commit not in existing_decision.commit_hashes:
+                                    existing_decision.commit_hashes.append(commit)
+                            existing_decision.response = new_decision.response
+                            break
+                    if not date_found:
+                        repo_decisions.append(new_decision)
+                    break
+            if not repo_found:
+                user.ai_decisions.append([new_decision])
