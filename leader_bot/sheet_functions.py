@@ -488,16 +488,25 @@ def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: 
         since = f"{date}-01"
         until = f"{date}-{last_day}"
         ai_decisions = get_ai_decisions_by_user_and_timeframe(username, since, until)
-        qualified, nonqualified = get_monthly_user_data_from_ai_decisions(ai_decisions)
-        if qualified == 0 and nonqualified == 0:
+        date_dict = get_monthly_user_data_from_ai_decisions(ai_decisions)
+        if not date_dict:
             return "No data found for the specified month."
 
         with open(file_path, mode="w", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(["Username", "Total Commits", "Qualified", "Nonqualified"])
             writer.writerow(
-                [username, qualified + nonqualified, qualified, nonqualified]
+                [
+                    "Username",
+                    "Date",
+                    "Non qualified Contribution",
+                    "Qualified Contribution",
+                    "Total Contribution",
+                ]
             )
+            for date, [nonqualified, qualified] in date_dict.items():
+                writer.writerow(
+                    [username, date, nonqualified, qualified, qualified + nonqualified]
+                )
 
         return "successfully"
 

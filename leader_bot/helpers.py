@@ -34,13 +34,19 @@ def get_monthly_user_data_from_ai_decisions(ai_decisions):
     if not ai_decisions or not ai_decisions[0]:
         raise ValueError("Empty ai_decisions list")
 
-    qualified, nonqualified = 0, 0
+    date_qualified_nonqualified = {}
 
     for decision_list in ai_decisions:
         for decision in decision_list:
-            if decision.response.is_qualified:
-                qualified += 1
-            else:
-                nonqualified += 1
+            date = decision.response.date
+            if date not in date_qualified_nonqualified:
+                date_qualified_nonqualified[date] = [
+                    0,
+                    0,
+                ]  # first element is nonqualified, second is qualified
 
-    return qualified, nonqualified
+            if decision.response.is_qualified:
+                date_qualified_nonqualified[date][1] += 1
+            else:
+                date_qualified_nonqualified[date][0] += 1
+    return dict(sorted(date_qualified_nonqualified.items()))
