@@ -245,18 +245,21 @@ async def get_result(username, repo_link, since_date, until_date):
 async def process_commit_day(username, repo_link, commits_day, commits_data):
     try:
         response = await decide_daily_commits(commits_day, commits_data)
+        commit_hashes = [commit["sha"] for commit in commits_data]
         data_entry = {
             "username": username,
             "repository": repo_link,
             "date": commits_day,
             "response": json.loads(response),
+            "commit_hashes": commit_hashes,
         }
         logger.debug(
             f"AI Response for daily commits:\n"
             f"Username: {username},\n"
             f"Repository: {repo_link},\n"
             f"Date: {commits_day},\n"
-            f"Response: {response}"
+            f"Response: {response},\n"
+            f"Commit Hashes: {commit_hashes}"
         )
         return data_entry
     except OpenAIError as e:
@@ -281,6 +284,7 @@ def convert_to_dict(data):
         return data
 
 
+##TODO HERE
 def create_ai_decisions_class(data):
     """Creates a list of AIDecisions instances from a list of dictionaries."""
     decisions = []
@@ -297,6 +301,7 @@ def create_ai_decisions_class(data):
             repository=entry["repository"],
             date=entry["date"],
             response=response,
+            commit_hashes=entry.get("commit_hashes", []),
         )
         decisions.append(decision)
     return decisions

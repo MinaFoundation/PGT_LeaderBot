@@ -33,12 +33,14 @@ class DailyContributionResponse:
         return asdict(self)
 
 
+##TODO here
 @dataclass
 class AIDecision:
     username: str
     repository: str
     date: str
     response: DailyContributionResponse
+    commit_hashes: List[str] = field(default_factory=list)
 
     def to_dict(self):
         """Converts the dataclass to a dictionary, including nested response."""
@@ -47,6 +49,7 @@ class AIDecision:
         return data
 
 
+##TODO HERE MAYBE
 @dataclass
 class User:
     user_handle: str
@@ -93,7 +96,7 @@ class User:
     def from_dict(data: Dict[str, Any]) -> "User":
         """Creates a User instance from a dictionary."""
         ai_decisions = [
-            [
+            [  ##TODO HERE
                 AIDecision(
                     username=decision["username"],
                     repository=decision["repository"],
