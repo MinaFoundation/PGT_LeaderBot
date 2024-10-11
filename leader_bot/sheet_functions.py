@@ -1,21 +1,18 @@
 import os
 import sys
 import csv
-from typing import List
-import calendar
-import datetime
-from github_tracker_bot.mongo_data_handler import AIDecision
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import config
 
+from typing import List
 from log_config import get_logger
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from db_functions import fetch_db_get_users, get_ai_decisions_by_user_and_timeframe
+from github_tracker_bot.mongo_data_handler import AIDecision
+from helpers import get_monthly_user_data_from_ai_decisions, get_since_until_y_m_d
 from config import GOOGLE_CREDENTIALS
-from helpers import get_monthly_user_data_from_ai_decisions
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 logger = get_logger(__name__)
 
@@ -483,10 +480,7 @@ def delete_user(discord_handle: str):
 
 def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: str):
     try:
-        year, month = map(int, date.split("-"))
-        last_day = calendar.monthrange(year, month)[1]
-        since = f"{date}-01"
-        until = f"{date}-{last_day}"
+        since, until = get_since_until_y_m_d(date)
         ai_decisions = get_ai_decisions_by_user_and_timeframe(username, since, until)
         date_dict = get_monthly_user_data_from_ai_decisions(ai_decisions)
         if not date_dict:
