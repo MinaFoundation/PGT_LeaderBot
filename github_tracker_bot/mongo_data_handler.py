@@ -329,6 +329,10 @@ class MongoDBManagement:
                 user.qualified_daily_contribution_dates
             )
 
+            repositories = user.repositories.copy()
+            repositories.extend([decision.repository for decision in ai_decisions[0]])
+            user.repositories = list(set(repositories))
+
             updated_user = self.update_user(user_handle, user)
             return updated_user
 
