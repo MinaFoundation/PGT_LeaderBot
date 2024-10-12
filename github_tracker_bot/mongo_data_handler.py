@@ -1,5 +1,6 @@
 import sys
 import os
+import copy
 import config
 
 from datetime import datetime
@@ -39,6 +40,7 @@ class AIDecision:
     repository: str
     date: str
     response: DailyContributionResponse
+    commit_hashes: List[str] = field(default_factory=list)
 
     def to_dict(self):
         """Converts the dataclass to a dictionary, including nested response."""
@@ -104,6 +106,7 @@ class User:
                         is_qualified=decision["response"]["is_qualified"],
                         explanation=decision["response"]["explanation"],
                     ),
+                    commit_hashes=decision.get("commit_hashes", []),
                 )
                 for decision in decisions
             ]
@@ -249,15 +252,16 @@ class MongoDBManagement:
 
     def add_ai_decisions_by_user(
         self, user_handle: str, ai_decisions: List[AIDecision]
-    ):
+    ) -> Optional[User]:
         """Adds AI decisions to a specific user."""
         try:
             user = self.get_user(user_handle)
             if not user:
                 raise ValueError(f"User with handle '{user_handle}' does not exist")
+            updated_user = copy.deepcopy(user)
+            self.update_ai_decisions(updated_user, ai_decisions)
+            result = self.update_user(user_handle, updated_user)
 
-            user.ai_decisions.append(ai_decisions)
-            result = self.update_user(user_handle, user)
             return result
         except Exception as e:
             logger.error(f"Failed to add AI decisions for user {user_handle}: {e}")
@@ -543,3 +547,22 @@ class MongoDBManagement:
                 f"Failed to set total daily contribution number for user {user_handle}: {e}"
             )
             raise
+
+    def update_ai_decisions(self, user: User, new_decisions: List[AIDecision]) -> None:
+        for new_decision in new_decisions:
+            for user_ai_decision in user.ai_decisions[0]:
+                if (
+                    user_ai_decision.repository == new_decision.repository
+                    and user_ai_decision.date == new_decision.date
+                ):
+                    user_ai_decision.response = new_decision.response
+                    for commit in new_decision.commit_hashes:
+                        if commit not in user_ai_decision.commit_hashes:
+                            user_commit_hashes = user_ai_decision.commit_hashes
+                            if type(user_commit_hashes) != list:
+                                user_commit_hashes = user_commit_hashes.split(",")
+                            user_commit_hashes.extend(commit)
+                            user_ai_decision.commit_hashes = user_commit_hashes
+                    break
+            else:
+                user.ai_decisions[0].extend([new_decision])
