@@ -4,6 +4,7 @@ import sys
 import json
 
 from datetime import datetime
+from github_tracker_bot.bot_functions import delete_all_data
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -107,7 +108,7 @@ class UserDeletionModal(Modal, title="User Deletion"):
         self.initial_from_date = from_date
         self.initial_until_date = until_date
 
-        self.discord_handle = TextInput(
+        self.discord_handle = TextInput(  ##todo github or discord username
             label="Discord Handle",
             placeholder="Enter your Discord handle",
         )
@@ -141,7 +142,7 @@ class UserDeletionModal(Modal, title="User Deletion"):
                 )
                 return
 
-            await dummy_delete_all_data_in_db()
+            await delete_all_data(modal_from_date, modal_until_date)
 
             await interaction.followup.send(
                 f"All data between {modal_from_date} and {modal_until_date} has been deleted.",
@@ -152,7 +153,3 @@ class UserDeletionModal(Modal, title="User Deletion"):
             await interaction.followup.send(
                 "Oops! Something went wrong.", ephemeral=True
             )
-
-
-async def dummy_delete_all_data_in_db():  ##todo delete
-    logger.info("Dummy Deletion Process completed. No data was deleted.")

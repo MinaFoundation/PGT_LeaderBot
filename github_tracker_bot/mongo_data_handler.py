@@ -566,3 +566,30 @@ class MongoDBManagement:
                     break
             else:
                 user.ai_decisions[0].extend([new_decision])
+
+    from datetime import datetime
+
+    def delete_data_between_dates(self, since_date: str, until_date: str) -> int:
+        """Deletes users and their data if they have ai_decisions between the specified dates."""
+        try:
+            since_dt = datetime.strptime(since_date, "%Y-%m-%d")
+            until_dt = datetime.strptime(until_date, "%Y-%m-%d")
+
+            result = self.collection.delete_many(
+                {
+                    "ai_decisions.date": {
+                        "$gte": since_dt.strftime("%Y-%m-%d"),
+                        "$lte": until_dt.strftime("%Y-%m-%d"),
+                    }
+                }
+            )
+
+            logger.info(
+                f"Deleted {result.deleted_count} records between {since_date} and {until_date}"
+            )
+            return result.deleted_count
+        except Exception as e:
+            logger.error(
+                f"Failed to delete data between {since_date} and {until_date}: {e}"
+            )
+            raise

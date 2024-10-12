@@ -268,6 +268,13 @@ async def process_commit_day(username, repo_link, commits_day, commits_data):
     return None
 
 
+async def delete_all_data(since_date, until_date):
+    try:
+        mongo_manager.delete_data_between_dates(since_date, until_date)
+    except Exception as e:
+        logger.error(f"An error occurred while deleting data: {e}")
+
+
 def convert_to_dict(data):
     if isinstance(data, list):
         return [convert_to_dict(item) for item in data]
