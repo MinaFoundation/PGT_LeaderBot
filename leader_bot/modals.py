@@ -98,3 +98,61 @@ class UserModal(Modal, title="User Information"):
     ) -> None:
         logger.error(f"Error in on_error: {error}")
         await interaction.followup.send("Oops! Something went wrong.", ephemeral=True)
+
+
+class UserDeletionModal(Modal, title="User Deletion"):
+    def __init__(self, from_date: str = "", until_date: str = ""):
+        super().__init__(title="User Deletion")
+
+        self.initial_from_date = from_date
+        self.initial_until_date = until_date
+
+        self.discord_handle = TextInput(
+            label="Discord Handle",
+            placeholder="Enter your Discord handle",
+        )
+        self.from_date = TextInput(
+            label="From Date (YYYY-MM-DD)",
+            placeholder="Enter the start date",
+        )
+        self.until_date = TextInput(
+            label="Until Date (YYYY-MM-DD)",
+            placeholder="Enter the end date",
+        )
+
+        self.add_item(self.discord_handle)
+        self.add_item(self.from_date)
+        self.add_item(self.until_date)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        try:
+            discord_handle = self.discord_handle.value.strip()
+            modal_from_date = self.from_date.value.strip()
+            modal_until_date = self.until_date.value.strip()
+
+            if (
+                self.initial_from_date != modal_from_date
+                or self.initial_until_date != modal_until_date
+            ):
+                await interaction.followup.send(
+                    "Dates do not match. Please try again.", ephemeral=True
+                )
+                return
+
+            await dummy_delete_all_data_in_db()
+
+            await interaction.followup.send(
+                f"All data between {modal_from_date} and {modal_until_date} has been deleted.",
+                ephemeral=True,
+            )
+        except Exception as e:
+            logger.error(f"Error in on_submit: {e}")
+            await interaction.followup.send(
+                "Oops! Something went wrong.", ephemeral=True
+            )
+
+
+async def dummy_delete_all_data_in_db():  ##todo delete
+    logger.info("Dummy Deletion Process completed. No data was deleted.")

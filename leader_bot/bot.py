@@ -36,7 +36,7 @@ from db_functions import (
     get_ai_decisions_by_user_and_timeframe,
     calculate_monthly_streak,
 )
-from modals import UserModal
+from modals import UserModal, UserDeletionModal
 from helpers import csv_to_structured_string
 import utils
 
@@ -632,6 +632,23 @@ async def on_command(interaction: discord.Interaction, username: str, date: str)
     except Exception as e:
         logger.error(f"Error in get-user-monthly-data-to-csv command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
+
+
+@tree.command(
+    name="delete-all-data",
+    description="Deletes all data between specific dates.",
+    guild=discord.Object(id=config.GUILD_ID),
+)
+async def on_command(interaction: discord.Interaction, from_date: str, until_date: str):
+    try:
+        modal = UserDeletionModal(from_date=from_date, until_date=until_date)
+        await interaction.response.send_modal(modal)
+
+    except Exception as e:
+        logger.error(f"Error in on_command: {e}")
+        await interaction.followup.send(
+            "Something went wrong while processing the command.", ephemeral=True
+        )
 
 
 client.run(config.DISCORD_TOKEN)
