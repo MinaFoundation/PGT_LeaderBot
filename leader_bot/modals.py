@@ -108,11 +108,7 @@ class UserDeletionModal(Modal, title="User Deletion"):
         self.initial_from_date = from_date
         self.initial_until_date = until_date
 
-<<<<<<< HEAD
-        self.discord_handle = TextInput(  ##todo github or discord username
-=======
-        self.discord_handle = TextInput(
->>>>>>> 30dab31 (init modal functionalities)
+        self.discord_handle = TextInput(  ##TODO: clarify github or discord username
             label="Discord Handle",
             placeholder="Enter your Discord handle",
         )
@@ -143,6 +139,13 @@ class UserDeletionModal(Modal, title="User Deletion"):
             ):
                 await interaction.followup.send(
                     "Dates do not match. Please try again.", ephemeral=True
+                )
+                return
+
+            elif self.initial_until_date < self.initial_from_date:
+                await interaction.followup.send(
+                    "Until date shouldn't be fewer than From date. Please try again.",
+                    ephemeral=True,
                 )
                 return
 
