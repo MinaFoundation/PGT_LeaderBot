@@ -550,6 +550,10 @@ class MongoDBManagement:
 
     def update_ai_decisions(self, user: User, new_decisions: List[AIDecision]) -> None:
         for new_decision in new_decisions:
+            if user.ai_decisions == None or user.ai_decisions == []:
+                user.ai_decisions = [[]]
+                user.ai_decisions[0].extend([new_decision])
+                continue
             for user_ai_decision in user.ai_decisions[0]:
                 if (
                     user_ai_decision.repository == new_decision.repository
@@ -569,27 +573,85 @@ class MongoDBManagement:
 
     from datetime import datetime
 
-    def delete_data_between_dates(self, since_date: str, until_date: str) -> int:
-        """Deletes users and their data if they have ai_decisions between the specified dates."""
+    def find_users_with_ai_decisions_in_date_range(
+        self, since_date: str, until_date: str
+    ) -> List[Dict]:
+        """Find users with any ai_decisions between the specified dates."""
         try:
             since_dt = datetime.strptime(since_date, "%Y-%m-%d")
             until_dt = datetime.strptime(until_date, "%Y-%m-%d")
 
-            result = self.collection.delete_many(
+            users = self.collection.find(
                 {
-                    "ai_decisions.date": {
-                        "$gte": since_dt.strftime("%Y-%m-%d"),
-                        "$lte": until_dt.strftime("%Y-%m-%d"),
+                    "ai_decisions": {
+                        "$elemMatch": {
+                            "$elemMatch": {
+                                "date": {
+                                    "$gte": since_dt.strftime("%Y-%m-%d"),
+                                    "$lte": until_dt.strftime("%Y-%m-%d"),
+                                }
+                            }
+                        }
                     }
                 }
             )
+            return list(users)
+        except Exception as e:
+            logger.error(f"Failed to find users with ai_decisions in date range: {e}")
+            raise
+
+    def delete_ai_decisions_and_clean_users(
+        self, since_date: str, until_date: str
+    ) -> int:
+        """Deletes ai_decisions between dates, and deletes user if no ai_decisions remain."""
+        try:
+            since_dt = datetime.strptime(since_date, "%Y-%m-%d")
+            until_dt = datetime.strptime(until_date, "%Y-%m-%d")
+
+            users_to_update = self.find_users_with_ai_decisions_in_date_range(
+                since_date, until_date
+            )
+
+            deleted_users = 0
+            updated_users = 0
+
+            for user in users_to_update:
+                user_handle = user["user_handle"]
+                updated_ai_decisions = []
+
+                for decision_list in user["ai_decisions"]:
+                    new_decision_list = [
+                        decision
+                        for decision in decision_list
+                        if not (
+                            since_dt
+                            <= datetime.strptime(decision["date"], "%Y-%m-%d")
+                            <= until_dt
+                        )
+                    ]
+                    if new_decision_list:
+                        updated_ai_decisions.append(new_decision_list)
+
+                if not updated_ai_decisions:
+                    self.collection.delete_one({"user_handle": user_handle})
+                    logger.info(
+                        f"Deleted user {user_handle} because all ai_decisions were removed."
+                    )
+                    deleted_users += 1
+                else:
+                    self.collection.update_one(
+                        {"user_handle": user_handle},
+                        {"$set": {"ai_decisions": updated_ai_decisions}},
+                    )
+                    logger.info(f"Updated user {user_handle} with new ai_decisions.")
+                    updated_users += 1
 
             logger.info(
-                f"Deleted {result.deleted_count} records between {since_date} and {until_date}"
+                f"Deleted {deleted_users} users and updated {updated_users} users."
             )
-            return result.deleted_count
+            return deleted_users, updated_users
         except Exception as e:
             logger.error(
-                f"Failed to delete data between {since_date} and {until_date}: {e}"
+                f"Failed to delete ai_decisions and clean users between {since_date} and {until_date}: {e}"
             )
             raise

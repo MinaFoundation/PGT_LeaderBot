@@ -270,7 +270,7 @@ async def process_commit_day(username, repo_link, commits_day, commits_data):
 
 async def delete_all_data(since_date, until_date):
     try:
-        mongo_manager.delete_data_between_dates(since_date, until_date)
+        mongo_manager.delete_ai_decisions_and_clean_users(since_date, until_date)
     except Exception as e:
         logger.error(f"An error occurred while deleting data: {e}")
 
