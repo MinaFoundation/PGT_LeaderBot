@@ -258,7 +258,6 @@ class MongoDBManagement:
             user = self.get_user(user_handle)
             if not user:
                 raise ValueError(f"User with handle '{user_handle}' does not exist")
-
             updated_user = copy.deepcopy(user)
             self.update_ai_decisions(updated_user, ai_decisions)
             result = self.update_user(user_handle, updated_user)
@@ -551,24 +550,19 @@ class MongoDBManagement:
 
     def update_ai_decisions(self, user: User, new_decisions: List[AIDecision]) -> None:
         for new_decision in new_decisions:
-            repo_found = False
-            for repo_decisions in user.ai_decisions:
+            for user_ai_decision in user.ai_decisions[0]:
                 if (
-                    repo_decisions
-                    and repo_decisions[0].repository == new_decision.repository
+                    user_ai_decision.repository == new_decision.repository
+                    and user_ai_decision.date == new_decision.date
                 ):
-                    repo_found = True
-                    date_found = False
-                    for existing_decision in repo_decisions:
-                        if existing_decision.date == new_decision.date:
-                            date_found = True
-                            for commit in new_decision.commit_hashes:
-                                if commit not in existing_decision.commit_hashes:
-                                    existing_decision.commit_hashes.append(commit)
-                            existing_decision.response = new_decision.response
-                            break
-                    if not date_found:
-                        repo_decisions.append(new_decision)
+                    user_ai_decision.response = new_decision.response
+                    for commit in new_decision.commit_hashes:
+                        if commit not in user_ai_decision.commit_hashes:
+                            user_commit_hashes = user_ai_decision.commit_hashes
+                            if type(user_commit_hashes) != list:
+                                user_commit_hashes = user_commit_hashes.split(",")
+                            user_commit_hashes.extend(commit)
+                            user_ai_decision.commit_hashes = user_commit_hashes
                     break
-            if not repo_found:
-                user.ai_decisions.append([new_decision])
+            else:
+                user.ai_decisions[0].extend([new_decision])
