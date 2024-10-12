@@ -1,13 +1,14 @@
 import os
 import sys
+import time
 import asyncio
 import aiohttp
 from datetime import datetime
 from dateutil import parser
 from github import Github
 from typing import List, Optional, Dict, Any
-
-from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type
+from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type, RetryError
+from asyncio import Semaphore
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -23,47 +24,49 @@ GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
 
-retry_conditions = retry_if_exception_type(
-    aiohttp.ClientError
-) | retry_if_exception_type(asyncio.TimeoutError)
+CONCURRENT_REQUESTS = 5 
+semaphore = Semaphore(CONCURRENT_REQUESTS)
 
-
+retry_conditions = (
+    retry_if_exception_type(
+        aiohttp.ClientError,
+    )
+    | retry_if_exception_type(asyncio.TimeoutError)
+    | retry_if_exception_type(aiohttp.ClientConnectorError)
+)
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(5), retry=retry_conditions)
 async def fetch_diff(repo: str, sha: str) -> Optional[str]:
     url = f"https://api.github.com/repos/{repo}/commits/{sha}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers) as response:
-                if response.status == 200:
-                    commit_data = await response.json()
-                    diff_url = commit_data["html_url"] + ".diff"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3.diff",
+    }
 
-                    async with session.get(diff_url, headers=headers) as diff_response:
-                        if diff_response.status == 200:
-                            return await diff_response.text()
-
-                        else:
-                            logger.error(
-                                f"Failed to fetch diff: {await diff_response.text()}"
-                            )
-                            return None
-
-                else:
-                    logger.error(
-                        f"Failed to fetch commit data: {await response.text()}"
-                    )
-                    return None
-    except aiohttp.ClientError as e:
-        logger.error(f"Client error while fetching diff for repo {repo}: {e}")
-        raise
-    except asyncio.TimeoutError:
-        logger.error("Request timed out while fetching diff")
-        raise
-    except Exception as e:
-        logger.error(f"Unexpected error while fetching diff: {e}")
-        raise
+    async with semaphore:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers, timeout=10) as response:
+                    if response.status == 200:
+                        diff = await response.text()
+                        return diff
+                    elif response.status == 403:
+                        reset_time = response.headers.get("X-RateLimit-Reset")
+                        sleep_time = (
+                            int(reset_time) - int(time.time()) + 1 if reset_time else 60
+                        )
+                        logger.warning(f"Rate limit exceeded. Sleeping for {sleep_time} seconds.")
+                        await asyncio.sleep(sleep_time)  # Ensure the sleep happens
+                        raise aiohttp.ClientError("Rate limit exceeded, retrying...")
+                    else:
+                        error_text = await response.text()
+                        logger.error(
+                            f"Failed to fetch diff: {response.status}, {error_text}"
+                        )
+                        return None
+        except Exception as e:
+            logger.error(f"Error while fetching diff for repo {repo}: {e}")
+            raise
 
 
 def concatenate_diff_to_commit_info(
@@ -86,7 +89,6 @@ def concatenate_diff_to_commit_info(
 
     return result
 
-
 def group_and_sort_commits(
     processed_commits: List[Dict[str, Any]]
 ) -> Dict[str, List[Dict[str, Any]]]:
@@ -103,19 +105,21 @@ def group_and_sort_commits(
 
     return grouped_commits
 
-
 async def process_commits(commit_infos: List[Dict[str, Any]]):
     tasks = [
         fetch_diff(commit_info["repo"], commit_info["sha"])
         for commit_info in commit_infos
     ]
 
-    diffs = await asyncio.gather(*tasks)
+    diffs = await asyncio.gather(*tasks, return_exceptions=True)
 
-    processed_commits = [
-        concatenate_diff_to_commit_info(commit_info, diff)
-        for commit_info, diff in zip(commit_infos, diffs)
-    ]
+    processed_commits = []
+    for commit_info, diff in zip(commit_infos, diffs):
+        if isinstance(diff, Exception):
+            logger.error(f"Failed to fetch diff for {commit_info['sha']}: {diff}")
+            diff = None 
+        processed_commit = concatenate_diff_to_commit_info(commit_info, diff)
+        processed_commits.append(processed_commit)
 
     grouped_commits = group_and_sort_commits(processed_commits)
     for daily_commit in grouped_commits.values():
@@ -123,13 +127,14 @@ async def process_commits(commit_infos: List[Dict[str, Any]]):
 
     return grouped_commits
 
-
 if __name__ == "__main__":
     repo_name = "UmstadAI/zkAppUmstad"
     sha = "092c20a73859e0b4a4591f815efbdcab08df4df8"
-    diff = asyncio.run(fetch_diff(repo_name, sha))
-
-    if diff:
-        logger.info(f"Fetched diff successfully: {diff}")
-    else:
-        logger.error("Failed to fetch diff")
+    try:
+        diff = asyncio.run(fetch_diff(repo_name, sha))
+        if diff:
+            logger.info(f"Fetched diff successfully.")
+        else:
+            logger.error("Failed to fetch diff")
+    except RetryError as e:
+        logger.error(f"Failed after retries: {e}")
