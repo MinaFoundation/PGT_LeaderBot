@@ -509,17 +509,3 @@ def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: 
     except Exception as e:
         logger.error(f"Failed to write to CSV: {e}")
         return f"Failed to write to CSV: {e}"
-
-
-def get_repositories_from_user(username: str):
-    data = read_sheet(config.SPREADSHEET_ID)
-    if not data:
-        logger.error("No data found in the spreadsheet.")
-        return
-
-    for row in data:
-        if row[0] == username:
-            return row[2].split(", ")
-
-    logger.error(f"User with Discord handle {username} not found.")
-    return None
