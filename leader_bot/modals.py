@@ -108,7 +108,11 @@ class UserDeletionModal(Modal, title="User Deletion"):
         self.initial_from_date = from_date
         self.initial_until_date = until_date
 
+<<<<<<< HEAD
         self.discord_handle = TextInput(  ##todo github or discord username
+=======
+        self.discord_handle = TextInput(
+>>>>>>> 30dab31 (init modal functionalities)
             label="Discord Handle",
             placeholder="Enter your Discord handle",
         )
