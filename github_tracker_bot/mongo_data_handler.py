@@ -2,7 +2,7 @@ import sys
 import os
 import copy
 import config
-
+from leader_bot.sheet_functions import get_repositories_from_user
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any, Optional, Union
@@ -330,7 +330,7 @@ class MongoDBManagement:
             )
 
             repositories = user.repositories.copy()
-            repositories.extend([decision.repository for decision in ai_decisions[0]])
+            repositories.extend(get_repositories_from_user(user_handle))
             user.repositories = list(set(repositories))
 
             updated_user = self.update_user(user_handle, user)
