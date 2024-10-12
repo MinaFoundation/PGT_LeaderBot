@@ -550,6 +550,17 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 **Usage:**
 `/get-blockchain-summary`
 
+#### **`/get-user-monthly-data-to-csv`**
+
+**Description:** Export a specific user's monthly qualified contribution data for each day of a month
+
+**Usage:**
+`/get-user-monthly-data-to-csv username: <username> date: <date>`
+
+* **username:** User handle of requested user.
+* **date:** "YYYY-MM" format date.
+
+
 --------------
 
 ## Contributions
