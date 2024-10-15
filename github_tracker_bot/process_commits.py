@@ -7,7 +7,13 @@ from datetime import datetime
 from dateutil import parser
 from github import Github
 from typing import List, Optional, Dict, Any
-from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type, RetryError
+from tenacity import (
+    retry,
+    wait_fixed,
+    stop_after_attempt,
+    retry_if_exception_type,
+    RetryError,
+)
 from asyncio import Semaphore
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -24,7 +30,7 @@ GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
 
-CONCURRENT_REQUESTS = 5 
+CONCURRENT_REQUESTS = 5
 semaphore = Semaphore(CONCURRENT_REQUESTS)
 
 retry_conditions = (
@@ -34,6 +40,8 @@ retry_conditions = (
     | retry_if_exception_type(asyncio.TimeoutError)
     | retry_if_exception_type(aiohttp.ClientConnectorError)
 )
+
+
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(5), retry=retry_conditions)
 async def fetch_diff(repo: str, sha: str) -> Optional[str]:
     url = f"https://api.github.com/repos/{repo}/commits/{sha}"
@@ -46,7 +54,7 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
     async with semaphore:
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers=headers, timeout=10) as response:
+                async with session.get(url, headers=headers) as response:
                     if response.status == 200:
                         diff = await response.text()
                         return diff
@@ -55,8 +63,10 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
                         sleep_time = (
                             int(reset_time) - int(time.time()) + 1 if reset_time else 60
                         )
-                        logger.warning(f"Rate limit exceeded. Sleeping for {sleep_time} seconds.")
-                        await asyncio.sleep(sleep_time)  # Ensure the sleep happens
+                        logger.warning(
+                            f"Rate limit exceeded. Sleeping for {sleep_time} seconds."
+                        )
+                        await asyncio.sleep(sleep_time)  
                         raise aiohttp.ClientError("Rate limit exceeded, retrying...")
                     else:
                         error_text = await response.text()
@@ -89,6 +99,7 @@ def concatenate_diff_to_commit_info(
 
     return result
 
+
 def group_and_sort_commits(
     processed_commits: List[Dict[str, Any]]
 ) -> Dict[str, List[Dict[str, Any]]]:
@@ -105,6 +116,7 @@ def group_and_sort_commits(
 
     return grouped_commits
 
+
 async def process_commits(commit_infos: List[Dict[str, Any]]):
     tasks = [
         fetch_diff(commit_info["repo"], commit_info["sha"])
@@ -117,7 +129,7 @@ async def process_commits(commit_infos: List[Dict[str, Any]]):
     for commit_info, diff in zip(commit_infos, diffs):
         if isinstance(diff, Exception):
             logger.error(f"Failed to fetch diff for {commit_info['sha']}: {diff}")
-            diff = None 
+            diff = None
         processed_commit = concatenate_diff_to_commit_info(commit_info, diff)
         processed_commits.append(processed_commit)
 
@@ -126,6 +138,7 @@ async def process_commits(commit_infos: List[Dict[str, Any]]):
         exceed_handler.handle_daily_exceed_data(daily_commit)
 
     return grouped_commits
+
 
 if __name__ == "__main__":
     repo_name = "UmstadAI/zkAppUmstad"
