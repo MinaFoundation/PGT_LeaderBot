@@ -612,8 +612,8 @@ class MongoDBManagement:
                 since_date, until_date
             )
 
-            deleted_users = 0
-            updated_users = 0
+            deleted_users = []
+            updated_users = []
 
             for user in users_to_update:
                 user_handle = user["user_handle"]
@@ -637,17 +637,17 @@ class MongoDBManagement:
                     logger.info(
                         f"Deleted user {user_handle} because all ai_decisions were removed."
                     )
-                    deleted_users += 1
+                    deleted_users.extend([user_handle])
                 else:
                     self.collection.update_one(
                         {"user_handle": user_handle},
                         {"$set": {"ai_decisions": updated_ai_decisions}},
                     )
                     logger.info(f"Updated user {user_handle} with new ai_decisions.")
-                    updated_users += 1
+                    updated_users.extend([user_handle])
 
             logger.info(
-                f"Deleted {deleted_users} users and updated {updated_users} users."
+                f"Deleted {len(deleted_users)} users and updated {len(updated_users)} users."
             )
             return deleted_users, updated_users
         except Exception as e:

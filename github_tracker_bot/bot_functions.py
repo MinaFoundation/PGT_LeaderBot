@@ -270,7 +270,26 @@ async def process_commit_day(username, repo_link, commits_day, commits_data):
 
 async def delete_all_data(since_date, until_date):
     try:
-        mongo_manager.delete_ai_decisions_and_clean_users(since_date, until_date)
+        deleted_users, updated_users = (
+            mongo_manager.delete_ai_decisions_and_clean_users(since_date, until_date)
+        )
+        if deleted_users is None:
+            deleted_users = []
+        if updated_users is None:
+            updated_users = []
+        logger.info(f"deleted_users: {str(deleted_users)}")
+        logger.info(f"updated_users: {str(updated_users)}")
+        all_users_to_be_updated = list(set(deleted_users + updated_users))
+        logger.info(f"all_users_to_be_updated: {str(all_users_to_be_updated)}")
+        for user in all_users_to_be_updated:
+            try:
+                mongo_manager.update_all_contribution_datas_from_ai_decisions(
+                    user_handle=user
+                )
+            except Exception as e:
+                logger.error(
+                    f"An error occurred while updating contribution fields for user: {user}: {e}"
+                )
     except Exception as e:
         logger.error(f"An error occurred while deleting data: {e}")
 
