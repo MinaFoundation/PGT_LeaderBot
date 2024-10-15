@@ -2,7 +2,6 @@ import sys
 import os
 import copy
 import config
-from leader_bot.sheet_functions import get_repositories_from_user
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any, Optional, Union
@@ -303,6 +302,8 @@ class MongoDBManagement:
         self, user_handle
     ) -> Optional[User]:
         """Updates all contribution data by calculating ai decisions with helper functions"""
+        from leader_bot.sheet_functions import get_repositories_from_user
+
         try:
             user = self.get_user(user_handle)
             ai_decisions = user.ai_decisions
