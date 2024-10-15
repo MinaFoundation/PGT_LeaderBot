@@ -554,20 +554,26 @@ class MongoDBManagement:
             raise
 
     def update_ai_decisions(self, user: User, new_decisions: List[AIDecision]) -> None:
-        for new_decision in new_decisions:
-            for user_ai_decision in user.ai_decisions[0]:
-                if (
-                    user_ai_decision.repository == new_decision.repository
-                    and user_ai_decision.date == new_decision.date
-                ):
-                    user_ai_decision.response = new_decision.response
-                    for commit in new_decision.commit_hashes:
-                        if commit not in user_ai_decision.commit_hashes:
-                            user_commit_hashes = user_ai_decision.commit_hashes
-                            if type(user_commit_hashes) != list:
-                                user_commit_hashes = user_commit_hashes.split(",")
-                            user_commit_hashes.extend(commit)
-                            user_ai_decision.commit_hashes = user_commit_hashes
-                    break
-            else:
-                user.ai_decisions[0].extend([new_decision])
+        logger.info(f"Updating AI decisions for user {user.user_handle}")
+        logger.info(f"New decisions: {new_decisions}")
+        logger.info(f"Old decisions: {user.ai_decisions}")
+        if len(user.ai_decisions) == 0:
+            user.ai_decisions = [new_decisions]
+        else:
+            for new_decision in new_decisions:
+                for user_ai_decision in user.ai_decisions[0]:
+                    if (
+                        user_ai_decision.repository == new_decision.repository
+                        and user_ai_decision.date == new_decision.date
+                    ):
+                        user_ai_decision.response = new_decision.response
+                        for commit in new_decision.commit_hashes:
+                            if commit not in user_ai_decision.commit_hashes:
+                                user_commit_hashes = user_ai_decision.commit_hashes
+                                if type(user_commit_hashes) != list:
+                                    user_commit_hashes = user_commit_hashes.split(",")
+                                user_commit_hashes.extend(commit)
+                                user_ai_decision.commit_hashes = user_commit_hashes
+                        break
+                else:
+                    user.ai_decisions[0].extend([new_decision])

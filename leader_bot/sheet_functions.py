@@ -8,7 +8,6 @@ from log_config import get_logger
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from github_tracker_bot.mongo_data_handler import AIDecision
-from helpers import get_monthly_user_data_from_ai_decisions, get_since_until_y_m_d
 from config import GOOGLE_CREDENTIALS
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -487,6 +486,7 @@ def delete_user(discord_handle: str):
 
 def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: str):
     from db_functions import get_ai_decisions_by_user_and_timeframe
+    from helpers import get_monthly_user_data_from_ai_decisions, get_since_until_y_m_d
 
     try:
         since, until = get_since_until_y_m_d(date)
