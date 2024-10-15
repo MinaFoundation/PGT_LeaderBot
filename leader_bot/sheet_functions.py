@@ -7,7 +7,6 @@ from typing import List
 from log_config import get_logger
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-from db_functions import fetch_db_get_users, get_ai_decisions_by_user_and_timeframe
 from github_tracker_bot.mongo_data_handler import AIDecision
 from helpers import get_monthly_user_data_from_ai_decisions, get_since_until_y_m_d
 from config import GOOGLE_CREDENTIALS
@@ -129,6 +128,8 @@ def create_leaderboard_sheet(
 
 
 def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
+    from db_functions import fetch_db_get_users
+
     try:
         column_names = [
             [
@@ -169,6 +170,8 @@ def fill_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
 
 
 def write_users_to_csv(file_path):
+    from db_functions import fetch_db_get_users
+
     try:
         column_names = [
             "User Handle",
@@ -210,6 +213,8 @@ def write_users_to_csv(file_path):
 
 
 def write_users_to_csv_monthly(file_path, month):
+    from db_functions import fetch_db_get_users
+
     try:
         users = fetch_db_get_users()
         filtered_users = []
@@ -274,6 +279,8 @@ def write_ai_decisions_to_csv(
 
 
 def update_created_spreadsheet_with_users_except_ai_decisions(spreadsheed_id):
+    from db_functions import fetch_db_get_users
+
     try:
         users = fetch_db_get_users()
         data = []
@@ -479,6 +486,8 @@ def delete_user(discord_handle: str):
 
 
 def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: str):
+    from db_functions import get_ai_decisions_by_user_and_timeframe
+
     try:
         since, until = get_since_until_y_m_d(date)
         ai_decisions = get_ai_decisions_by_user_and_timeframe(username, since, until)
