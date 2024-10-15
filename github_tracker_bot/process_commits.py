@@ -30,7 +30,7 @@ GITHUB_TOKEN = config.GITHUB_TOKEN
 g = Github(GITHUB_TOKEN)
 
 
-CONCURRENT_REQUESTS = 5
+CONCURRENT_REQUESTS = 8
 semaphore = Semaphore(CONCURRENT_REQUESTS)
 
 retry_conditions = (
