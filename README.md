@@ -252,6 +252,7 @@ class AIDecision:
     repository: str
     date: str
     response: DailyContributionResponse
+    commit_hashes: List[str] = field(default_factory=list)
 
     def to_dict(self):
         """Converts the dataclass to a dictionary, including nested response."""
@@ -302,7 +303,7 @@ class User:
             "qualified_daily_contribution_streak": self.qualified_daily_contribution_streak,
         }
 
-    @staticmethod
+     @staticmethod
     def from_dict(data: Dict[str, Any]) -> "User":
         """Creates a User instance from a dictionary."""
         ai_decisions = [
@@ -316,6 +317,9 @@ class User:
                         date=decision["response"]["date"],
                         is_qualified=decision["response"]["is_qualified"],
                         explanation=decision["response"]["explanation"],
+                    ),
+                    commit_hashes=decision.get(
+                        "commit_hashes", []
                     ),
                 )
                 for decision in decisions
@@ -545,6 +549,17 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 
 **Usage:**
 `/get-blockchain-summary`
+
+#### **`/get-user-monthly-data-to-csv`**
+
+**Description:** Export a specific user's monthly qualified contribution data for each day of a month
+
+**Usage:**
+`/get-user-monthly-data-to-csv username: <username> date: <date>`
+
+* **username:** User handle of requested user.
+* **date:** "YYYY-MM" format date.
+
 
 --------------
 

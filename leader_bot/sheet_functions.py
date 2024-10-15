@@ -1,20 +1,18 @@
 import os
 import sys
 import csv
-from typing import List
-
-from github_tracker_bot.mongo_data_handler import AIDecision
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import config
 
+from typing import List
 from log_config import get_logger
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
+from db_functions import fetch_db_get_users, get_ai_decisions_by_user_and_timeframe
+from github_tracker_bot.mongo_data_handler import AIDecision
+from helpers import get_monthly_user_data_from_ai_decisions, get_since_until_y_m_d
 from config import GOOGLE_CREDENTIALS
 
-from db_functions import fetch_db_get_users
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 logger = get_logger(__name__)
 
@@ -478,3 +476,36 @@ def delete_user(discord_handle: str):
         logger.error(f"Failed to clear Google Sheets data: {e}")
 
     update_data(config.SPREADSHEET_ID, RANGE_NAME, updated_data)
+
+
+def write_all_data_of_user_to_csv_by_month(file_path: str, username: str, date: str):
+    try:
+        since, until = get_since_until_y_m_d(date)
+        ai_decisions = get_ai_decisions_by_user_and_timeframe(username, since, until)
+        date_dict = get_monthly_user_data_from_ai_decisions(ai_decisions)
+        if not date_dict:
+            return "No data found for the specified month."
+
+        with open(file_path, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(
+                ["username", "date", "is_qualified", "total_qualified_so_far"]
+            )
+            total_qualified = 0
+            for date, [nonqualified, qualified] in date_dict.items():
+                qualified = True if qualified != 0 else False
+                total_qualified += qualified
+                writer.writerow(
+                    [
+                        username,
+                        date,
+                        qualified,
+                        total_qualified,
+                    ]
+                )
+
+        return "successfully"
+
+    except Exception as e:
+        logger.error(f"Failed to write to CSV: {e}")
+        return f"Failed to write to CSV: {e}"
