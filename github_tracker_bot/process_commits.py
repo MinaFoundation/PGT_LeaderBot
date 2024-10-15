@@ -66,7 +66,7 @@ async def fetch_diff(repo: str, sha: str) -> Optional[str]:
                         logger.warning(
                             f"Rate limit exceeded. Sleeping for {sleep_time} seconds."
                         )
-                        await asyncio.sleep(sleep_time)  
+                        await asyncio.sleep(sleep_time)
                         raise aiohttp.ClientError("Rate limit exceeded, retrying...")
                     else:
                         error_text = await response.text()
