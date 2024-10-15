@@ -127,4 +127,4 @@ dmypy.json
 # Pyright type checker
 .pyright/
 
-settings.json
+.vscode/settings.json
