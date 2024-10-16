@@ -2,7 +2,6 @@ import sys
 import os
 import copy
 import config
-
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any, Optional, Union
@@ -303,6 +302,8 @@ class MongoDBManagement:
         self, user_handle
     ) -> Optional[User]:
         """Updates all contribution data by calculating ai decisions with helper functions"""
+        from leader_bot.sheet_functions import get_repositories_from_user
+
         try:
             user = self.get_user(user_handle)
             ai_decisions = user.ai_decisions
@@ -328,6 +329,10 @@ class MongoDBManagement:
             user.qualified_daily_contribution_streak = calculate_streak(
                 user.qualified_daily_contribution_dates
             )
+
+            repositories = user.repositories.copy()
+            repositories.extend(get_repositories_from_user(user_handle))
+            user.repositories = list(set(repositories))
 
             updated_user = self.update_user(user_handle, user)
             return updated_user
@@ -549,20 +554,26 @@ class MongoDBManagement:
             raise
 
     def update_ai_decisions(self, user: User, new_decisions: List[AIDecision]) -> None:
-        for new_decision in new_decisions:
-            for user_ai_decision in user.ai_decisions[0]:
-                if (
-                    user_ai_decision.repository == new_decision.repository
-                    and user_ai_decision.date == new_decision.date
-                ):
-                    user_ai_decision.response = new_decision.response
-                    for commit in new_decision.commit_hashes:
-                        if commit not in user_ai_decision.commit_hashes:
-                            user_commit_hashes = user_ai_decision.commit_hashes
-                            if type(user_commit_hashes) != list:
-                                user_commit_hashes = user_commit_hashes.split(",")
-                            user_commit_hashes.extend(commit)
-                            user_ai_decision.commit_hashes = user_commit_hashes
-                    break
-            else:
-                user.ai_decisions[0].extend([new_decision])
+        logger.info(f"Updating AI decisions for user {user.user_handle}")
+        logger.info(f"New decisions: {new_decisions}")
+        logger.info(f"Old decisions: {user.ai_decisions}")
+        if len(user.ai_decisions) == 0:
+            user.ai_decisions = [new_decisions]
+        else:
+            for new_decision in new_decisions:
+                for user_ai_decision in user.ai_decisions[0]:
+                    if (
+                        user_ai_decision.repository == new_decision.repository
+                        and user_ai_decision.date == new_decision.date
+                    ):
+                        user_ai_decision.response = new_decision.response
+                        for commit in new_decision.commit_hashes:
+                            if commit not in user_ai_decision.commit_hashes:
+                                user_commit_hashes = user_ai_decision.commit_hashes
+                                if type(user_commit_hashes) != list:
+                                    user_commit_hashes = user_commit_hashes.split(",")
+                                user_commit_hashes.extend(commit)
+                                user_ai_decision.commit_hashes = user_commit_hashes
+                        break
+                else:
+                    user.ai_decisions[0].extend([new_decision])
