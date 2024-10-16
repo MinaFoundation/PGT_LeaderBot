@@ -305,6 +305,10 @@ class MongoDBManagement:
         """Updates all contribution data by calculating ai decisions with helper functions"""
         try:
             user = self.get_user(user_handle)
+            if user is None:
+                logger.error(f"User with handle {user_handle} cannot be updated because it does not exist.")
+                return None
+            
             ai_decisions = user.ai_decisions
 
             calculated_data = count_all_contribution_data(ai_decisions)
