@@ -2,7 +2,6 @@ import sys
 import os
 import copy
 import config
-
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any, Optional, Union
@@ -303,6 +302,8 @@ class MongoDBManagement:
         self, user_handle
     ) -> Optional[User]:
         """Updates all contribution data by calculating ai decisions with helper functions"""
+        from leader_bot.sheet_functions import get_repositories_from_user
+
         try:
             user = self.get_user(user_handle)
             if user is None:
@@ -334,6 +335,10 @@ class MongoDBManagement:
             user.qualified_daily_contribution_streak = calculate_streak(
                 user.qualified_daily_contribution_dates
             )
+
+            repositories = user.repositories.copy()
+            repositories.extend(get_repositories_from_user(user_handle))
+            user.repositories = list(set(repositories))
 
             updated_user = self.update_user(user_handle, user)
             return updated_user

@@ -3,7 +3,10 @@ from unittest.mock import patch, AsyncMock
 import asyncio
 import aiohttp
 from github.GithubException import GithubException
+import sys
+import os
 
+sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/../"))
 from github_tracker_bot.commit_scraper import fetch_commits, get_user_commits_in_repo
 
 
