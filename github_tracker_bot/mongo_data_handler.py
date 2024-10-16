@@ -306,6 +306,12 @@ class MongoDBManagement:
 
         try:
             user = self.get_user(user_handle)
+            if user is None:
+                logger.error(
+                    f"User with handle {user_handle} cannot be updated because it does not exist."
+                )
+                return None
+
             ai_decisions = user.ai_decisions
 
             calculated_data = count_all_contribution_data(ai_decisions)
@@ -554,26 +560,109 @@ class MongoDBManagement:
             raise
 
     def update_ai_decisions(self, user: User, new_decisions: List[AIDecision]) -> None:
-        logger.info(f"Updating AI decisions for user {user.user_handle}")
-        logger.info(f"New decisions: {new_decisions}")
-        logger.info(f"Old decisions: {user.ai_decisions}")
-        if len(user.ai_decisions) == 0:
-            user.ai_decisions = [new_decisions]
-        else:
-            for new_decision in new_decisions:
-                for user_ai_decision in user.ai_decisions[0]:
-                    if (
-                        user_ai_decision.repository == new_decision.repository
-                        and user_ai_decision.date == new_decision.date
-                    ):
-                        user_ai_decision.response = new_decision.response
-                        for commit in new_decision.commit_hashes:
-                            if commit not in user_ai_decision.commit_hashes:
-                                user_commit_hashes = user_ai_decision.commit_hashes
-                                if type(user_commit_hashes) != list:
-                                    user_commit_hashes = user_commit_hashes.split(",")
-                                user_commit_hashes.extend(commit)
-                                user_ai_decision.commit_hashes = user_commit_hashes
-                        break
+        for new_decision in new_decisions:
+            if user.ai_decisions == None or user.ai_decisions == []:
+                user.ai_decisions = [[]]
+                user.ai_decisions[0].extend([new_decision])
+                continue
+            for user_ai_decision in user.ai_decisions[0]:
+                if (
+                    user_ai_decision.repository == new_decision.repository
+                    and user_ai_decision.date == new_decision.date
+                ):
+                    user_ai_decision.response = new_decision.response
+                    for commit in new_decision.commit_hashes:
+                        if commit not in user_ai_decision.commit_hashes:
+                            user_commit_hashes = user_ai_decision.commit_hashes
+                            if type(user_commit_hashes) != list:
+                                user_commit_hashes = user_commit_hashes.split(",")
+                            user_commit_hashes.extend(commit)
+                            user_ai_decision.commit_hashes = user_commit_hashes
+                    break
+            else:
+                user.ai_decisions[0].extend([new_decision])
+
+    from datetime import datetime
+
+    def find_users_with_ai_decisions_in_date_range(
+        self, since_date: str, until_date: str
+    ) -> List[Dict]:
+        """Find users with any ai_decisions between the specified dates."""
+        try:
+            since_dt = datetime.strptime(since_date, "%Y-%m-%d")
+            until_dt = datetime.strptime(until_date, "%Y-%m-%d")
+
+            users = self.collection.find(
+                {
+                    "ai_decisions": {
+                        "$elemMatch": {
+                            "$elemMatch": {
+                                "date": {
+                                    "$gte": since_dt.strftime("%Y-%m-%d"),
+                                    "$lte": until_dt.strftime("%Y-%m-%d"),
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+            return list(users)
+        except Exception as e:
+            logger.error(f"Failed to find users with ai_decisions in date range: {e}")
+            raise
+
+    def delete_ai_decisions_and_clean_users(
+        self, since_date: str, until_date: str
+    ) -> int:
+        """Deletes ai_decisions between dates, and deletes user if no ai_decisions remain."""
+        try:
+            since_dt = datetime.strptime(since_date, "%Y-%m-%d")
+            until_dt = datetime.strptime(until_date, "%Y-%m-%d")
+
+            users_to_update = self.find_users_with_ai_decisions_in_date_range(
+                since_date, until_date
+            )
+
+            deleted_users = []
+            updated_users = []
+
+            for user in users_to_update:
+                user_handle = user["user_handle"]
+                updated_ai_decisions = []
+
+                for decision_list in user["ai_decisions"]:
+                    new_decision_list = [
+                        decision
+                        for decision in decision_list
+                        if not (
+                            since_dt
+                            <= datetime.strptime(decision["date"], "%Y-%m-%d")
+                            <= until_dt
+                        )
+                    ]
+                    if new_decision_list:
+                        updated_ai_decisions.append(new_decision_list)
+
+                if not updated_ai_decisions:
+                    self.collection.delete_one({"user_handle": user_handle})
+                    logger.info(
+                        f"Deleted user {user_handle} because all ai_decisions were removed."
+                    )
+                    deleted_users.extend([user_handle])
                 else:
-                    user.ai_decisions[0].extend([new_decision])
+                    self.collection.update_one(
+                        {"user_handle": user_handle},
+                        {"$set": {"ai_decisions": updated_ai_decisions}},
+                    )
+                    logger.info(f"Updated user {user_handle} with new ai_decisions.")
+                    updated_users.extend([user_handle])
+
+            logger.info(
+                f"Deleted {len(deleted_users)} users and updated {len(updated_users)} users."
+            )
+            return deleted_users, updated_users
+        except Exception as e:
+            logger.error(
+                f"Failed to delete ai_decisions and clean users between {since_date} and {until_date}: {e}"
+            )
+            raise

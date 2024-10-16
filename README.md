@@ -560,6 +560,19 @@ Additionally, need to enable google drive api to use sheet sharing functionality
 * **username:** User handle of requested user.
 * **date:** "YYYY-MM" format date.
 
+#### **`/delete-all-data`**
+
+**Description:** Deletes all data between specific dates
+
+**Usage:**
+`/delete-all-data from: <from> until: <until>`
+
+* **from:** "YYYY-MM-DD"
+* **until:** "YYYY-MM-DD"
+
+After using this command, there will be a modal to confirm the deletion process. In order to confirm the deletion, you need to enter your discord username and exact same dates with the command. **Warning** : This process cannot be reverted.
+
+
 
 --------------
 
