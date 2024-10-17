@@ -4,6 +4,7 @@ import json
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import time
 import config
 from typing import TypedDict, List
 from datetime import datetime
@@ -37,9 +38,7 @@ def validate_date_format(date_str: str) -> bool:
         return False
 
 
-async def decide_daily_commits(
-    date: str, data_array: List[CommitData], seed: int = 42
-):
+async def decide_daily_commits(date: str, data_array: List[CommitData], seed: int = None):
     if not validate_date_format(date):
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
 
@@ -54,25 +53,55 @@ async def decide_daily_commits(
             logger.error("After processing commit")
             return False
 
-        completion = client.chat.completions.create(
-            model="gpt-4o",
-            response_format={"type": "json_object"},
-            messages=[
-                {
-                    "role": "system",
-                    "content": prompts.SYSTEM_MESSAGE_DAILY_DECIDE_COMMIT,
-                },
-                {"role": "user", "content": message},
-            ],
-            seed=seed,
-            temperature=0.1,
-        )
+        retries = 0
+        max_retries = 2
 
-        return completion.choices[0].message.content
+        while retries < max_retries:
+            try:
+                # Call the OpenAI API
+                completion = client.chat.completions.create(
+                    model="gpt-4o",
+                    response_format={"type": "json_object"},
+                    messages=[
+                        {"role": "system", "content": prompts.SYSTEM_MESSAGE_DAILY_DECIDE_COMMIT},
+                        {"role": "user", "content": message},
+                    ],
+                    seed=seed,
+                    temperature=0.1,
+                )
+                # If successful, return the completion message
+                return completion.choices[0].message.content
 
-    except OpenAIError as e:
-        logger.error(f"OpenAI API call failed with error: {e}")
+            except AuthenticationError as e:
+                # Handle 403 Forbidden (Authentication Error) with retries
+                retries += 1
+                logger.error(f"403 Forbidden Error: {e}. Retrying {retries}/{max_retries} in 1 minute...")
+                if retries >= max_retries:
+                    logger.error(f"Failed after {max_retries} attempts due to 403 Forbidden Error.")
+                    return False
+                time.sleep(60)  # Sleep for 1 minute before retrying
+
+            except OpenAIError as e:
+                # Handle general OpenAIError (e.g., 500 Internal Server Error) with retries
+                retries += 1
+                logger.error(f"OpenAI API Error: {e}. Retrying {retries}/{max_retries} in 1 minute...")
+                if retries >= max_retries:
+                    logger.error(f"Failed after {max_retries} attempts due to OpenAI Error: {e}")
+                    return False
+                time.sleep(60)  # Sleep for 1 minute before retrying
+
+            except NotFoundError:
+                # Handle 404 Not Found
+                logger.error("404 Not Found Error.")
+                return False
 
     except Exception as e:
+        # Catch any other unexpected errors
+        logger.error(f"An unexpected error occurred: {e}")
+        return False
+
+
+    except Exception as e:
+        # Catch any other unexpected errors
         logger.error(f"An unexpected error occurred: {e}")
         return False

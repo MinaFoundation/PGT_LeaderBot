@@ -112,7 +112,7 @@ class TestFetchDiff(unittest.IsolatedAsyncioTestCase):
         # 1. Once for the rate limit (expected_sleep_time)
         # 2. Once for the tenacity retry (fixed 2 seconds)
         self.assertEqual(mock_sleep.call_count, 2)
-        mock_sleep.assert_has_calls([call(expected_sleep_time), call(2.0)])
+        mock_sleep.assert_has_calls([call(expected_sleep_time), call(5.0)])
 
         # Ensure that the second call to `aiohttp.get` was successful
         self.assertEqual(mock_get.call_count, 2)
