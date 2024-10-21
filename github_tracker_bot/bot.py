@@ -116,6 +116,8 @@ async def scheduler(scheduled_time="00:02"):
 
 @app.middleware("http")
 async def check_auth_token(request: Request, call_next):
+    if request.url.path == "/health":
+        return await call_next(request)
     auth_token = config.SHARED_SECRET
 
     request_token = request.headers.get("Authorization")

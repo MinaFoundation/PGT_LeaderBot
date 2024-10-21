@@ -25,9 +25,7 @@ async def test_app_startup():
 @pytest.mark.smoke
 @pytest.mark.asyncio
 async def test_app_health_check():
-    headers = {"Authorization": config.SHARED_SECRET}
-
     async with AsyncClient(app=app, base_url="http://test") as client:
-        response = await client.get("/health", headers=headers)
+        response = await client.get("/health")
         assert response.status_code == 200
         assert response.json() == {"status": "OK"}
