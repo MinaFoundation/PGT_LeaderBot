@@ -314,9 +314,12 @@ class TestMongoDBManagement(unittest.TestCase):
         self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions_1)
         self.mongo_handler.add_ai_decisions_by_user("test_handle", ai_decisions_2)
 
-        self.mongo_handler.update_all_contribution_datas_from_ai_decisions(
-            "test_handle"
-        )
+        with patch('leader_bot.sheet_functions.get_repositories_from_user') as mock_get_repos:
+            mock_get_repos.return_value = []
+            self.mongo_handler.update_all_contribution_datas_from_ai_decisions(
+                "test_handle"
+            )
+            
         user = self.mongo_handler.get_user("test_handle")
 
         self.assertEqual(user.total_daily_contribution_number, 4)
