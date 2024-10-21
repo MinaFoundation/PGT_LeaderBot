@@ -127,6 +127,10 @@ async def check_auth_token(request: Request, call_next):
     response = await call_next(request)
     return response
 
+@app.get("/health")
+async def health_check():
+    return JSONResponse(status_code=200, content={"status": "OK"})
+
 
 @app.post("/run-task")
 async def run_task(time_frame: TaskTimeFrame):
