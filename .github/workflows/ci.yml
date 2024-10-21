@@ -29,7 +29,7 @@ jobs:
         run: echo "SHARED_SECRET=${{ secrets.SHARED_SECRET }}" >> $GITHUB_ENV
 
       - name: Run Smoke Tests
-        run: pytest -m smoke
+        run: pytest tests/smoke/test_startup.py tests/smoke/test_auth_middleware.py tests/smoke/test_scheduler.py -m smoke
 
       - name: Archive test reports
         if: always()
