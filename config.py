@@ -18,9 +18,9 @@ GOOGLE_CREDENTIALS = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
-MONGO_HOST = os.getenv("MONGO_HOST")
-MONGO_DB = os.getenv("MONGO_DB")
-MONGO_COLLECTION = os.getenv("MONGO_COLLECTION")
+MONGO_HOST = os.getenv("MONGO_HOST") or ""
+MONGO_DB = os.getenv("MONGO_DB") or ""
+MONGO_COLLECTION = os.getenv("MONGO_COLLECTION") or ""
 
 GTP_ENDPOINT = os.getenv("GTP_ENDPOINT")
 
