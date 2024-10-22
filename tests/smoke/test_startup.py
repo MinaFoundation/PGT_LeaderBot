@@ -1,8 +1,8 @@
 import sys
 import os
-
 import pytest
 from httpx import AsyncClient, ASGITransport
+from unittest import mock
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if project_root not in sys.path:
@@ -10,7 +10,8 @@ if project_root not in sys.path:
 
 import config
 
-from github_tracker_bot.bot import app
+with mock.patch("github_tracker_bot.ai_decide_commits.OpenAI") as mock_openai_client:
+    from github_tracker_bot.bot import app
 
 
 @pytest.mark.smoke
