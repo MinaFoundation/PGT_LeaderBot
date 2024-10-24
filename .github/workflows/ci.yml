@@ -25,17 +25,8 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-asyncio httpx
       
-      - name: Set environment variables
-        env:
-          SHARED_SECRET: ${{ secrets.SHARED_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          echo "SHARED_SECRET=${{ secrets.SHARED_SECRET }}" >> $GITHUB_ENV
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
-          echo "MONGO_HOST=${{ secrets.MONGO_HOST }}" >> $GITHUB_ENV
-
       - name: Run Smoke Tests
-        run: pytest tests/smoke/test_startup.py tests/smoke/test_auth_middleware.py tests/smoke/test_scheduler.py -m smoke
+        run: invoke smoke
 
       - name: Archive test reports
         if: always()
