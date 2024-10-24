@@ -116,6 +116,8 @@ async def scheduler(scheduled_time="00:02"):
 
 @app.middleware("http")
 async def check_auth_token(request: Request, call_next):
+    if request.url.path == "/health":
+        return await call_next(request)
     auth_token = config.SHARED_SECRET
 
     request_token = request.headers.get("Authorization")
@@ -126,6 +128,11 @@ async def check_auth_token(request: Request, call_next):
         )
     response = await call_next(request)
     return response
+
+
+@app.get("/health")
+async def health_check():
+    return JSONResponse(status_code=200, content={"status": "OK"})
 
 
 @app.post("/run-task")
