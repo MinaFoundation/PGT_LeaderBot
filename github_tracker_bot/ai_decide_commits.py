@@ -3,23 +3,22 @@ import sys
 import json
 import aiohttp
 import asyncio
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from typing import Optional
-import logging
 import time
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
-import config
-from typing import TypedDict, List
+from typing import Optional, List, TypedDict
 from datetime import datetime
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
+import config
 import log_config
 import github_tracker_bot.prompts as prompts
-
 from openai import AuthenticationError, NotFoundError, OpenAI, OpenAIError
 
 logger = log_config.get_logger(__name__)
-
 client = OpenAI(api_key=config.OPENAI_API_KEY)
 
 
@@ -42,9 +41,6 @@ def validate_date_format(date_str: str) -> bool:
         return False
 
 
-logger = logging.getLogger(__name__)
-
-
 retry_conditions = (
     retry_if_exception_type(AuthenticationError)
     | retry_if_exception_type(OpenAIError)
@@ -54,16 +50,19 @@ retry_conditions = (
 )
 
 
-@retry(wait=wait_fixed(5), stop=stop_after_attempt(8), retry=retry_conditions)
+@retry(
+    wait=wait_exponential(multiplier=2, min=5, max=60),
+    stop=stop_after_attempt(8),
+    retry=retry_conditions,
+)
 async def decide_daily_commits(
     date: str, data_array: List[CommitData], seed: int = None
 ) -> Optional[str]:
     if not validate_date_format(date):
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
 
-    commit_data = next((data for data in data_array), None)
-    if not commit_data:
-        logger.error("Commit data or diff file is empty")
+    if not data_array:
+        logger.error("Commit data array is empty")
         return None
 
     message = prompts.process_message(date, data_array)
@@ -94,10 +93,19 @@ async def decide_daily_commits(
     except aiohttp.ClientResponseError as e:
         if e.status == 403:
             reset_time = e.headers.get("X-RateLimit-Reset")
-            sleep_time = int(reset_time) - int(time.time()) + 1 if reset_time else 60
+            try:
+                sleep_time = (
+                    max(int(reset_time) - int(time.time()) + 1, 1) if reset_time else 60
+                )
+            except ValueError:
+                sleep_time = 60
             logger.warning(f"Rate limit exceeded. Sleeping for {sleep_time} seconds.")
             await asyncio.sleep(sleep_time)
             raise aiohttp.ClientError("Rate limit exceeded, retrying...")
+
+    except OpenAIError as e:
+        logger.error(f"OpenAI API Error: {e}")
+        return None
 
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
