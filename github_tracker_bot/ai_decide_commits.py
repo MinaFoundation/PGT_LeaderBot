@@ -56,7 +56,7 @@ retry_conditions = (
     retry=retry_conditions,
 )
 async def decide_daily_commits(
-    date: str, data_array: List[CommitData], seed: int = None
+    date: str, data_array: List[CommitData], seed: int = 42
 ) -> Optional[str]:
     if not validate_date_format(date):
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
