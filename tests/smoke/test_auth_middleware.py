@@ -11,7 +11,9 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from github_tracker_bot.bot import app
+
 client = TestClient(app)
+
 
 @pytest.mark.smoke
 @pytest.mark.asyncio
