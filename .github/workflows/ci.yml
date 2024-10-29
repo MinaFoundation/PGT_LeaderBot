@@ -24,6 +24,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pytest-asyncio httpx
+          
+      - name: Verify pytest.ini presence
+        run: cat pytest.ini
       
       - name: Run Smoke Tests
         run: invoke smoke
