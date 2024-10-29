@@ -93,4 +93,4 @@ def lbf(ctx):
 
 @task
 def smoke(ctx):
-    ctx.run("pytest -m smoke")
+    ctx.run("pytest -c pytest.ini -m smoke")
