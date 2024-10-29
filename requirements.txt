@@ -75,7 +75,7 @@ pylint==3.2.6
 pymongo==4.8.0
 PyNaCl==1.5.0
 pyparsing==3.1.2
-pytest==8.2.2
+pytest==8.3.3
 pytest-asyncio==0.24.0
 pytest-env==1.1.5
 python-dateutil==2.9.0.post0
