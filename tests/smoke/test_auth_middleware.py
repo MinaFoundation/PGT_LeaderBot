@@ -18,6 +18,7 @@ client = TestClient(app)
 @pytest.mark.smoke
 @pytest.mark.asyncio
 async def test_authentication_required():
-    response = await client.post("/run-task")
+    headers = {"Authorization": "Bearer invalid_token"}
+    response = client.post("/run-task", headers=headers)
     assert response.status_code == 401
     assert response.json()["message"] == "Unauthorized"

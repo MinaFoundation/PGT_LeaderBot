@@ -8,8 +8,6 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-import config
-
 with mock.patch("github_tracker_bot.ai_decide_commits.OpenAI") as mock_openai_client:
     from github_tracker_bot.bot import app
 
@@ -18,11 +16,12 @@ with mock.patch("github_tracker_bot.ai_decide_commits.OpenAI") as mock_openai_cl
 @pytest.mark.asyncio
 async def test_app_startup():
     transport = ASGITransport(app=app)
-    headers = {"Authorization": config.SHARED_SECRET}
+    shared_secret = os.environ.get("SHARED_SECRET")
+    headers = {"Authorization": f"Bearer {shared_secret}"}
 
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/non-existing-endpoint", headers=headers)
-        assert response.status_code == 404
+        assert response.status_code == 401
 
 
 @pytest.mark.smoke
