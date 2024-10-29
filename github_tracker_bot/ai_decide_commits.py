@@ -71,7 +71,8 @@ async def decide_daily_commits(
         return None
 
     try:
-        completion = await asyncio.to_thread(client.chat.completions.create,
+        completion = await asyncio.to_thread(
+            client.chat.completions.create,
             model="gpt-4o",
             response_format={"type": "json_object"},
             messages=[
