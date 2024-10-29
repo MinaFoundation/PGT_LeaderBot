@@ -89,3 +89,8 @@ def dbf(ctx):
 @task
 def lbf(ctx):
     ctx.run("python leader_bot/leaderboard_functions.py")
+
+
+@task
+def smoke(ctx):
+    ctx.run("pytest -m smoke tests/smoke")

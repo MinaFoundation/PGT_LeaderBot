@@ -37,9 +37,7 @@ def validate_date_format(date_str: str) -> bool:
         return False
 
 
-async def decide_daily_commits(
-    date: str, data_array: List[CommitData], seed: int = 42
-):
+async def decide_daily_commits(date: str, data_array: List[CommitData], seed: int = 42):
     if not validate_date_format(date):
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
 
