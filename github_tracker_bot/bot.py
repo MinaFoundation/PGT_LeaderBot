@@ -29,29 +29,9 @@ from slowapi.util import get_remote_address
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.errors import RateLimitExceeded
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    app.state.scheduler_task = asyncio.create_task(scheduler())
-    logger.info("Scheduler started on application startup")
-
-    try:
-        yield
-    finally:
-        if app.state.scheduler_task:
-            app.state.scheduler_task.cancel()
-            try:
-                await app.state.scheduler_task
-            except asyncio.CancelledError:
-                pass
-            app.state.scheduler_task = None
-            logger.info("Scheduler stopped on application shutdown")
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["10/minute"])
-
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
@@ -112,6 +92,24 @@ async def scheduler(scheduled_time="00:02"):
     while True:
         await schedule.run_pending()
         await asyncio.sleep(1)
+
+
+@app.on_event("startup")
+async def startup_event():
+    app.state.scheduler_task = asyncio.create_task(scheduler())
+    logger.info("Scheduler started on application startup")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    if app.state.scheduler_task:
+        app.state.scheduler_task.cancel()
+        try:
+            await app.state.scheduler_task
+        except asyncio.CancelledError:
+            pass
+        app.state.scheduler_task = None
+        logger.info("Scheduler stopped on application shutdown")
 
 
 @app.middleware("http")
