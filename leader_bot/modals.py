@@ -7,7 +7,7 @@ import aiohttp
 from datetime import datetime
 from discord.ext import tasks
 from github_tracker_bot.bot_functions import delete_all_data
-from leader_bot.bot import convert_to_iso8601
+from leader_bot.utils import convert_to_iso8601
 from leader_bot.db_functions import get_ai_decisions_by_user_and_timeframe
 from leader_bot.leaderboard_functions import create_leaderboard_by_month, format_leaderboard_for_discord
 from leader_bot.shared_state import task_details, auto_post_tasks, auto_post_leaderboard

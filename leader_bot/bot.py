@@ -41,6 +41,7 @@ from modals import UserModal, UserDeletionModal
 from helpers import csv_to_structured_string
 import utils
 from ui_manager import MainView
+from leader_bot.utils import convert_to_iso8601
 
 logger = get_logger(__name__)
 
@@ -420,13 +421,6 @@ async def on_command(interaction: discord.Interaction):
     except Exception as e:
         logger.error(f"An error occured: {e}")
         await interaction.followup.send(f"An error occured: {e}", ephemeral=True)
-
-
-def convert_to_iso8601(date_str):
-    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-    iso8601_str = date_obj.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    return iso8601_str
 
 
 async def fetch(session, url, method="GET", data=None, params=None):
