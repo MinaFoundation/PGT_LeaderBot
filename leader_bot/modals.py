@@ -313,3 +313,223 @@ class SchedulerStartModal(discord.ui.Modal):
             await interaction.followup.send(response_data["message"], ephemeral=True)
         except Exception as e:
             await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+
+
+class UserMonthlyDataModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Get User Monthly Data")
+        self.username = discord.ui.TextInput(
+            label="Username",
+            placeholder="Enter username"
+        )
+        self.date = discord.ui.TextInput(
+            label="Date (YYYY-MM)",
+            placeholder="e.g., 2024-03"
+        )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            file_path = "user_monthly_data.csv"
+            result = write_all_data_of_user_to_csv_by_month(
+                file_path, 
+                self.username.value, 
+                self.date.value
+            )
+            
+            if "successfully" in result:
+                await interaction.channel.send(file=discord.File(file_path))
+                os.remove(file_path)
+                await interaction.followup.send(
+                    "User monthly data has been exported.", 
+                    ephemeral=True
+                )
+            else:
+                await interaction.followup.send(
+                    "No data found for this user and month.", 
+                    ephemeral=True
+                )
+        except Exception as e:
+            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+
+
+class AIDecisionsModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Get AI Decisions")
+        self.username = discord.ui.TextInput(
+            label="Username",
+            placeholder="Enter username"
+        )
+        self.since = discord.ui.TextInput(
+            label="Since (YYYY-MM-DD)",
+            placeholder="Start date"
+        )
+        self.until = discord.ui.TextInput(
+            label="Until (YYYY-MM-DD)",
+            placeholder="End date"
+        )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            ai_decisions = get_ai_decisions_by_user_and_timeframe(
+                self.username.value,
+                self.since.value,
+                self.until.value
+            )
+
+            file_path = f"ai_decisions_by_user_{self.username.value}.csv"
+            result = write_ai_decisions_to_csv(file_path, ai_decisions)
+            
+            if "successful" in result:
+                await interaction.channel.send(file=discord.File(file_path))
+                os.remove(file_path)
+                await interaction.followup.send(
+                    "AI decisions have been exported.", 
+                    ephemeral=True
+                )
+            else:
+                await interaction.followup.send(
+                    "No AI decisions found for this period.", 
+                    ephemeral=True
+                )
+        except Exception as e:
+            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+
+
+class UserTaskRunModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Run Task for User")
+        self.username = discord.ui.TextInput(
+            label="Username",
+            placeholder="Enter username"
+        )
+        self.since = discord.ui.TextInput(
+            label="Since (YYYY-MM-DD)",
+            placeholder="Start date"
+        )
+        self.until = discord.ui.TextInput(
+            label="Until (YYYY-MM-DD)",
+            placeholder="End date"
+        )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            since = convert_to_iso8601(self.since.value)
+            until = convert_to_iso8601(self.until.value)
+            
+            url = f"{config.GTP_ENDPOINT}/run-task-for-user"
+            payload = {"since": since, "until": until}
+            params = {"username": self.username.value}
+            headers = {"Authorization": config.SHARED_SECRET}
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    url, 
+                    json=payload, 
+                    params=params, 
+                    headers=headers
+                ) as response:
+                    response_data = await response.json()
+
+            await interaction.followup.send(response_data["message"], ephemeral=True)
+        except Exception as e:
+            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+
+
+class SheetUpdateModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Update Sheet")
+        self.spreadsheet_id = discord.ui.TextInput(
+            label="Spreadsheet ID",
+            placeholder="Enter the spreadsheet ID to update"
+        )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            updated_spreadsheet_id = update_created_spreadsheet_with_users_except_ai_decisions(
+                self.spreadsheet_id.value
+            )
+
+            await interaction.followup.send(
+                f"Spreadsheet updated successfully!\n"
+                f"View it here: https://docs.google.com/spreadsheets/d/{self.spreadsheet_id.value}",
+                ephemeral=True
+            )
+        except Exception as e:
+            await interaction.followup.send(f"Error updating spreadsheet: {str(e)}", ephemeral=True)
+
+
+class AutopostStartModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Start Auto-post")
+        self.date = discord.ui.TextInput(
+            label="Date (YYYY-MM)",
+            placeholder="e.g., 2024-03"
+        )
+        self.time = discord.ui.TextInput(
+            label="Time (HH:MM)",
+            placeholder="e.g., 09:00"
+        )
+        self.spreadsheet_id = discord.ui.TextInput(
+            label="Spreadsheet ID (Optional)",
+            required=False,
+            placeholder="Enter spreadsheet ID"
+        )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            year, month = self.date.value.split("-")
+            hour, minute = map(int, self.time.value.split(":"))
+            spreadsheet_id = self.spreadsheet_id.value if self.spreadsheet_id.value else None
+
+            task_id = f"{year}-{month}"
+            task_details[task_id] = {
+                "year": year,
+                "month": month,
+                "spreadsheet_id": spreadsheet_id,
+                "hour": hour,
+                "minute": minute,
+                "channel": interaction.channel,
+            }
+
+            if task_id not in auto_post_tasks or not auto_post_tasks[task_id].is_running():
+                auto_post_tasks[task_id] = tasks.loop(minutes=1)(auto_post_leaderboard(task_id))
+                auto_post_tasks[task_id].start()
+
+            await interaction.followup.send(
+                f"Auto-post started for {year}-{month} at {hour:02d}:{minute:02d}",
+                ephemeral=True
+            )
+        except Exception as e:
+            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+
+
+class AutopostStopModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Stop Auto-post")
+        self.date = discord.ui.TextInput(
+            label="Date (YYYY-MM)",
+            placeholder="e.g., 2024-03"
+        )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            task_id = self.date.value
+            if task_id in auto_post_tasks and auto_post_tasks[task_id].is_running():
+                auto_post_tasks[task_id].cancel()
+                await interaction.followup.send(
+                    f"Auto-post stopped for {task_id}",
+                    ephemeral=True
+                )
+            else:
+                await interaction.followup.send(
+                    f"No auto-post task running for {task_id}",
+                    ephemeral=True
+                )
+        except Exception as e:
+            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
