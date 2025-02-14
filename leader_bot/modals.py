@@ -73,7 +73,7 @@ class UserModal(Modal, title="User Information"):
                 updated_user = update_user(discord_handle, github_name, repositories)
                 if not updated_user:
                     await interaction.followup.send(
-                        f"Cannot found user named {discord_handle}"
+                        f"Cannot found user named {discord_handle}"
                     )
             elif self.operation == "add_repo":
                 for repo in repositories:
@@ -160,3 +160,21 @@ class UserDeletionModal(Modal, title="User Deletion"):
             await interaction.followup.send(
                 "Oops! Something went wrong.", ephemeral=True
             )
+
+
+class SheetCreationModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Create Sheet")
+        self.spreadsheet_name = discord.ui.TextInput(
+            label="Spreadsheet Name",
+            placeholder="Enter spreadsheet name..."
+        )
+        self.email = discord.ui.TextInput(
+            label="Email Address (Optional)",
+            required=False,
+            placeholder="Enter email address..."
+        )
+        
+    async def on_submit(self, interaction: discord.Interaction):
+        # Implementation of sheet creation logic
+        pass

@@ -39,6 +39,7 @@ from db_functions import (
 from modals import UserModal, UserDeletionModal
 from helpers import csv_to_structured_string
 import utils
+from ui_manager import MainView
 
 logger = get_logger(__name__)
 
@@ -62,7 +63,14 @@ AUTH_TOKEN = config.SHARED_SECRET
 @client.event
 async def on_ready():
     try:
-        await tree.sync(guild=discord.Object(id=config.GUILD_ID))
+        # Set up the admin channel with main menu
+        admin_channel = client.get_channel(config.LEADERBOARD_ADMIN_CHANNEL_ID)
+        await admin_channel.purge()  # Clear previous messages
+        
+        main_view = MainView()
+        embed = main_view.create_main_menu_embed()
+        
+        await admin_channel.send(embed=embed, view=main_view)
         logger.info(f"We have logged in as {client.user}")
     except Exception as e:
         logger.error(f"Error during on_ready: {e}")
