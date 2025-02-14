@@ -21,7 +21,7 @@ class MainView(View):
         )
         embed.add_field(
             name="👥 User Management", 
-            value="Manage user data and permissions", 
+            value="Manage user data", 
             inline=True
         )
         embed.add_field(
