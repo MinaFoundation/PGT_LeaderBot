@@ -5,7 +5,12 @@ import json
 import aiohttp
 
 from datetime import datetime
+from discord.ext import tasks
 from github_tracker_bot.bot_functions import delete_all_data
+from leader_bot.bot import convert_to_iso8601
+from leader_bot.db_functions import get_ai_decisions_by_user_and_timeframe
+from leader_bot.leaderboard_functions import create_leaderboard_by_month, format_leaderboard_for_discord
+from leader_bot.shared_state import task_details, auto_post_tasks, auto_post_leaderboard
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -19,10 +24,17 @@ logger = get_logger(__name__)
 
 
 from sheet_functions import (
+    create_leaderboard_sheet,
+    create_new_spreadsheet,
+    fill_created_spreadsheet_with_users_except_ai_decisions,
     insert_user,
+    share_spreadsheet,
+    update_created_spreadsheet_with_users_except_ai_decisions,
     update_user,
     delete_user,
     add_repository_for_user,
+    write_ai_decisions_to_csv,
+    write_all_data_of_user_to_csv_by_month,
 )
 
 
@@ -176,9 +188,29 @@ class SheetCreationModal(discord.ui.Modal):
             placeholder="Enter email address..."
         )
         
+        # Add the TextInput components to the modal
+        self.add_item(self.spreadsheet_name)
+        self.add_item(self.email)
+        
     async def on_submit(self, interaction: discord.Interaction):
-        # Implementation of sheet creation logic
-        pass
+        await interaction.response.defer()
+        try:
+            spreadsheet_name = self.spreadsheet_name.value
+            email = self.email.value if self.email.value else config.GMAIL_ADDRESS
+            
+            created_spreadsheet_id = create_new_spreadsheet(spreadsheet_name)
+            share_spreadsheet(created_spreadsheet_id, email)
+            res = fill_created_spreadsheet_with_users_except_ai_decisions(created_spreadsheet_id)
+            
+            await interaction.followup.send(
+                f"Spreadsheet created successfully!\n"
+                f"ID: `{created_spreadsheet_id}`\n"
+                f"Name: `{spreadsheet_name}`\n"
+                f"View it here: https://docs.google.com/spreadsheets/d/{created_spreadsheet_id}",
+                ephemeral=True
+            )
+        except Exception as e:
+            await interaction.followup.send(f"Error creating spreadsheet: {str(e)}", ephemeral=True)
 
 
 class LeaderboardCreateModal(discord.ui.Modal):
@@ -194,6 +226,10 @@ class LeaderboardCreateModal(discord.ui.Modal):
             placeholder="e.g., 2024-03",
             required=False
         )
+        
+        # Add the TextInput components to the modal
+        self.add_item(self.spreadsheet_id)
+        self.add_item(self.date)
         
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -229,6 +265,10 @@ class LeaderboardViewModal(discord.ui.Modal):
             placeholder="e.g., 2024-03",
             required=False
         )
+        
+        # Add the TextInput components to the modal
+        self.add_item(self.thread_id)
+        self.add_item(self.date)
         
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()

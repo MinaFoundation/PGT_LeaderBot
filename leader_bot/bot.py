@@ -15,6 +15,7 @@ from datetime import datetime
 
 import config
 from log_config import get_logger
+from leader_bot.shared_state import task_details, auto_post_tasks, auto_post_leaderboard
 from sheet_functions import (
     create_new_spreadsheet,
     share_spreadsheet,
@@ -54,9 +55,6 @@ tree = app_commands.CommandTree(client)
 
 spread_sheet_id = None
 auto_post_task = None
-auto_post_tasks = {}
-task_details = {}
-
 AUTH_TOKEN = config.SHARED_SECRET
 
 
@@ -306,35 +304,6 @@ async def leaderboard_stop_auto_post(interaction: discord.Interaction, date: str
     except Exception as e:
         logger.error(f"Error in leaderboard-stop-auto-post command: {e}")
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
-
-
-def auto_post_leaderboard(task_id):
-    async def inner():
-        try:
-            now = datetime.now()
-            details = task_details[task_id]
-            if now.hour == details["hour"] and now.minute == details["minute"]:
-                leaderboard = create_leaderboard_by_month(
-                    details["year"], details["month"]
-                )
-                create_leaderboard_sheet(
-                    details["spreadsheet_id"],
-                    leaderboard,
-                    details["year"],
-                    details["month"],
-                )
-                messages = format_leaderboard_for_discord(leaderboard)
-                channel = details["channel"]
-                bot_user_id = client.user.id
-                async for message in channel.history(limit=None):
-                    if message.author.id == bot_user_id:
-                        await message.delete()
-                for msg in messages:
-                    await channel.send(msg)
-        except Exception as e:
-            logger.error(f"Error in auto_post_leaderboard task {task_id}: {e}")
-
-    return inner
 
 
 @tree.command(
