@@ -2,6 +2,8 @@ import discord
 from discord.ui import View, Button
 from typing import Optional
 from datetime import datetime
+import os
+import aiohttp
 
 class MainView(View):
     def __init__(self):
@@ -187,3 +189,107 @@ class LeaderboardManagementView(View):
             embed=main_view.create_main_menu_embed(),
             view=main_view
         ) 
+
+class UserManagementView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Get Monthly Data", style=discord.ButtonStyle.secondary)
+    async def get_monthly_data(self, interaction: discord.Interaction, button: Button):
+        modal = UserMonthlyDataModal()
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label="Get All Data", style=discord.ButtonStyle.secondary)
+    async def get_all_data(self, interaction: discord.Interaction, button: Button):
+        embed = discord.Embed(
+            title="Export Data",
+            description="Exporting all user data to CSV...",
+            color=discord.Color.blue()
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+        
+        file_path = "all_data.csv"
+        result = write_users_to_csv(file_path)
+        if "successfully" in result:
+            await interaction.channel.send(file=discord.File(file_path))
+            os.remove(file_path)
+
+    @discord.ui.button(label="Get AI Decisions", style=discord.ButtonStyle.secondary)
+    async def get_ai_decisions(self, interaction: discord.Interaction, button: Button):
+        modal = AIDecisionsModal()
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label="Delete Data", style=discord.ButtonStyle.danger)
+    async def delete_data(self, interaction: discord.Interaction, button: Button):
+        modal = UserDeletionModal()
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label="Back", style=discord.ButtonStyle.gray)
+    async def back_to_main(self, interaction: discord.Interaction, button: Button):
+        main_view = MainView()
+        await interaction.response.edit_message(
+            embed=main_view.create_main_menu_embed(),
+            view=main_view
+        )
+
+class APIManagementView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Run Task", style=discord.ButtonStyle.secondary)
+    async def run_task(self, interaction: discord.Interaction, button: Button):
+        modal = TaskRunModal()
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label="Run User Task", style=discord.ButtonStyle.secondary)
+    async def run_user_task(self, interaction: discord.Interaction, button: Button):
+        modal = UserTaskRunModal()
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label="Scheduler Controls", style=discord.ButtonStyle.secondary)
+    async def scheduler_controls(self, interaction: discord.Interaction, button: Button):
+        embed = discord.Embed(
+            title="Scheduler Controls",
+            description="Manage scheduler:",
+            color=discord.Color.red()
+        )
+        await interaction.response.send_message(
+            embed=embed,
+            view=SchedulerControlView(),
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Back", style=discord.ButtonStyle.gray)
+    async def back_to_main(self, interaction: discord.Interaction, button: Button):
+        main_view = MainView()
+        await interaction.response.edit_message(
+            embed=main_view.create_main_menu_embed(),
+            view=main_view
+        )
+
+class SchedulerControlView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Start Scheduler", style=discord.ButtonStyle.success)
+    async def start_scheduler(self, interaction: discord.Interaction, button: Button):
+        modal = SchedulerStartModal()
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label="Stop Scheduler", style=discord.ButtonStyle.danger)
+    async def stop_scheduler(self, interaction: discord.Interaction, button: Button):
+        await self.control_scheduler(interaction, "stop")
+
+    async def control_scheduler(self, interaction: discord.Interaction, action: str, interval: int = 1):
+        try:
+            url = f"{config.GTP_ENDPOINT}/control-scheduler"
+            payload = {"action": action, "interval_minutes": interval}
+            headers = {"Authorization": config.SHARED_SECRET}
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload, headers=headers) as response:
+                    response_data = await response.json()
+
+            await interaction.response.send_message(response_data["message"], ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"Error: {str(e)}", ephemeral=True) 

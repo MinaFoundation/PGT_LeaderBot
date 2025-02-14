@@ -2,6 +2,7 @@ import discord
 import os
 import sys
 import json
+import aiohttp
 
 from datetime import datetime
 from github_tracker_bot.bot_functions import delete_all_data
@@ -178,3 +179,137 @@ class SheetCreationModal(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction):
         # Implementation of sheet creation logic
         pass
+
+
+class LeaderboardCreateModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Create/Update Leaderboard")
+        self.spreadsheet_id = discord.ui.TextInput(
+            label="Spreadsheet ID (Optional)",
+            required=False,
+            placeholder="Enter spreadsheet ID..."
+        )
+        self.date = discord.ui.TextInput(
+            label="Date (YYYY-MM)",
+            placeholder="e.g., 2024-03",
+            required=False
+        )
+        
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            date = self.date.value if self.date.value else None
+            spreadsheet_id = self.spreadsheet_id.value if self.spreadsheet_id.value else None
+            
+            if date:
+                year, month = date.split("-")
+            else:
+                now = datetime.now()
+                year, month = now.strftime("%Y-%m").split("-")
+
+            leaderboard = create_leaderboard_by_month(year, month)
+            create_leaderboard_sheet(spreadsheet_id, leaderboard, year, month)
+            messages = format_leaderboard_for_discord(leaderboard)
+            
+            for msg in messages:
+                await interaction.followup.send(msg, ephemeral=True)
+        except Exception as e:
+            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+
+
+class LeaderboardViewModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="View Leaderboard")
+        self.thread_id = discord.ui.TextInput(
+            label="Thread ID",
+            placeholder="Enter thread ID"
+        )
+        self.date = discord.ui.TextInput(
+            label="Date (YYYY-MM)",
+            placeholder="e.g., 2024-03",
+            required=False
+        )
+        
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            thread = await interaction.guild.fetch_channel(self.thread_id.value)
+            date = self.date.value if self.date.value else None
+            
+            if date:
+                year, month = date.split("-")
+            else:
+                now = datetime.now()
+                year, month = now.strftime("%Y-%m").split("-")
+
+            leaderboard = create_leaderboard_by_month(year, month)
+            messages = format_leaderboard_for_discord(leaderboard)
+            
+            bot_user_id = interaction.client.user.id
+            async for message in thread.history(limit=None):
+                if message.author.id == bot_user_id:
+                    await message.delete()
+
+            for msg in messages:
+                await thread.send(msg)
+
+            await interaction.followup.send("Leaderboard posted successfully!", ephemeral=True)
+        except Exception as e:
+            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+
+
+class TaskRunModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Run Task")
+        self.since = discord.ui.TextInput(
+            label="Since (YYYY-MM-DD)",
+            placeholder="Enter start date"
+        )
+        self.until = discord.ui.TextInput(
+            label="Until (YYYY-MM-DD)",
+            placeholder="Enter end date"
+        )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            since = convert_to_iso8601(self.since.value)
+            until = convert_to_iso8601(self.until.value)
+            
+            url = f"{config.GTP_ENDPOINT}/run-task"
+            payload = {"since": since, "until": until}
+            headers = {"Authorization": config.SHARED_SECRET}
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload, headers=headers) as response:
+                    response_data = await response.json()
+
+            await interaction.followup.send(response_data["message"], ephemeral=True)
+        except Exception as e:
+            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+
+
+class SchedulerStartModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Start Scheduler")
+        self.interval = discord.ui.TextInput(
+            label="Interval (minutes)",
+            placeholder="Enter interval in minutes",
+            default="1"
+        )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            interval = int(self.interval.value)
+            url = f"{config.GTP_ENDPOINT}/control-scheduler"
+            payload = {"action": "start", "interval_minutes": interval}
+            headers = {"Authorization": config.SHARED_SECRET}
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload, headers=headers) as response:
+                    response_data = await response.json()
+
+            await interaction.followup.send(response_data["message"], ephemeral=True)
+        except Exception as e:
+            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
