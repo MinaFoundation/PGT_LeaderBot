@@ -534,11 +534,17 @@ class AutopostStartModal(discord.ui.Modal):
             required=False,
             placeholder="Enter spreadsheet ID"
         )
+        self.channel_id = discord.ui.TextInput(
+            label="Channel/Thread ID (Optional)",
+            required=False,
+            placeholder="Enter channel/thread ID"
+        )
         
         # Add the TextInput components to the modal
         self.add_item(self.date)
         self.add_item(self.time)
         self.add_item(self.spreadsheet_id)
+        self.add_item(self.channel_id)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -546,27 +552,67 @@ class AutopostStartModal(discord.ui.Modal):
             year, month = self.date.value.split("-")
             hour, minute = map(int, self.time.value.split(":"))
             spreadsheet_id = self.spreadsheet_id.value if self.spreadsheet_id.value else None
+            channel_id = self.channel_id.value.strip() if self.channel_id.value else None
+
+            target_channel = interaction.channel
+            if channel_id:
+                try:
+                    target_channel = await interaction.guild.fetch_channel(int(channel_id))
+                    if not target_channel:
+                        raise ValueError("Channel not found")
+                except (ValueError, discord.NotFound, discord.Forbidden):
+                    await interaction.followup.send(
+                        "Invalid channel ID or cannot access the specified channel. Using current channel instead.",
+                        ephemeral=True
+                    )
+                    target_channel = interaction.channel
 
             task_id = f"{year}-{month}"
+            
+            # Check if there's already a task running for this month
+            if task_id in auto_post_tasks and auto_post_tasks[task_id].is_running():
+                old_channel = task_details[task_id]["channel"]
+                await interaction.followup.send(
+                    f"There's already an auto-post task running for {task_id} in channel {old_channel.name}. "
+                    f"Please stop it first before starting a new one.",
+                    ephemeral=True
+                )
+                return
+
             task_details[task_id] = {
                 "year": year,
                 "month": month,
                 "spreadsheet_id": spreadsheet_id,
                 "hour": hour,
                 "minute": minute,
-                "channel": interaction.channel,
+                "channel": target_channel,
             }
 
-            if task_id not in auto_post_tasks or not auto_post_tasks[task_id].is_running():
-                auto_post_tasks[task_id] = tasks.loop(minutes=1)(auto_post_leaderboard(task_id))
-                auto_post_tasks[task_id].start()
+            if not spreadsheet_id:
+                await interaction.followup.send(
+                    f"Spreadsheet ID is missing; it will not update the spreadsheet!",
+                    ephemeral=True,
+                )
+
+            auto_post_tasks[task_id] = tasks.loop(minutes=1)(auto_post_leaderboard(task_id))
+            auto_post_tasks[task_id].start()
 
             await interaction.followup.send(
-                f"Auto-post started for {year}-{month} at {hour:02d}:{minute:02d}",
+                f"Auto-post leaderboard task started for {self.date.value} at {hour:02d}:{minute:02d} "
+                f"in channel #{target_channel.name}",
+                ephemeral=True
+            )
+        except ValueError as ve:
+            await interaction.followup.send(
+                f"Invalid input: {str(ve)}. Please check your date and time format.",
                 ephemeral=True
             )
         except Exception as e:
-            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+            logger.error(f"Error in AutopostStartModal: {e}")
+            await interaction.followup.send(
+                f"An error occurred: {str(e)}",
+                ephemeral=True
+            )
 
 
 class AutopostStopModal(discord.ui.Modal):
@@ -576,24 +622,64 @@ class AutopostStopModal(discord.ui.Modal):
             label="Date (YYYY-MM)",
             placeholder="e.g., 2024-03"
         )
+        self.channel_id = discord.ui.TextInput(
+            label="Channel/Thread ID (Optional)",
+            required=False,
+            placeholder="Enter channel/thread ID"
+        )
         
-        # Add the TextInput component to the modal
+        # Add the TextInput components to the modal
         self.add_item(self.date)
+        self.add_item(self.channel_id)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
         try:
             task_id = self.date.value
-            if task_id in auto_post_tasks and auto_post_tasks[task_id].is_running():
-                auto_post_tasks[task_id].cancel()
-                await interaction.followup.send(
-                    f"Auto-post stopped for {task_id}",
-                    ephemeral=True
-                )
-            else:
+            channel_id = self.channel_id.value.strip() if self.channel_id.value else None
+            
+            if task_id not in auto_post_tasks or not auto_post_tasks[task_id].is_running():
                 await interaction.followup.send(
                     f"No auto-post task running for {task_id}",
                     ephemeral=True
                 )
+                return
+
+            if channel_id:
+                try:
+                    target_channel = await interaction.guild.fetch_channel(int(channel_id))
+                    if not target_channel:
+                        raise ValueError("Channel not found")
+                        
+                    if task_details[task_id]["channel"].id != target_channel.id:
+                        await interaction.followup.send(
+                            f"The auto-post task for {task_id} is running in #{task_details[task_id]['channel'].name}, "
+                            f"not in the specified channel #{target_channel.name}",
+                            ephemeral=True
+                        )
+                        return
+                except (ValueError, discord.NotFound, discord.Forbidden):
+                    await interaction.followup.send(
+                        "Invalid channel ID or cannot access the specified channel.",
+                        ephemeral=True
+                    )
+                    return
+
+            auto_post_tasks[task_id].cancel()
+            channel_name = task_details[task_id]["channel"].name
+            await interaction.followup.send(
+                f"Auto-post leaderboard task stopped for {task_id} in channel #{channel_name}",
+                ephemeral=True
+            )
+            
+        except ValueError as ve:
+            await interaction.followup.send(
+                f"Invalid input: {str(ve)}. Please check your date format.",
+                ephemeral=True
+            )
         except Exception as e:
-            await interaction.followup.send(f"Error: {str(e)}", ephemeral=True)
+            logger.error(f"Error in AutopostStopModal: {e}")
+            await interaction.followup.send(
+                f"An error occurred: {str(e)}",
+                ephemeral=True
+            )
