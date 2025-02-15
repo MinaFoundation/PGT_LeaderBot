@@ -309,6 +309,10 @@ class TaskRunModal(discord.ui.Modal):
             label="Until (YYYY-MM-DD)",
             placeholder="Enter end date"
         )
+        
+        # Add the TextInput components to the modal
+        self.add_item(self.since)
+        self.add_item(self.until)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -366,6 +370,10 @@ class UserMonthlyDataModal(discord.ui.Modal):
             label="Date (YYYY-MM)",
             placeholder="e.g., 2024-03"
         )
+        
+        # Add the TextInput components to the modal
+        self.add_item(self.username)
+        self.add_item(self.date)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -408,6 +416,11 @@ class AIDecisionsModal(discord.ui.Modal):
             label="Until (YYYY-MM-DD)",
             placeholder="End date"
         )
+        
+        # Add the TextInput components to the modal
+        self.add_item(self.username)
+        self.add_item(self.since)
+        self.add_item(self.until)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -446,12 +459,17 @@ class UserTaskRunModal(discord.ui.Modal):
         )
         self.since = discord.ui.TextInput(
             label="Since (YYYY-MM-DD)",
-            placeholder="Start date"
+            placeholder="Enter start date"
         )
         self.until = discord.ui.TextInput(
             label="Until (YYYY-MM-DD)",
-            placeholder="End date"
+            placeholder="Enter end date"
         )
+        
+        # Add the TextInput components to the modal
+        self.add_item(self.username)
+        self.add_item(self.since)
+        self.add_item(self.until)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -465,12 +483,7 @@ class UserTaskRunModal(discord.ui.Modal):
             headers = {"Authorization": config.SHARED_SECRET}
 
             async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    url, 
-                    json=payload, 
-                    params=params, 
-                    headers=headers
-                ) as response:
+                async with session.post(url, json=payload, params=params, headers=headers) as response:
                     response_data = await response.json()
 
             await interaction.followup.send(response_data["message"], ephemeral=True)
@@ -485,6 +498,9 @@ class SheetUpdateModal(discord.ui.Modal):
             label="Spreadsheet ID",
             placeholder="Enter the spreadsheet ID to update"
         )
+        
+        # Add the TextInput component to the modal
+        self.add_item(self.spreadsheet_id)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -518,6 +534,11 @@ class AutopostStartModal(discord.ui.Modal):
             required=False,
             placeholder="Enter spreadsheet ID"
         )
+        
+        # Add the TextInput components to the modal
+        self.add_item(self.date)
+        self.add_item(self.time)
+        self.add_item(self.spreadsheet_id)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -555,6 +576,9 @@ class AutopostStopModal(discord.ui.Modal):
             label="Date (YYYY-MM)",
             placeholder="e.g., 2024-03"
         )
+        
+        # Add the TextInput component to the modal
+        self.add_item(self.date)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()

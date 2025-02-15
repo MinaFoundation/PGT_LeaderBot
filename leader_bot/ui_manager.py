@@ -214,7 +214,7 @@ class LeaderboardManagementView(View):
         self.autopost_controls.row = 0
         self.back_to_main.row = 1
 
-    @discord.ui.button(label="Create/Update", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Create", style=discord.ButtonStyle.primary)
     async def create_update(self, interaction: discord.Interaction, button: Button):
         modal = LeaderboardCreateModal()
         await interaction.response.send_modal(modal)
@@ -307,7 +307,7 @@ class APIManagementView(View):
         modal = TaskRunModal()
         await interaction.response.send_modal(modal)
 
-    @discord.ui.button(label="Run User Task", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Run Task for User", style=discord.ButtonStyle.primary)
     async def run_user_task(self, interaction: discord.Interaction, button: Button):
         modal = UserTaskRunModal()
         await interaction.response.send_modal(modal)
