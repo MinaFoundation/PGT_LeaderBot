@@ -65,10 +65,10 @@ async def on_ready():
         # Set up the admin channel with main menu
         admin_channel = client.get_channel(config.LEADERBOARD_ADMIN_CHANNEL_ID)
         await admin_channel.purge()  # Clear previous messages
-        
+
         main_view = MainView()
         embed = main_view.create_main_menu_embed()
-        
+
         await admin_channel.send(embed=embed, view=main_view)
         logger.info(f"We have logged in as {client.user}")
     except Exception as e:
@@ -80,6 +80,12 @@ async def on_message(message):
     try:
         if message.author == client.user:
             return
+
+        if message.content.lower() == "!leaderbot":
+            main_view = MainView()
+            embed = main_view.create_main_menu_embed()
+            await message.channel.send(embed=embed, view=main_view)
+
     except Exception as e:
         logger.error(f"Error processing message: {e}")
 

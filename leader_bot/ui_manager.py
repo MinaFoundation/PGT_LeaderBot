@@ -19,9 +19,10 @@ from leader_bot.modals import (
     UserTaskRunModal,
     SchedulerStartModal,
     AutopostStartModal,
-    AutopostStopModal
+    AutopostStopModal,
 )
 from leader_bot.sheet_functions import write_users_to_csv
+
 
 class MainView(View):
     def __init__(self):
@@ -31,49 +32,48 @@ class MainView(View):
         self.user_management.row = 0
         self.api_management.row = 1
         self.sheet_management.row = 1
-        
+
     def create_main_menu_embed(self):
         embed = discord.Embed(
             title="Leaderboard Admin Control Panel",
             description="Select a category to manage:",
             color=discord.Color.blue(),
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
         embed.add_field(
-            name="🏆 Leaderboard Management", 
-            value="Manage leaderboards and rankings", 
-            inline=True
+            name="🏆 Leaderboard Management",
+            value="Manage leaderboards and rankings",
+            inline=True,
         )
         embed.add_field(
-            name="👥 User Management", 
-            value="Manage user data", 
-            inline=True
+            name="👥 User Management", value="Manage user data", inline=True
         )
         embed.add_field(
-            name="🔧 API Management", 
-            value="Control API tasks and settings", 
-            inline=True
+            name="🔧 API Management",
+            value="Control API tasks and settings",
+            inline=True,
         )
         embed.add_field(
-            name="📊 Sheet Management", 
-            value="Create, update and manage sheets", 
-            inline=True
+            name="📊 Sheet Management",
+            value="Create, update and manage sheets",
+            inline=True,
         )
         embed.set_footer(text="Use the buttons below to navigate")
         return embed
 
-
-    @discord.ui.button(label="🏆 Leaderboard Management", style=discord.ButtonStyle.primary)
-    async def leaderboard_management(self, interaction: discord.Interaction, button: Button):
+    @discord.ui.button(
+        label="🏆 Leaderboard Management", style=discord.ButtonStyle.primary
+    )
+    async def leaderboard_management(
+        self, interaction: discord.Interaction, button: Button
+    ):
         embed = discord.Embed(
             title="Leaderboard Management",
             description="Select an operation:",
-            color=discord.Color.gold()
+            color=discord.Color.gold(),
         )
         await interaction.response.send_message(
-            embed=embed,
-            view=LeaderboardManagementView(),
-            ephemeral=True
+            embed=embed, view=LeaderboardManagementView(), ephemeral=True
         )
 
     @discord.ui.button(label="👥 User Management", style=discord.ButtonStyle.primary)
@@ -81,12 +81,10 @@ class MainView(View):
         embed = discord.Embed(
             title="User Management",
             description="Select an operation:",
-            color=discord.Color.blue()
+            color=discord.Color.blue(),
         )
         await interaction.response.send_message(
-            embed=embed,
-            view=UserManagementView(),
-            ephemeral=True
+            embed=embed, view=UserManagementView(), ephemeral=True
         )
 
     @discord.ui.button(label="🔧 API Management", style=discord.ButtonStyle.primary)
@@ -94,12 +92,10 @@ class MainView(View):
         embed = discord.Embed(
             title="API Management",
             description="Select an operation:",
-            color=discord.Color.red()
+            color=discord.Color.red(),
         )
         await interaction.response.send_message(
-            embed=embed,
-            view=APIManagementView(),
-            ephemeral=True
+            embed=embed, view=APIManagementView(), ephemeral=True
         )
 
     @discord.ui.button(label="📊 Sheet Management", style=discord.ButtonStyle.primary)
@@ -107,17 +103,20 @@ class MainView(View):
         embed = discord.Embed(
             title="Sheet Management",
             description="Select an operation:",
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
-        embed.add_field(name="Create Sheet", value="Create a new spreadsheet", inline=True)
-        embed.add_field(name="Update Sheet", value="Update existing spreadsheet", inline=True)
+        embed.add_field(
+            name="Create Sheet", value="Create a new spreadsheet", inline=True
+        )
+        embed.add_field(
+            name="Update Sheet", value="Update existing spreadsheet", inline=True
+        )
         embed.add_field(name="Edit Sheet", value="Modify sheet contents", inline=True)
-        
+
         await interaction.response.send_message(
-            embed=embed,
-            view=SheetManagementView(),
-            ephemeral=True
+            embed=embed, view=SheetManagementView(), ephemeral=True
         )
+
 
 class SheetManagementView(View):
     def __init__(self):
@@ -143,21 +142,19 @@ class SheetManagementView(View):
         embed = discord.Embed(
             title="Edit Sheet",
             description="Choose edit operation:",
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
         await interaction.response.send_message(
-            embed=embed,
-            view=SheetEditView(),
-            ephemeral=True
+            embed=embed, view=SheetEditView(), ephemeral=True
         )
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.secondary)
     async def back_to_main(self, interaction: discord.Interaction, button: Button):
         main_view = MainView()
         await interaction.response.edit_message(
-            embed=main_view.create_main_menu_embed(),
-            view=main_view
+            embed=main_view.create_main_menu_embed(), view=main_view
         )
+
 
 class SheetEditView(View):
     def __init__(self):
@@ -190,20 +187,24 @@ class SheetEditView(View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.secondary)
-    async def back_to_sheet_management(self, interaction: discord.Interaction, button: Button):
+    async def back_to_sheet_management(
+        self, interaction: discord.Interaction, button: Button
+    ):
         embed = discord.Embed(
             title="Sheet Management",
             description="Select an operation:",
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
-        embed.add_field(name="Create Sheet", value="Create a new spreadsheet", inline=True)
-        embed.add_field(name="Update Sheet", value="Update existing spreadsheet", inline=True)
+        embed.add_field(
+            name="Create Sheet", value="Create a new spreadsheet", inline=True
+        )
+        embed.add_field(
+            name="Update Sheet", value="Update existing spreadsheet", inline=True
+        )
         embed.add_field(name="Edit Sheet", value="Modify sheet contents", inline=True)
-        
-        await interaction.response.edit_message(
-            embed=embed,
-            view=SheetManagementView()
-        )
+
+        await interaction.response.edit_message(embed=embed, view=SheetManagementView())
+
 
 class LeaderboardManagementView(View):
     def __init__(self):
@@ -229,21 +230,19 @@ class LeaderboardManagementView(View):
         embed = discord.Embed(
             title="Auto-post Controls",
             description="Manage automatic posting:",
-            color=discord.Color.gold()
+            color=discord.Color.gold(),
         )
         await interaction.response.send_message(
-            embed=embed,
-            view=AutopostControlView(),
-            ephemeral=True
+            embed=embed, view=AutopostControlView(), ephemeral=True
         )
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.secondary)
     async def back_to_main(self, interaction: discord.Interaction, button: Button):
         main_view = MainView()
         await interaction.response.edit_message(
-            embed=main_view.create_main_menu_embed(),
-            view=main_view
-        ) 
+            embed=main_view.create_main_menu_embed(), view=main_view
+        )
+
 
 class UserManagementView(View):
     def __init__(self):
@@ -265,10 +264,10 @@ class UserManagementView(View):
         embed = discord.Embed(
             title="Export Data",
             description="Exporting all user data to CSV...",
-            color=discord.Color.blue()
+            color=discord.Color.blue(),
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
-        
+
         file_path = "all_data.csv"
         result = write_users_to_csv(file_path)
         if "successfully" in result:
@@ -289,9 +288,9 @@ class UserManagementView(View):
     async def back_to_main(self, interaction: discord.Interaction, button: Button):
         main_view = MainView()
         await interaction.response.edit_message(
-            embed=main_view.create_main_menu_embed(),
-            view=main_view
+            embed=main_view.create_main_menu_embed(), view=main_view
         )
+
 
 class APIManagementView(View):
     def __init__(self):
@@ -313,25 +312,25 @@ class APIManagementView(View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Scheduler Controls", style=discord.ButtonStyle.primary)
-    async def scheduler_controls(self, interaction: discord.Interaction, button: Button):
+    async def scheduler_controls(
+        self, interaction: discord.Interaction, button: Button
+    ):
         embed = discord.Embed(
             title="Scheduler Controls",
             description="Manage scheduler:",
-            color=discord.Color.red()
+            color=discord.Color.red(),
         )
         await interaction.response.send_message(
-            embed=embed,
-            view=SchedulerControlView(),
-            ephemeral=True
+            embed=embed, view=SchedulerControlView(), ephemeral=True
         )
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.secondary)
     async def back_to_main(self, interaction: discord.Interaction, button: Button):
         main_view = MainView()
         await interaction.response.edit_message(
-            embed=main_view.create_main_menu_embed(),
-            view=main_view
+            embed=main_view.create_main_menu_embed(), view=main_view
         )
+
 
 class SchedulerControlView(View):
     def __init__(self):
@@ -350,7 +349,9 @@ class SchedulerControlView(View):
     async def stop_scheduler(self, interaction: discord.Interaction, button: Button):
         await self.control_scheduler(interaction, "stop")
 
-    async def control_scheduler(self, interaction: discord.Interaction, action: str, interval: int = 1):
+    async def control_scheduler(
+        self, interaction: discord.Interaction, action: str, interval: int = 1
+    ):
         try:
             url = f"{config.GTP_ENDPOINT}/control-scheduler"
             payload = {"action": action, "interval_minutes": interval}
@@ -360,21 +361,21 @@ class SchedulerControlView(View):
                 async with session.post(url, json=payload, headers=headers) as response:
                     response_data = await response.json()
 
-            await interaction.response.send_message(response_data["message"], ephemeral=True)
+            await interaction.response.send_message(
+                response_data["message"], ephemeral=True
+            )
         except Exception as e:
-            await interaction.response.send_message(f"Error: {str(e)}", ephemeral=True) 
+            await interaction.response.send_message(f"Error: {str(e)}", ephemeral=True)
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.secondary)
     async def back_to_api(self, interaction: discord.Interaction, button: Button):
         embed = discord.Embed(
             title="API Management",
             description="Select an operation:",
-            color=discord.Color.red()
+            color=discord.Color.red(),
         )
-        await interaction.response.edit_message(
-            embed=embed,
-            view=APIManagementView()
-        )
+        await interaction.response.edit_message(embed=embed, view=APIManagementView())
+
 
 class AutopostControlView(View):
     def __init__(self):
@@ -395,13 +396,14 @@ class AutopostControlView(View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.secondary)
-    async def back_to_leaderboard(self, interaction: discord.Interaction, button: Button):
+    async def back_to_leaderboard(
+        self, interaction: discord.Interaction, button: Button
+    ):
         embed = discord.Embed(
             title="Leaderboard Management",
             description="Select an operation:",
-            color=discord.Color.gold()
+            color=discord.Color.gold(),
         )
         await interaction.response.edit_message(
-            embed=embed,
-            view=LeaderboardManagementView()
-        ) 
+            embed=embed, view=LeaderboardManagementView()
+        )
