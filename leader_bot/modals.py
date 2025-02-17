@@ -8,10 +8,14 @@ from datetime import datetime
 from discord.ext import tasks
 from github_tracker_bot.bot_functions import delete_all_data
 from leader_bot.utils import convert_to_iso8601
-from leader_bot.db_functions import get_ai_decisions_by_user_and_timeframe
+from leader_bot.db_functions import (
+    calculate_monthly_streak,
+    get_ai_decisions_by_user_and_timeframe,
+)
 from leader_bot.leaderboard_functions import (
     create_leaderboard_by_month,
     format_leaderboard_for_discord,
+    format_streaks_for_discord,
 )
 from leader_bot.shared_state import task_details, auto_post_tasks, auto_post_leaderboard
 
@@ -38,6 +42,7 @@ from sheet_functions import (
     add_repository_for_user,
     write_ai_decisions_to_csv,
     write_all_data_of_user_to_csv_by_month,
+    write_users_to_csv_monthly,
 )
 
 
@@ -684,6 +689,126 @@ class AutopostStopModal(discord.ui.Modal):
             )
         except Exception as e:
             logger.error(f"Error in AutopostStopModal: {e}")
+            await interaction.followup.send(
+                f"An error occurred: {str(e)}", ephemeral=True
+            )
+
+
+class LeaderboardClosureModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Leaderboard Closure")
+        self.date = discord.ui.TextInput(
+            label="Date (YYYY-MM)", placeholder="e.g., 2024-03", required=False
+        )
+        self.commit_filter = discord.ui.TextInput(
+            label="Commit Filter",
+            placeholder="Minimum number of commits (default: 10)",
+            required=False,
+            default="10",
+        )
+
+        # Add the TextInput components to the modal
+        self.add_item(self.date)
+        self.add_item(self.commit_filter)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            forum_channel_id = int(config.LEADERBOARD_FORUM_CHANNEL_ID)
+            forum_channel = interaction.guild.get_channel(forum_channel_id)
+
+            if self.date.value:
+                year, month = self.date.value.split("-")
+                date_obj = datetime.strptime(f"{year}-{month}", "%Y-%m")
+            else:
+                now = datetime.now()
+                date_obj = now
+                formatted_date = now.strftime("%Y-%m")
+                year, month = formatted_date.split("-")
+
+            commit_filter = (
+                int(self.commit_filter.value) if self.commit_filter.value else 10
+            )
+
+            leaderboard = create_leaderboard_by_month(year, month, commit_filter)
+            messages = format_leaderboard_for_discord(
+                leaderboard, self.date.value, True
+            )
+            month_name = date_obj.strftime("%B")
+
+            thread_title = f"Leaderboard | {year} {month_name}"
+            thread, _ = await forum_channel.create_thread(
+                name=thread_title, content=messages[0]
+            )
+
+            if len(messages) > 0:
+                for msg in messages[1:]:
+                    await thread.send(msg)
+
+            file_path = "user_data.csv"
+            result = write_users_to_csv_monthly(file_path, self.date.value)
+
+            if "Successfully" in result:
+                await thread.send(file=discord.File(file_path))
+                os.remove(file_path)
+
+            await interaction.followup.send(
+                f"Leaderboard thread created: {thread.jump_url}", ephemeral=True
+            )
+
+        except Exception as e:
+            logger.error(f"Error in LeaderboardClosureModal: {e}")
+            await interaction.followup.send(
+                f"An error occurred: {str(e)}", ephemeral=True
+            )
+
+
+class MonthlyStreaksModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Monthly Streaks")
+        self.date = discord.ui.TextInput(
+            label="Date (YYYY-MM)", placeholder="e.g., 2024-03", required=False
+        )
+
+        # Add the TextInput component to the modal
+        self.add_item(self.date)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            forum_channel_id = int(config.LEADERBOARD_FORUM_CHANNEL_ID)
+            forum_channel = interaction.guild.get_channel(forum_channel_id)
+
+            if self.date.value:
+                year, month = self.date.value.split("-")
+                date_obj = datetime.strptime(f"{year}-{month}", "%Y-%m")
+                date = self.date.value
+            else:
+                now = datetime.now()
+                date_obj = now
+                formatted_date = now.strftime("%Y-%m")
+                year, month = formatted_date.split("-")
+                date = formatted_date
+
+            month_name = date_obj.strftime("%B")
+            streaks = calculate_monthly_streak(date)
+
+            messages = format_streaks_for_discord(streaks, month_name)
+            thread_title = f"Streaks | {year} {month_name}"
+            thread, _ = await forum_channel.create_thread(
+                name=thread_title, content=messages[0]
+            )
+
+            if len(messages) > 0:
+                for msg in messages[1:]:
+                    await thread.send(msg)
+
+            await interaction.followup.send(
+                f"Streaks thread created: {thread.jump_url}", ephemeral=True
+            )
+
+        except Exception as e:
+            logger.error(f"Error in MonthlyStreaksModal: {e}")
             await interaction.followup.send(
                 f"An error occurred: {str(e)}", ephemeral=True
             )

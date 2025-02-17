@@ -20,6 +20,8 @@ from leader_bot.modals import (
     SchedulerStartModal,
     AutopostStartModal,
     AutopostStopModal,
+    LeaderboardClosureModal,
+    MonthlyStreaksModal,
 )
 from leader_bot.sheet_functions import write_users_to_csv
 
@@ -213,7 +215,9 @@ class LeaderboardManagementView(View):
         self.create_update.row = 0
         self.view_leaderboard.row = 0
         self.autopost_controls.row = 0
-        self.back_to_main.row = 1
+        self.leaderboard_closure.row = 1
+        self.monthly_streaks.row = 1
+        self.back_to_main.row = 2
 
     @discord.ui.button(label="Create", style=discord.ButtonStyle.primary)
     async def create_update(self, interaction: discord.Interaction, button: Button):
@@ -235,6 +239,18 @@ class LeaderboardManagementView(View):
         await interaction.response.send_message(
             embed=embed, view=AutopostControlView(), ephemeral=True
         )
+
+    @discord.ui.button(label="Monthly Closure", style=discord.ButtonStyle.primary)
+    async def leaderboard_closure(
+        self, interaction: discord.Interaction, button: Button
+    ):
+        modal = LeaderboardClosureModal()
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label="Monthly Streaks", style=discord.ButtonStyle.primary)
+    async def monthly_streaks(self, interaction: discord.Interaction, button: Button):
+        modal = MonthlyStreaksModal()
+        await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.secondary)
     async def back_to_main(self, interaction: discord.Interaction, button: Button):
