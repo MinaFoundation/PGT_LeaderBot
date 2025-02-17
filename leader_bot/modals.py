@@ -345,6 +345,9 @@ class SchedulerStartModal(discord.ui.Modal):
             default="1",
         )
 
+        # Add the TextInput component to the modal
+        self.add_item(self.interval)
+
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
         try:
