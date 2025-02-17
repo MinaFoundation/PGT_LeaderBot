@@ -62,7 +62,6 @@ AUTH_TOKEN = config.SHARED_SECRET
 @client.event
 async def on_ready():
     try:
-        # Set up the admin channel with main menu
         admin_channel = client.get_channel(config.LEADERBOARD_ADMIN_CHANNEL_ID)
         await admin_channel.purge()  # Clear previous messages
 
