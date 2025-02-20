@@ -26,6 +26,7 @@ services:
       - GTP_ENDPOINT=gtp_endpoint
       - GUILD_ID=guild_id
       - LEADERBOARD_FORUM_CHANNEL_ID=leaderboard_forum_channel_id
+      - LEADERBOARD_ADMIN_CHANNEL_ID=leaderboard_admin_channel_id
       - LOG_LEVEL=DEBUG
       - MONGO_COLLECTION=example_collection
       - MONGO_DB=example_db

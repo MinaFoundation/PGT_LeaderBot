@@ -15,6 +15,7 @@ from datetime import datetime
 
 import config
 from log_config import get_logger
+from leader_bot.shared_state import task_details, auto_post_tasks, auto_post_leaderboard
 from sheet_functions import (
     create_new_spreadsheet,
     share_spreadsheet,
@@ -39,6 +40,8 @@ from db_functions import (
 from modals import UserModal, UserDeletionModal
 from helpers import csv_to_structured_string
 import utils
+from ui_manager import MainView
+from leader_bot.utils import convert_to_iso8601
 
 logger = get_logger(__name__)
 
@@ -53,16 +56,19 @@ tree = app_commands.CommandTree(client)
 
 spread_sheet_id = None
 auto_post_task = None
-auto_post_tasks = {}
-task_details = {}
-
 AUTH_TOKEN = config.SHARED_SECRET
 
 
 @client.event
 async def on_ready():
     try:
-        await tree.sync(guild=discord.Object(id=config.GUILD_ID))
+        admin_channel = client.get_channel(config.LEADERBOARD_ADMIN_CHANNEL_ID)
+        await admin_channel.purge()  # Clear previous messages
+
+        main_view = MainView()
+        embed = main_view.create_main_menu_embed()
+
+        await admin_channel.send(embed=embed, view=main_view)
         logger.info(f"We have logged in as {client.user}")
     except Exception as e:
         logger.error(f"Error during on_ready: {e}")
@@ -73,6 +79,12 @@ async def on_message(message):
     try:
         if message.author == client.user:
             return
+
+        if message.content.lower() == "!leaderbot":
+            main_view = MainView()
+            embed = main_view.create_main_menu_embed()
+            await message.channel.send(embed=embed, view=main_view)
+
     except Exception as e:
         logger.error(f"Error processing message: {e}")
 
@@ -300,35 +312,6 @@ async def leaderboard_stop_auto_post(interaction: discord.Interaction, date: str
         await interaction.followup.send(f"An error occurred: {e}", ephemeral=True)
 
 
-def auto_post_leaderboard(task_id):
-    async def inner():
-        try:
-            now = datetime.now()
-            details = task_details[task_id]
-            if now.hour == details["hour"] and now.minute == details["minute"]:
-                leaderboard = create_leaderboard_by_month(
-                    details["year"], details["month"]
-                )
-                create_leaderboard_sheet(
-                    details["spreadsheet_id"],
-                    leaderboard,
-                    details["year"],
-                    details["month"],
-                )
-                messages = format_leaderboard_for_discord(leaderboard)
-                channel = details["channel"]
-                bot_user_id = client.user.id
-                async for message in channel.history(limit=None):
-                    if message.author.id == bot_user_id:
-                        await message.delete()
-                for msg in messages:
-                    await channel.send(msg)
-        except Exception as e:
-            logger.error(f"Error in auto_post_leaderboard task {task_id}: {e}")
-
-    return inner
-
-
 @tree.command(
     name="leaderboard-closure-month",
     description="It will create forum thread for leaderboard in the discord forum channel",
@@ -443,13 +426,6 @@ async def on_command(interaction: discord.Interaction):
     except Exception as e:
         logger.error(f"An error occured: {e}")
         await interaction.followup.send(f"An error occured: {e}", ephemeral=True)
-
-
-def convert_to_iso8601(date_str):
-    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-    iso8601_str = date_obj.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    return iso8601_str
 
 
 async def fetch(session, url, method="GET", data=None, params=None):
