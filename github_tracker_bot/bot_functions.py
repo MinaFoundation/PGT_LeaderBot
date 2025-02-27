@@ -244,6 +244,12 @@ async def get_result(username, repo_link, since_date, until_date):
 async def process_commit_day(username, repo_link, commits_day, commits_data):
     try:
         response = await decide_daily_commits(commits_day, commits_data)
+        
+        # If the response is False, it means all retries failed
+        if response is False:
+            logger.error(f"Failed to get response from OpenAI API after retries for {username}, {repo_link}, {commits_day}")
+            return None
+            
         commit_hashes = [commit["sha"] for commit in commits_data]
         data_entry = {
             "username": username,
