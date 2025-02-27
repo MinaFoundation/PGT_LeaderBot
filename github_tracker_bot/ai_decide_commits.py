@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import asyncio
+import random
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -39,11 +40,18 @@ def validate_date_format(date_str: str) -> bool:
         return False
 
 
-async def decide_daily_commits(date: str, data_array: List[CommitData], seed: int = 42, max_retries: int = 3, retry_delay: int = 60):
+async def decide_daily_commits(date: str, data_array: List[CommitData], seed: int = 42, max_retries: int = None, initial_retry_delay: int = None):
     if not validate_date_format(date):
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
+        
+    # Use config values if not explicitly provided
+    if max_retries is None:
+        max_retries = config.OPENAI_MAX_RETRIES
+    if initial_retry_delay is None:
+        initial_retry_delay = config.OPENAI_INITIAL_RETRY_DELAY
 
     retry_count = 0
+    had_error = False
     
     while retry_count <= max_retries:
         try:
@@ -70,18 +78,42 @@ async def decide_daily_commits(date: str, data_array: List[CommitData], seed: in
                 seed=seed,
                 temperature=0.1,
             )
+            
+            # Log successful retry if we previously had an error
+            if had_error:
+                logger.info(f"Successfully completed OpenAI API call after {retry_count} retries")
 
             return completion.choices[0].message.content
 
         except OpenAIError as e:
             error_message = str(e)
             logger.error(f"OpenAI API call failed with error: {e}")
+            had_error = True
             
-            # Check if it's a 403 Forbidden error or contains HTML
+            # Check for errors that should be retried
+            should_retry = False
+            
+            # 403 Forbidden or HTML response (API instability)
             if "403 Forbidden" in error_message or "<!DOCTYPE html>" in error_message:
+                should_retry = True
+            # Rate limit errors
+            elif "rate limit" in error_message.lower() or "too many requests" in error_message.lower():
+                should_retry = True
+            # Server errors (5xx)
+            elif "500" in error_message or "502" in error_message or "503" in error_message or "504" in error_message:
+                should_retry = True
+            # Timeout errors
+            elif "timeout" in error_message.lower() or "timed out" in error_message.lower():
+                should_retry = True
+                
+            if should_retry:
                 retry_count += 1
                 if retry_count <= max_retries:
-                    logger.info(f"Received 403 Forbidden error from OpenAI API. Retrying in {retry_delay} seconds (Attempt {retry_count}/{max_retries})...")
+                    # Calculate exponential backoff delay with jitter: initial_delay * 2^(retry_count-1) * (0.5 + random(0, 0.5))
+                    base_delay = initial_retry_delay * (2 ** (retry_count - 1))
+                    jitter = random.uniform(0.5, 1.0)  # Add 50-100% of the base delay as jitter
+                    retry_delay = base_delay * jitter
+                    logger.info(f"OpenAI API error detected. Retrying in {int(retry_delay)} seconds (Attempt {retry_count}/{max_retries})...")
                     await asyncio.sleep(retry_delay)
                 else:
                     logger.error(f"Maximum retry attempts ({max_retries}) reached. Giving up.")

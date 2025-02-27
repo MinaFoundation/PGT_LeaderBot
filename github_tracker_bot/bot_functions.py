@@ -249,13 +249,19 @@ async def process_commit_day(username, repo_link, commits_day, commits_data):
         if response is False:
             logger.error(f"Failed to get response from OpenAI API after retries for {username}, {repo_link}, {commits_day}")
             return None
+        
+        try:
+            parsed_response = json.loads(response)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON response from OpenAI API: {e}. Response: {response}")
+            return None
             
         commit_hashes = [commit["sha"] for commit in commits_data]
         data_entry = {
             "username": username,
             "repository": repo_link,
             "date": commits_day,
-            "response": json.loads(response),
+            "response": parsed_response,
             "commit_hashes": commit_hashes,
         }
         logger.debug(

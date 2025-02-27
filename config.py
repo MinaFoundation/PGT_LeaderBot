@@ -25,6 +25,10 @@ MONGO_COLLECTION = os.getenv("MONGO_COLLECTION")
 
 GTP_ENDPOINT = os.getenv("GTP_ENDPOINT")
 
+# OpenAI API retry configuration
+OPENAI_MAX_RETRIES = int(os.getenv("OPENAI_MAX_RETRIES", "3"))
+OPENAI_INITIAL_RETRY_DELAY = int(os.getenv("OPENAI_INITIAL_RETRY_DELAY", "60"))
+
 if LOG_LEVEL not in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
     print(f"Invalid log level '{LOG_LEVEL}', defaulting to 'INFO'")
     LOG_LEVEL = "INFO"
