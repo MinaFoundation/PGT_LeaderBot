@@ -26,7 +26,9 @@ MONGO_COLLECTION = os.getenv("MONGO_COLLECTION")
 GTP_ENDPOINT = os.getenv("GTP_ENDPOINT")
 
 # OpenAI API retry configuration
+# Maximum number of retry attempts for OpenAI API errors (403, rate limits, server errors, etc.)
 OPENAI_MAX_RETRIES = int(os.getenv("OPENAI_MAX_RETRIES", "3"))
+# Initial delay in seconds before retrying (will increase exponentially with each retry)
 OPENAI_INITIAL_RETRY_DELAY = int(os.getenv("OPENAI_INITIAL_RETRY_DELAY", "60"))
 
 if LOG_LEVEL not in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:

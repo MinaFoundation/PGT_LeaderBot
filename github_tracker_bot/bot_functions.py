@@ -242,6 +242,18 @@ async def get_result(username, repo_link, since_date, until_date):
 
 
 async def process_commit_day(username, repo_link, commits_day, commits_data):
+    """
+    Process commits for a specific day and get AI decision.
+    
+    Args:
+        username: GitHub username
+        repo_link: Repository URL
+        commits_day: Date of commits in YYYY-MM-DD format
+        commits_data: Array of commit data
+        
+    Returns:
+        Dictionary with AI decision data or None if processing failed
+    """
     try:
         response = await decide_daily_commits(commits_day, commits_data)
         

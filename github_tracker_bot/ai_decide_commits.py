@@ -41,6 +41,19 @@ def validate_date_format(date_str: str) -> bool:
 
 
 async def decide_daily_commits(date: str, data_array: List[CommitData], seed: int = 42, max_retries: int = None, initial_retry_delay: int = None):
+    """
+    Process daily commits and decide if they qualify based on AI analysis.
+    
+    Args:
+        date: The date in YYYY-MM-DD format
+        data_array: Array of commit data
+        seed: Random seed for OpenAI API
+        max_retries: Maximum number of retry attempts for API errors
+        initial_retry_delay: Initial delay in seconds before retrying
+        
+    Returns:
+        JSON string with the AI decision or False if processing failed
+    """
     if not validate_date_format(date):
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
         
